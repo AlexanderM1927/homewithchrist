@@ -1,0 +1,57 @@
+services:
+
+  db:
+    container_name: db_hwc
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-hwc}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - network_hwc
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    container_name: frontend_hwc
+    build: 
+      dockerfile: Dockerfile
+      context: ./front
+    volumes:
+      - ./front:/usr/src/front-app
+      - ./front/package.json:/usr/src/front-app/package.json
+      - /usr/src/front-app/node_modules
+    ports:
+      - "9093:9093"
+    networks:
+      - network_hwc
+
+  backend:
+    container_name: backend_hwc
+    build: 
+      dockerfile: Dockerfile
+      context: ./back
+    volumes:
+      - ./back:/usr/src/back-app
+      - ./back/package.json:/usr/src/back-app/package.json
+      - /usr/src/back-app/node_modules
+    ports:
+      - "8003:8003"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - network_hwc
+
+volumes:
+  db_data:
+
+networks:
+  network_hwc: {}
