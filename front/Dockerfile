@@ -20,6 +20,6 @@ COPY . /usr/src/front-app/
 # run postinstall now that project files are present
 RUN npm run postinstall
 
-EXPOSE 9093
+EXPOSE 9000
 
 CMD ["quasar", "dev"]
