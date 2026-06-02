@@ -10,12 +10,15 @@ RUN apk update && apk upgrade
 RUN apk add git
 RUN npm install -g @quasar/cli@5.0
 
-# install node dependencies
-COPY package.json ./
-RUN npm install
+# install node dependencies (skip postinstall so quasar prepare runs after full copy)
+COPY package.json package-lock.json ./
+RUN npm install --ignore-scripts
 
 # copy the app, note .dockerignore
 COPY . /usr/src/front-app/
+
+# run postinstall now that project files are present
+RUN npm run postinstall
 
 EXPOSE 9093
 

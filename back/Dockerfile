@@ -10,12 +10,12 @@ RUN apk update && apk upgrade
 RUN apk add git
 
 # install node dependencies
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN npm install
 
 # copy the app, note .dockerignore
 COPY . /usr/src/back-app/
 
-EXPOSE 8003
+EXPOSE 8004
 
 CMD ["npm", "run", "dev"]

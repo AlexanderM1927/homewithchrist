@@ -43,7 +43,7 @@ services:
       - ./back/package.json:/usr/src/back-app/package.json
       - /usr/src/back-app/node_modules
     ports:
-      - "8003:8003"
+      - "8004:8004"
     depends_on:
       db:
         condition: service_healthy
