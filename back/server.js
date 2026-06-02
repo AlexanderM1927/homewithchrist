@@ -17,7 +17,7 @@ app.get('/', async (req, res) => {
     },
     body: JSON.stringify({
       model: 'gemma3',
-      prompt: 'Hola',
+      prompt: 'Hola, puedes decirme un versiculo biblico hoy?',
       stream: false
     })
   })
