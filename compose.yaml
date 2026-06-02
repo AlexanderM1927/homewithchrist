@@ -35,6 +35,9 @@ services:
 
   backend:
     container_name: backend_hwc
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     build: 
       dockerfile: Dockerfile
       context: ./back

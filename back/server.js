@@ -9,7 +9,6 @@ app.use(express.json())
 
 app.get('/', async (req, res) => {
   const ollamaUrl = process.env.OLLAMA_URL
-
   const response = await fetch(`${ollamaUrl}/api/generate`, {
     method: 'POST',
     headers: {
@@ -17,7 +16,7 @@ app.get('/', async (req, res) => {
     },
     body: JSON.stringify({
       model: 'gemma3',
-      prompt: 'Hola, puedes decirme un versiculo biblico hoy?',
+      prompt: req.query.prompt,
       stream: false
     })
   })
