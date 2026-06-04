@@ -12,7 +12,7 @@
         indicator-color="transparent"
       >
         <q-tab name="inicio" icon="home" :label="$t('nav.home')" />
-        <q-tab name="versiculo" icon="menu_book" :label="$t('nav.verse')" />
+        <q-tab name="consejero" icon="chat" :label="$t('nav.advisor')" />
         <q-tab name="logout" icon="logout" :label="$t('nav.logout')" class="text-negative" @click="logout" />
       </q-tabs>
     </q-footer>

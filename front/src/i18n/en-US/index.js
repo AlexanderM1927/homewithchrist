@@ -3,6 +3,7 @@ export default {
     home: 'Inicio',
     counselor: 'Consejero',
     verse: 'Versículo',
+    advisor:  'Consejero',
     diary: 'Diario',
     mood: 'Ánimo',
     logout: 'Salir'
