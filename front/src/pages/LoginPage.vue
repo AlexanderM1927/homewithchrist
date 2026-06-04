@@ -72,6 +72,26 @@
             </div>
           </div>
 
+          <!-- Clave de 4 dígitos -->
+          <div class="pin-field">
+            <div class="text-caption text-grey-7 q-mb-xs">Clave (4 dígitos)</div>
+            <div class="row justify-center q-gutter-sm">
+              <input
+                v-for="(_, i) in 4"
+                :key="i"
+                :ref="el => { if (el) pinRefs[i] = el }"
+                v-model="pinDigits[i]"
+                type="tel"
+                inputmode="numeric"
+                maxlength="1"
+                class="pin-box"
+                @input="onPinInput(i, $event)"
+                @keydown="onPinKeydown(i, $event)"
+                @paste="onPinPaste($event)"
+              />
+            </div>
+          </div>
+
           <!-- Botón ingresar -->
           <div class="q-pt-sm">
             <q-btn
@@ -100,6 +120,33 @@ const router = useRouter()
 const name = ref('')
 const phoneNumber = ref('')
 const loading = ref(false)
+const pinDigits = ref(['', '', '', ''])
+const pinRefs = ref([])
+
+function onPinInput(index, event) {
+  const val = event.target.value.replace(/\D/g, '')
+  pinDigits.value[index] = val ? val[val.length - 1] : ''
+  event.target.value = pinDigits.value[index]
+  if (pinDigits.value[index] && index < 3) {
+    pinRefs.value[index + 1]?.focus()
+  }
+}
+
+function onPinKeydown(index, event) {
+  if (event.key === 'Backspace' && !pinDigits.value[index] && index > 0) {
+    pinRefs.value[index - 1]?.focus()
+  }
+}
+
+function onPinPaste(event) {
+  const text = (event.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 4)
+  event.preventDefault()
+  text.split('').forEach((char, i) => {
+    pinDigits.value[i] = char
+  })
+  const nextEmpty = text.length < 4 ? text.length : 3
+  pinRefs.value[nextEmpty]?.focus()
+}
 
 const countries = [
   { name: 'Colombia', dial: '+57', code: 'CO', flag: '🇨🇴' },
@@ -127,6 +174,10 @@ const countries = [
 const selectedCountry = ref(countries[0]) // Colombia por defecto
 
 async function handleLogin() {
+  const pin = pinDigits.value.join('')
+  if (pin.length < 4) {
+    return
+  }
   loading.value = true
   try {
     const fullPhone = `${selectedCountry.value.dial}${phoneNumber.value}`
@@ -135,7 +186,8 @@ async function handleLogin() {
       phone: fullPhone,
       countryCode: selectedCountry.value.code,
       countryDial: selectedCountry.value.dial,
-      phoneNumber: phoneNumber.value
+      phoneNumber: phoneNumber.value,
+      pin
     }
     localStorage.setItem('hwc_user', JSON.stringify(userData))
     await router.push('/')
@@ -161,5 +213,25 @@ async function handleLogin() {
 .country-select {
   width: 130px;
   flex-shrink: 0;
+}
+
+.pin-box {
+  width: 56px;
+  height: 56px;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+  caret-color: transparent;
+}
+
+.pin-box:focus {
+  border-color: var(--q-primary, #7c3aed);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 </style>
