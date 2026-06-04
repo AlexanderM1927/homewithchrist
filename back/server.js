@@ -9,14 +9,20 @@ const botRoutes = require('./routes/bot')
 
 const app = express()
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:9000']
+const isProduction = process.env.NODE_ENV === 'production'
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true // necesario para enviar/recibir cookies
-}))
+if (isProduction) {
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : []
+
+  app.use(cors({
+    origin: allowedOrigins,
+    credentials: true // necesario para enviar/recibir cookies
+  }))
+} else {
+  app.use(cors({ origin: true, credentials: true }))
+}
 app.use(express.json())
 app.use(cookieParser())
 
