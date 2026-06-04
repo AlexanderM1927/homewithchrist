@@ -141,10 +141,16 @@ async function sendMessage () {
   await scrollToBottom()
 
   try {
-    const result = await chatService.chat(text)
     const lastMsg = messages.value[messages.value.length - 1]
-    lastMsg.loading = false
-    lastMsg.content = result.data?.response || 'No pude obtener una respuesta. Intenta de nuevo.'
+    lastMsg.loading = true
+
+    await chatService.chatStream(text, (token, done) => {
+      if (lastMsg.loading) {
+        lastMsg.loading = false
+      }
+      lastMsg.content += token
+      scrollToBottom()
+    })
   } catch {
     const lastMsg = messages.value[messages.value.length - 1]
     lastMsg.loading = false
