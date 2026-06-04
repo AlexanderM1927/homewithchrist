@@ -130,7 +130,7 @@
           <q-item-label caption lines="2">{{ entry.text }}</q-item-label>
         </q-item-section>
         <q-item-section side>
-          <q-badge :label="`peso: ${entry.weight}`" color="secondary" />
+          <q-badge :label="$t('training.weightBadge', { weight: entry.weight })" color="secondary" />
         </q-item-section>
       </q-item>
     </q-list>
@@ -143,23 +143,25 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 
 const $q = useQuasar()
+const { t } = useI18n()
 
 const saving = ref(false)
 const entries = ref([])
 
-const categoryOptions = [
-  { label: 'Oración', value: 'oracion' },
-  { label: 'Perdón', value: 'perdon' },
-  { label: 'Ansiedad', value: 'ansiedad' },
-  { label: 'Relaciones', value: 'relaciones' },
-  { label: 'Culpa', value: 'culpa' },
-  { label: 'Biblia', value: 'biblia' },
-  { label: 'Decisión', value: 'decision' },
-  { label: 'Crisis', value: 'crisis' }
-]
+const categoryOptions = computed(() => [
+  { label: t('training.categories.oracion'), value: 'oracion' },
+  { label: t('training.categories.perdon'), value: 'perdon' },
+  { label: t('training.categories.ansiedad'), value: 'ansiedad' },
+  { label: t('training.categories.relaciones'), value: 'relaciones' },
+  { label: t('training.categories.culpa'), value: 'culpa' },
+  { label: t('training.categories.biblia'), value: 'biblia' },
+  { label: t('training.categories.decision'), value: 'decision' },
+  { label: t('training.categories.crisis'), value: 'crisis' }
+])
 
 const versionOptions = [
   { label: 'RVR1960', value: 'RVR1960' },
@@ -208,10 +210,10 @@ async function onSubmit () {
       reference: reference.value
     }
     entries.value.unshift(entry)
-    $q.notify({ type: 'positive', message: 'Versículo guardado correctamente' })
+    $q.notify({ type: 'positive', message: t('training.saveSuccess') })
     resetForm()
   } catch (err) {
-    $q.notify({ type: 'negative', message: err.message || 'Error al guardar' })
+    $q.notify({ type: 'negative', message: err.message || t('training.saveError') })
   } finally {
     saving.value = false
   }

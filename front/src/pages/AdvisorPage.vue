@@ -16,8 +16,8 @@
         <q-icon name="auto_awesome" color="primary" size="26px" />
       </q-avatar>
       <div>
-        <div class="text-weight-bold text-dark" style="font-size:15px;">Consejero Espiritual</div>
-        <div class="text-caption text-grey-6">Powered by IA · siempre disponible</div>
+        <div class="text-weight-bold text-dark" style="font-size:15px;">{{ $t('advisor.title') }}</div>
+        <div class="text-caption text-grey-6">{{ $t('advisor.subtitle') }}</div>
       </div>
       <q-space />
       <q-btn flat round icon="more_vert" color="grey-7" size="sm" />
@@ -28,9 +28,9 @@
       <!-- Welcome bubble when empty -->
       <div v-if="messages.length === 0" class="column items-center justify-center full-height q-py-xl">
         <q-icon name="auto_awesome" color="primary" size="56px" class="q-mb-md" />
-        <div class="text-h6 text-weight-bold text-dark text-center">Hola, soy tu Consejero</div>
+        <div class="text-h6 text-weight-bold text-dark text-center">{{ $t('advisor.welcomeTitle') }}</div>
         <div class="text-body2 text-grey-6 text-center q-mt-sm q-px-lg">
-          Estoy aquí para escucharte y acompañarte desde la fe. Puedes contarme lo que tengas en el corazón.
+          {{ $t('advisor.welcomeDesc') }}
         </div>
         <div class="q-mt-xl q-gutter-y-sm full-width">
           <q-btn
@@ -81,7 +81,7 @@
           outlined
           dense
           rounded
-          placeholder="Escribe tu mensaje..."
+          :placeholder="$t('advisor.inputPlaceholder')"
           class="col"
           bg-color="grey-2"
           :input-style="{ maxHeight: '120px' }"
@@ -101,8 +101,11 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import chatService from 'src/services/ChatService'
+
+const { t } = useI18n()
 
 function formatMessage (text) {
   return text
@@ -118,12 +121,7 @@ const inputText = ref('')
 const isLoading = ref(false)
 const messages = ref([])
 
-const suggestions = [
-  'Me siento ansioso y no sé por qué',
-  'Necesito orientación espiritual',
-  'Tengo un conflicto familiar',
-  '¿Qué dice la Biblia sobre el perdón?'
-]
+const suggestions = computed(() => t('advisor.suggestions', []))
 
 async function scrollToBottom () {
   await nextTick()
@@ -170,7 +168,7 @@ async function sendMessage () {
   } catch {
     const lastMsg = messages.value[messages.value.length - 1]
     lastMsg.loading = false
-    lastMsg.content = 'Hubo un error al conectar con el consejero. Intenta de nuevo más tarde.'
+    lastMsg.content = t('advisor.errorMessage')
   } finally {
     isLoading.value = false
   }

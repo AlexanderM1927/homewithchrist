@@ -58,6 +58,33 @@ export default {
     clear: 'Limpiar',
     history: 'Versículos guardados',
     empty: 'Aún no hay versículos guardados.',
-    required: 'Campo requerido'
+    required: 'Campo requerido',
+    saveSuccess: 'Versículo guardado correctamente',
+    saveError: 'Error al guardar',
+    weightBadge: 'peso: {weight}',
+    categories: {
+      oracion: 'Oración',
+      perdon: 'Perdón',
+      ansiedad: 'Ansiedad',
+      relaciones: 'Relaciones',
+      culpa: 'Culpa',
+      biblia: 'Biblia',
+      decision: 'Decisión',
+      crisis: 'Crisis'
+    }
+  },
+  advisor: {
+    title: 'Consejero Espiritual',
+    subtitle: 'Powered by IA · siempre disponible',
+    welcomeTitle: 'Hola, soy tu Consejero',
+    welcomeDesc: 'Estoy aquí para escucharte y acompañarte desde la fe. Puedes contarme lo que tengas en el corazón.',
+    inputPlaceholder: 'Escribe tu mensaje...',
+    errorMessage: 'Hubo un error al conectar con el consejero. Intenta de nuevo más tarde.',
+    suggestions: [
+      'Me siento ansioso y no sé por qué',
+      'Necesito orientación espiritual',
+      'Tengo un conflicto familiar',
+      '¿Qué dice la Biblia sobre el perdón?'
+    ]
   }
 }
