@@ -256,7 +256,7 @@ const reference = computed(() => {
 
 function resetForm () {
   form.value = defaultForm()
-  formRef.value?.reset()
+  formRef.value?.resetValidation()
 }
 
 async function onSubmit () {
