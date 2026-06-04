@@ -34,8 +34,8 @@
       />
 
       <!-- Versículos -->
-      <div class="row q-col-gutter-md">
-        <div class="col-6">
+      <div class="row" style="gap: 8px">
+        <div class="col">
           <q-input
             v-model.number="form.verse_start"
             :label="$t('training.verseStart')"
@@ -45,7 +45,7 @@
             :rules="[val => !!val || $t('training.required')]"
           />
         </div>
-        <div class="col-6">
+        <div class="col">
           <q-input
             v-model.number="form.verse_end"
             :label="$t('training.verseEnd')"
