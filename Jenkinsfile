@@ -8,8 +8,8 @@ pipeline {
 
     environment {
         NODE_OPTIONS = "--max-old-space-size=1536"
-        JENKINS_NODE_COOKIE = "dontKillMeSoundhub"
-        SOUNDHUB_APP_DIR = "/var/www/apps/soundhub/back"
+        JENKINS_NODE_COOKIE = "dontKillMeHWC"
+        HWC_APP_DIR = "/var/www/apps/hwc/back"
     }
 
     stages {
@@ -19,7 +19,7 @@ pipeline {
             }
 
             steps {
-                withCredentials([file(credentialsId: 'envsoundhub', variable: 'ENV_FILE')]) {
+                withCredentials([file(credentialsId: 'envhwc', variable: 'ENV_FILE')]) {
                     sh 'rm -f ./back/.env'
                     sh 'cp "$ENV_FILE" ./back/.env'
                 }
@@ -48,7 +48,7 @@ pipeline {
             }
 
             steps {
-                withCredentials([file(credentialsId: 'envsoundhub-front', variable: 'ENV_FILE')]) {
+                withCredentials([file(credentialsId: 'envhwc-front', variable: 'ENV_FILE')]) {
                     sh 'rm -f ./front/.env'
                     sh 'cp "$ENV_FILE" ./front/.env'
                 }
@@ -99,18 +99,18 @@ pipeline {
                     sh '''
                     set -e
 
-                    echo "[deploy] Deploying SoundHub to $SOUNDHUB_APP_DIR..."
+                    echo "[deploy] Deploying HWC to $HWC_APP_DIR..."
 
-                    mkdir -p "$SOUNDHUB_APP_DIR"
+                    mkdir -p "$HWC_APP_DIR"
 
                     rsync -az --delete \
                       --exclude node_modules \
-                      ./ "$SOUNDHUB_APP_DIR/"
+                      ./ "$HWC_APP_DIR/"
 
                     echo "[deploy] Syncing dependencies..."
-                    rsync -az --delete ./node_modules "$SOUNDHUB_APP_DIR/"
+                    rsync -az --delete ./node_modules "$HWC_APP_DIR/"
 
-                    cd "$SOUNDHUB_APP_DIR"
+                    cd "$HWC_APP_DIR"
 
                     echo "[deploy] Running migrations..."
                     npx sequelize-cli db:migrate
@@ -139,8 +139,8 @@ pipeline {
                 echo "[verify] PM2 list..."
                 pm2 list
 
-                echo "[verify] Checking SoundHub..."
-                pm2 list | grep SoundHubBackend
+                echo "[verify] Checking HWC..."
+                pm2 list | grep HWCBackend
 
                 echo "[verify] Local HTTP check..."
                 curl -I --max-time 10 http://127.0.0.1:8003 || true
