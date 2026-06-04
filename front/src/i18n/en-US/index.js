@@ -59,6 +59,7 @@ export default {
     history: 'Versículos guardados',
     empty: 'Aún no hay versículos guardados.',
     required: 'Campo requerido',
+    loadTopicsError: 'No se pudieron cargar los temas',
     saveSuccess: 'Versículo guardado correctamente',
     saveError: 'Error al guardar',
     weightBadge: 'peso: {weight}',

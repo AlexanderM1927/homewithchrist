@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser')
 
 const authRoutes = require('./routes/auth')
 const botRoutes = require('./routes/bot')
+const trainingRoutes = require('./routes/training')
 
 const app = express()
 
@@ -28,6 +29,7 @@ app.use(cookieParser())
 
 app.use('/api/auth', authRoutes)
 app.use('/api/bot', botRoutes)
+app.use('/api/training', trainingRoutes)
 
 const PORT = process.env.PORT || 8004
 

@@ -21,9 +21,17 @@ const sequelize = new Sequelize(
 
 const Role = require('./Role')(sequelize, DataTypes)
 const User = require('./User')(sequelize, DataTypes)
+const Topic = require('./Topic')(sequelize, DataTypes)
+const Verse = require('./Verse')(sequelize, DataTypes)
+const TopicVerse = require('./TopicVerse')(sequelize, DataTypes)
 
 // Associations
 Role.hasMany(User, { foreignKey: 'role_id' })
 User.belongsTo(Role, { foreignKey: 'role_id' })
 
-module.exports = { sequelize, Role, User }
+Topic.belongsToMany(Verse, { through: TopicVerse, foreignKey: 'topic_id', otherKey: 'verse_id' })
+Verse.belongsToMany(Topic, { through: TopicVerse, foreignKey: 'verse_id', otherKey: 'topic_id' })
+TopicVerse.belongsTo(Topic, { foreignKey: 'topic_id' })
+TopicVerse.belongsTo(Verse, { foreignKey: 'verse_id' })
+
+module.exports = { sequelize, Role, User, Topic, Verse, TopicVerse }

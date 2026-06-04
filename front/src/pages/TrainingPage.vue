@@ -12,6 +12,7 @@
         outlined
         emit-value
         map-options
+        :loading="loadingTopics"
         :rules="[val => !!val || $t('training.required')]"
       />
 
@@ -142,26 +143,34 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
+import trainingService from 'src/services/TrainingService'
 
 const $q = useQuasar()
 const { t } = useI18n()
 
 const saving = ref(false)
+const loadingTopics = ref(false)
 const entries = ref([])
 
-const categoryOptions = computed(() => [
-  { label: t('training.categories.oracion'), value: 'oracion' },
-  { label: t('training.categories.perdon'), value: 'perdon' },
-  { label: t('training.categories.ansiedad'), value: 'ansiedad' },
-  { label: t('training.categories.relaciones'), value: 'relaciones' },
-  { label: t('training.categories.culpa'), value: 'culpa' },
-  { label: t('training.categories.biblia'), value: 'biblia' },
-  { label: t('training.categories.decision'), value: 'decision' },
-  { label: t('training.categories.crisis'), value: 'crisis' }
-])
+// Topics cargados desde el backend
+const categoryOptions = ref([])
+
+async function loadTopics() {
+  loadingTopics.value = true
+  try {
+    const topics = await trainingService.getTopics()
+    categoryOptions.value = topics.map(t => ({ label: t.name, value: t.id }))
+  } catch {
+    $q.notify({ type: 'negative', message: t('training.loadTopicsError') })
+  } finally {
+    loadingTopics.value = false
+  }
+}
+
+onMounted(loadTopics)
 
 const versionOptions = [
   { label: 'RVR1960', value: 'RVR1960' },
@@ -173,7 +182,7 @@ const versionOptions = [
 
 function defaultForm () {
   return {
-    category: null,
+    category: null,  // topic_id (number)
     book: '',
     chapter: null,
     verse_start: null,
@@ -204,12 +213,20 @@ function resetForm () {
 async function onSubmit () {
   saving.value = true
   try {
-    // TODO: conectar con el backend cuando esté listo
-    const entry = {
-      ...form.value,
-      reference: reference.value
+    const payload = {
+      topic_id: form.value.category,
+      book: form.value.book,
+      chapter: form.value.chapter,
+      verse_start: form.value.verse_start,
+      verse_end: form.value.verse_end || null,
+      reference: reference.value,
+      text: form.value.text,
+      version: form.value.version,
+      weight: form.value.weight
     }
-    entries.value.unshift(entry)
+    const result = await trainingService.createVerse(payload)
+    const topicName = categoryOptions.value.find(o => o.value === form.value.category)?.label ?? ''
+    entries.value.unshift({ ...result.verse, category: topicName, reference: reference.value, weight: form.value.weight })
     $q.notify({ type: 'positive', message: t('training.saveSuccess') })
     resetForm()
   } catch (err) {
