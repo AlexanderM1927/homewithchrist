@@ -110,7 +110,16 @@ class AuthService {
     const hashedRefresh = await bcrypt.hash(newRefreshToken, 10)
     await userRepository.saveRefreshToken(user.user_id, hashedRefresh)
 
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken }
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+      user: {
+        id: user.user_id,
+        name: user.name,
+        phone: user.phone,
+        role: user.Role?.role_name || 'user'
+      }
+    }
   }
 
   /**

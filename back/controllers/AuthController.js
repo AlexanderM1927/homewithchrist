@@ -47,11 +47,11 @@ class AuthController {
     }
 
     try {
-      const { accessToken, refreshToken: newRefreshToken } = await authService.refresh(refreshToken)
+      const { accessToken, refreshToken: newRefreshToken, user } = await authService.refresh(refreshToken)
 
       res.cookie(REFRESH_COOKIE_NAME, newRefreshToken, COOKIE_OPTIONS)
 
-      return res.status(200).json({ accessToken })
+      return res.status(200).json({ accessToken, user })
     } catch (err) {
       res.clearCookie(REFRESH_COOKIE_NAME)
       return res.status(err.status || 500).json({ message: err.message })

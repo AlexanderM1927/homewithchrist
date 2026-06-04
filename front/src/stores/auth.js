@@ -34,6 +34,7 @@ export const useAuthStore = defineStore('auth', {
     async refresh() {
       const data = await authService.refresh()
       this.accessToken = data.accessToken
+      if (data.user) this.user = data.user
       this.sessionChecked = true
       return data.accessToken
     },
@@ -48,6 +49,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const data = await authService.refresh()
         this.accessToken = data.accessToken
+        if (data.user) this.user = data.user
       } catch {
         // No hay sesión activa — normal si el usuario no ha iniciado sesión
       }
