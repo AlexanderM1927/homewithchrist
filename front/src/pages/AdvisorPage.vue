@@ -63,8 +63,9 @@
             <q-icon name="auto_awesome" color="white" size="16px" />
           </q-avatar>
           <div class="ai-bubble q-px-md q-py-sm">
-            <span v-if="msg.loading" class="typing-indicator">
-              <span /><span /><span />
+            <span v-if="msg.loading" class="phase-wrapper">
+              <span class="typing-indicator"><span /><span /><span /></span>
+              <span v-if="msg.phase" class="phase-label q-ml-xs">{{ $t(`advisor.phases.${msg.phase}`) }}</span>
             </span>
             <span v-else v-html="formatMessage(msg.content)" />
           </div>
@@ -151,16 +152,21 @@ async function sendMessage () {
 
   // Placeholder loading bubble
   isLoading.value = true
-  messages.value.push({ role: 'ai', content: '', loading: true })
+  messages.value.push({ role: 'ai', content: '', loading: true, phase: 'classifying' })
   await scrollToBottom()
 
   try {
     const lastMsg = messages.value[messages.value.length - 1]
-    lastMsg.loading = true
 
-    await chatService.chatStream(text, (token) => {
+    await chatService.chatStream(text, (token, done, phase) => {
+      if (phase) {
+        lastMsg.phase = phase
+        scrollToBottom()
+        return
+      }
       if (lastMsg.loading) {
         lastMsg.loading = false
+        lastMsg.phase = null
       }
       lastMsg.content += token
       scrollToBottom()
@@ -228,6 +234,18 @@ async function sendMessage () {
   text-transform: none;
   letter-spacing: 0;
   font-size: 13px;
+}
+
+/* Phase label */
+.phase-wrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.phase-label {
+  font-size: 12px;
+  color: #9C59D1;
+  font-style: italic;
 }
 
 /* Typing dots animation */

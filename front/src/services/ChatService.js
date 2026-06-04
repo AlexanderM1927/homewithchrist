@@ -13,7 +13,7 @@ class ChatService extends ApiService {
   /**
    * Envía un prompt y recibe la respuesta token a token via SSE.
    * @param {string} prompt
-   * @param {(token: string, done: boolean) => void} onToken - Callback por cada token recibido
+   * @param {(token: string, done: boolean, phase: string|null) => void} onToken
    * @returns {Promise<void>}
    */
   async chatStream (prompt, onToken) {
@@ -49,7 +49,8 @@ class ChatService extends ApiService {
         try {
           const json = JSON.parse(line.slice(6))
           if (json.error) throw new Error(json.error)
-          onToken(json.token ?? '', json.done ?? false)
+          if (json.phase) { onToken('', false, json.phase); continue }
+          onToken(json.token ?? '', json.done ?? false, null)
         } catch {
             console.log('No se pudo parsear el token recibido:', line)
         }

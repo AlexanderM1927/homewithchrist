@@ -1,4 +1,5 @@
 'use strict'
+const { Op } = require('sequelize')
 const { Topic, Verse, TopicVerse } = require('../models')
 
 class TrainingRepository {
@@ -37,6 +38,30 @@ class TrainingRepository {
     })
 
     return { verse, topicVerse }
+  }
+
+  /**
+   * Devuelve versículos activos asociados a los topics cuyo slug esté en la lista,
+   * ordenados por peso descendente (mayor relevancia primero).
+   * @param {string[]} slugs
+   * @param {number} limit
+   */
+  async findVersesByTopicSlugs(slugs, limit = 12) {
+    if (!slugs || slugs.length === 0) return []
+
+    return Verse.findAll({
+      where: { is_active: true },
+      include: [
+        {
+          model: Topic,
+          where: { slug: { [Op.in]: slugs }, is_active: true },
+          through: { attributes: ['weight'] },
+          required: true
+        }
+      ],
+      order: [[Topic, TopicVerse, 'weight', 'DESC']],
+      limit
+    })
   }
 
   /** Lista versículos con sus temas, paginados */

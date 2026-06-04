@@ -82,6 +82,11 @@ export default {
     welcomeDesc: 'Estoy aquí para escucharte y acompañarte desde la fe. Puedes contarme lo que tengas en el corazón.',
     inputPlaceholder: 'Escribe tu mensaje...',
     errorMessage: 'Hubo un error al conectar con el consejero. Intenta de nuevo más tarde.',
+    phases: {
+      classifying: 'Clasificando tu pregunta...',
+      searching: 'Buscando referencias bíblicas...',
+      generating: 'Generando respuesta...'
+    },
     suggestions: [
       'Me siento ansioso y no sé por qué',
       'Necesito orientación espiritual',
