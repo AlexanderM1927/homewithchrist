@@ -105,7 +105,7 @@ import { ref, nextTick, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import chatService from 'src/services/ChatService'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
 
 function formatMessage (text) {
   return text
@@ -121,7 +121,7 @@ const inputText = ref('')
 const isLoading = ref(false)
 const messages = ref([])
 
-const suggestions = computed(() => t('advisor.suggestions', []))
+const suggestions = computed(() => tm('advisor.suggestions'))
 
 async function scrollToBottom () {
   await nextTick()
