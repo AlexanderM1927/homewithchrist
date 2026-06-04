@@ -10,9 +10,10 @@
         align="justify"
         active-color="primary"
         indicator-color="transparent"
+        @update:model-value="onTabChange"
       >
-        <q-tab name="inicio" icon="home" :label="$t('nav.home')" />
-        <q-tab name="consejero" icon="chat" :label="$t('nav.advisor')" />
+        <q-tab name="index" icon="home" :label="$t('nav.home')" />
+        <q-tab name="advisor" icon="chat" :label="$t('nav.advisor')" />
         <q-tab name="logout" icon="logout" :label="$t('nav.logout')" class="text-negative" @click="logout" />
       </q-tabs>
     </q-footer>
@@ -26,7 +27,16 @@ import { useAuthStore } from 'src/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const activeTab = ref('inicio')
+const activeTab = ref('index')
+
+const tabRoutes = {
+  index: '/',
+  advisor: '/advisor'
+}
+
+function onTabChange (tab) {
+  if (tabRoutes[tab]) router.push(tabRoutes[tab])
+}
 
 async function logout () {
   await authStore.logout()

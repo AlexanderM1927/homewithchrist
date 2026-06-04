@@ -49,39 +49,6 @@
       </q-card>
 
       <!-- Racha + Estado de ánimo -->
-      <div class="row q-gutter-x-md">
-        <!-- Racha -->
-        <q-card flat bordered class="col stat-card">
-          <q-card-section class="q-pa-md">
-            <div class="text-overline text-weight-bold text-grey-6" style="font-size:10px; letter-spacing:1px;">
-              {{ $t('dashboard.streak.label') }}
-            </div>
-            <div class="row items-center q-gutter-x-xs q-mt-xs">
-              <span style="font-size:28px;">🔥</span>
-              <span class="text-h4 text-weight-bold text-dark">12</span>
-            </div>
-            <div class="text-caption text-grey-7">{{ $t('dashboard.streak.days') }}</div>
-            <div class="text-caption text-grey-6 q-mt-xs">{{ $t('dashboard.streak.encouragement') }}</div>
-          </q-card-section>
-        </q-card>
-
-        <!-- Estado de ánimo -->
-        <q-card flat bordered class="col stat-card">
-          <q-card-section class="q-pa-md">
-            <div class="text-overline text-weight-bold text-grey-6" style="font-size:10px; letter-spacing:1px;">
-              {{ $t('dashboard.mood.label') }}
-            </div>
-            <div class="row items-center q-gutter-x-xs q-mt-xs">
-              <span style="font-size:22px;">😊</span>
-              <span class="text-subtitle1 text-weight-bold text-dark">{{ $t('dashboard.mood.value') }}</span>
-            </div>
-            <div class="text-caption text-grey-7 q-mt-xs">{{ $t('dashboard.mood.description') }}</div>
-            <div class="text-caption text-primary text-weight-medium q-mt-xs cursor-pointer">
-              {{ $t('dashboard.mood.seeMore') }}
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
 
       <!-- Consejero Espiritual IA -->
       <q-card flat class="counselor-card">
