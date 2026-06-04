@@ -15,6 +15,8 @@ class ChatController {
   async chat (req, res) {
     const ollamaUrl = process.env.OLLAMA_URL
     const userMessage = (req.body.prompt || '').trim()
+    // history: array de { role: 'user'|'assistant', content: string } con los turnos anteriores
+    const history = Array.isArray(req.body.history) ? req.body.history : []
 
     if (!userMessage) {
       return res.status(400).json({ error: 'El mensaje es requerido' })
@@ -44,12 +46,12 @@ class ChatController {
         verses = await trainingRepository.findVersesByTopicSlugs(matchedSlugs)
       }
 
-      // 4. Construir el prompt enriquecido con el contexto bíblico
-      const finalPrompt = this._buildPrompt(userMessage, verses)
+      // 4. Construir el array de mensajes con historial + contexto bíblico en el mensaje actual
+      const messages = this._buildMessages(userMessage, verses, history)
 
       // 5. Enviar a Ollama y transmitir la respuesta al cliente
       emit({ phase: 'generating' })
-      await this._streamResponse(ollamaUrl, finalPrompt, res)
+      await this._streamResponse(ollamaUrl, messages, res)
     } catch (err) {
       console.error('[ChatController] Error en pipeline:', err.message)
       res.write(`data: ${JSON.stringify({ error: 'Error interno del consejero' })}\n\n`)
@@ -104,36 +106,53 @@ No incluyas texto adicional, solo el JSON.`
   }
 
   /**
-   * Ensambla el prompt final con el system prompt de Hope,
-   * los versículos encontrados y la pregunta del usuario.
+   * Construye el array de mensajes para /api/chat de Ollama.
+   * Incluye: system prompt, historial de la conversación y el mensaje actual
+   * enriquecido con los versículos encontrados.
+   * @param {string} userMessage
+   * @param {Array} verses
+   * @param {Array<{role:string, content:string}>} history - turnos anteriores
    */
-  _buildPrompt (userMessage, verses) {
-    let prompt = SYSTEM_PROMPT + '\n\n'
+  _buildMessages (userMessage, verses, history) {
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT }
+    ]
 
-    if (verses.length > 0) {
-      prompt += 'Versículos bíblicos relevantes para tu respuesta:\n'
-      for (const verse of verses) {
-        prompt += `- ${verse.reference} (${verse.version}): "${verse.text}"\n`
+    // Historial de la conversación (turnos anteriores)
+    for (const turn of history) {
+      if ((turn.role === 'user' || turn.role === 'assistant') && turn.content) {
+        messages.push({ role: turn.role, content: turn.content })
       }
-      prompt += '\n'
     }
 
-    prompt += `Usuario: ${userMessage}`
-    return prompt
+    // Mensaje actual del usuario, enriquecido con contexto bíblico si aplica
+    let currentContent = userMessage
+    if (verses.length > 0) {
+      currentContent += '\n\n[Versículos bíblicos relevantes:]\n'
+      for (const verse of verses) {
+        currentContent += `- ${verse.reference} (${verse.version}): "${verse.text}"\n`
+      }
+    }
+    messages.push({ role: 'user', content: currentContent })
+
+    return messages
   }
 
   /**
-   * Envía el prompt a Ollama con streaming y reenvía cada token al cliente via SSE.
+   * Envía los mensajes a Ollama (/api/chat) con streaming y reenvía cada token al cliente via SSE.
+   * @param {string} ollamaUrl
+   * @param {Array<{role:string, content:string}>} messages
+   * @param {import('express').Response} res
    */
-  async _streamResponse (ollamaUrl, prompt, res) {
+  async _streamResponse (ollamaUrl, messages, res) {
     let ollamaResponse
     try {
-      ollamaResponse = await fetch(`${ollamaUrl}/api/generate`, {
+      ollamaResponse = await fetch(`${ollamaUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: OLLAMA_MODEL,
-          prompt,
+          messages,
           stream: true
         })
       })
@@ -154,7 +173,8 @@ No incluyas texto adicional, solo el JSON.`
         for (const line of chunk.split('\n').filter(Boolean)) {
           try {
             const json = JSON.parse(line)
-            res.write(`data: ${JSON.stringify({ token: json.response, done: json.done })}\n\n`)
+            // /api/chat devuelve { message: { content }, done }
+            res.write(`data: ${JSON.stringify({ token: json.message?.content ?? '', done: json.done })}\n\n`)
           } catch {}
         }
       }

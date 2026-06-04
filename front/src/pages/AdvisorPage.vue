@@ -150,6 +150,12 @@ async function sendMessage () {
   messages.value.push({ role: 'user', content: text })
   await scrollToBottom()
 
+  // Construir historial de la conversación (todos los turnos completados, sin el que acabamos de agregar)
+  const history = messages.value
+    .slice(0, -1) // excluir el mensaje actual que acabamos de pushear
+    .filter(m => !m.loading && m.content)
+    .map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }))
+
   // Placeholder loading bubble
   isLoading.value = true
   messages.value.push({ role: 'ai', content: '', loading: true, phase: 'classifying' })
@@ -158,7 +164,7 @@ async function sendMessage () {
   try {
     const lastMsg = messages.value[messages.value.length - 1]
 
-    await chatService.chatStream(text, (token, done, phase) => {
+    await chatService.chatStream(text, history, (token, done, phase) => {
       if (phase) {
         lastMsg.phase = phase
         scrollToBottom()

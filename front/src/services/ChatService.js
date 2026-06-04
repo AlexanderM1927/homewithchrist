@@ -11,12 +11,13 @@ class ChatService extends ApiService {
   }
 
   /**
-   * Envía un prompt y recibe la respuesta token a token via SSE.
-   * @param {string} prompt
+   * Envía un prompt con historial y recibe la respuesta token a token via SSE.
+   * @param {string} prompt - Mensaje actual del usuario
+   * @param {Array<{role:string, content:string}>} history - Turnos anteriores de la conversación
    * @param {(token: string, done: boolean, phase: string|null) => void} onToken
    * @returns {Promise<void>}
    */
-  async chatStream (prompt, onToken) {
+  async chatStream (prompt, history, onToken) {
     const { useAuthStore } = await import('src/stores/auth')
     const authStore = useAuthStore()
 
@@ -29,7 +30,7 @@ class ChatService extends ApiService {
       method: 'POST',
       headers,
       credentials: 'include',
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt, history })
     })
 
     if (!response.ok) {
