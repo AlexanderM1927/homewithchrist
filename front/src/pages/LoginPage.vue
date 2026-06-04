@@ -148,11 +148,11 @@ async function handleLogin() {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+  background: #F4F0FA;
 }
 
 .login-card {
-  width: 100%;
+  width: 95%;
   max-width: 420px;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
