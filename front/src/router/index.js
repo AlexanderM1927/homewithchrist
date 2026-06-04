@@ -26,5 +26,15 @@ export default defineRouter((/* { store, ssrContext } */) => {
     history: createHistory(process.env.VUE_ROUTER_BASE)
   })
 
+  Router.beforeEach((to) => {
+    const isAuthenticated = !!localStorage.getItem('hwc_user')
+    if (!isAuthenticated && to.path !== '/login') {
+      return '/login'
+    }
+    if (isAuthenticated && to.path === '/login') {
+      return '/'
+    }
+  })
+
   return Router
 })

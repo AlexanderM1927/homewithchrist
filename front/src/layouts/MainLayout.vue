@@ -25,17 +25,30 @@
       bordered
     >
       <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
+        <q-item-label header>
+          Menú
         </q-item-label>
 
-        <EssentialLink
-          v-for="link in linksList"
-          :key="link.title"
-          v-bind="link"
-        />
+        <q-item v-if="user" class="q-mb-sm">
+          <q-item-section avatar>
+            <q-avatar color="primary" text-color="white" icon="person" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>{{ user.name }}</q-item-label>
+            <q-item-label caption>{{ user.phone }}</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-separator spaced />
+
+        <q-item clickable v-ripple @click="logout">
+          <q-item-section avatar>
+            <q-icon name="logout" color="negative" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label class="text-negative">Cerrar sesión</q-item-label>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 
@@ -46,57 +59,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-]
+const router = useRouter()
+
+const user = computed(() => {
+  const data = localStorage.getItem('hwc_user')
+  return data ? JSON.parse(data) : null
+})
 
 const leftDrawerOpen = ref(false)
 
 function toggleLeftDrawer () {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+function logout () {
+  localStorage.removeItem('hwc_user')
+  router.push('/login')
 }
 </script>
