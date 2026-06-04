@@ -2,7 +2,7 @@
   <q-page class="q-pa-md">
     <div class="text-h6 q-mb-md">{{ $t('training.title') }}</div>
 
-    <q-form @submit.prevent="onSubmit" class="q-gutter-md">
+    <q-form ref="formRef" @submit.prevent="onSubmit" class="q-gutter-md">
 
       <!-- Categoría -->
       <q-select
@@ -151,6 +151,7 @@ import trainingService from 'src/services/TrainingService'
 const $q = useQuasar()
 const { t } = useI18n()
 
+const formRef = ref(null)
 const saving = ref(false)
 const loadingTopics = ref(false)
 const entries = ref([])
@@ -208,6 +209,7 @@ const reference = computed(() => {
 
 function resetForm () {
   form.value = defaultForm()
+  formRef.value?.reset()
 }
 
 async function onSubmit () {
