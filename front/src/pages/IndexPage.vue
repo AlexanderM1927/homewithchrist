@@ -137,13 +137,11 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useAuthStore } from 'src/stores/auth'
 
-const userName = computed(() => {
-  const data = localStorage.getItem('hwc_user')
-  if (!data) return 'Valeria'
-  const user = JSON.parse(data)
-  return user.name || 'Valeria'
-})
+const authStore = useAuthStore()
+
+const userName = computed(() => authStore.user?.name || 'usuario')
 </script>
 
 <style scoped>

@@ -12,14 +12,11 @@
           <!-- Nombre -->
           <q-input
             v-model="name"
-            label="Nombre"
+            label="Nombre (opcional)"
             outlined
             maxlength="15"
             counter
-            :rules="[
-              val => !!val || 'El nombre es requerido',
-              val => val.length >= 2 || 'Mínimo 2 caracteres'
-            ]"
+            :rules="[val => !val || val.length >= 2 || 'Mínimo 2 caracteres']"
             lazy-rules
           >
             <template #prepend>
@@ -94,6 +91,9 @@
 
           <!-- Botón ingresar -->
           <div class="q-pt-sm">
+            <q-banner v-if="errorMsg" class="text-negative q-mb-sm" dense rounded>
+              {{ errorMsg }}
+            </q-banner>
             <q-btn
               type="submit"
               label="Ingresar"
@@ -114,14 +114,17 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from 'src/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const name = ref('')
 const phoneNumber = ref('')
 const loading = ref(false)
 const pinDigits = ref(['', '', '', ''])
 const pinRefs = ref([])
+const errorMsg = ref('')
 
 function onPinInput(index, event) {
   const val = event.target.value.replace(/\D/g, '')
@@ -178,19 +181,14 @@ async function handleLogin() {
   if (pin.length < 4) {
     return
   }
+  errorMsg.value = ''
   loading.value = true
   try {
     const fullPhone = `${selectedCountry.value.dial}${phoneNumber.value}`
-    const userData = {
-      name: name.value,
-      phone: fullPhone,
-      countryCode: selectedCountry.value.code,
-      countryDial: selectedCountry.value.dial,
-      phoneNumber: phoneNumber.value,
-      pin
-    }
-    localStorage.setItem('hwc_user', JSON.stringify(userData))
+    await authStore.login({ name: name.value, phone: fullPhone, pin })
     await router.push('/')
+  } catch (err) {
+    errorMsg.value = err.message || 'Error al iniciar sesión'
   } finally {
     loading.value = false
   }

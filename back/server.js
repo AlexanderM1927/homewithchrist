@@ -1,11 +1,25 @@
+require('dotenv').config()
+
 const express = require('express')
 const cors = require('cors')
-require('dotenv').config()
+const cookieParser = require('cookie-parser')
+
+const authRoutes = require('./routes/auth')
 
 const app = express()
 
-app.use(cors())
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:9000']
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true // necesario para enviar/recibir cookies
+}))
 app.use(express.json())
+app.use(cookieParser())
+
+app.use('/api/auth', authRoutes)
 
 app.get('/', async (req, res) => {
   const ollamaUrl = process.env.OLLAMA_URL

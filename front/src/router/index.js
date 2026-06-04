@@ -2,16 +2,7 @@ import { defineRouter } from '#q-app/wrappers'
 import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
 import routes from './routes'
 
-/*
- * If not building with SSR mode, you can
- * directly export the Router instantiation;
- *
- * The function below can be async too; either use
- * async/await or return a Promise which resolves
- * with the Router instance.
- */
-
-export default defineRouter((/* { store, ssrContext } */) => {
+export default defineRouter(({ store }) => {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory)
@@ -19,19 +10,21 @@ export default defineRouter((/* { store, ssrContext } */) => {
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
-
-    // Leave this as is and make changes in quasar.conf.js instead!
-    // quasar.conf.js -> build -> vueRouterMode
-    // quasar.conf.js -> build -> publicPath
     history: createHistory(process.env.VUE_ROUTER_BASE)
   })
 
-  Router.beforeEach((to) => {
-    const isAuthenticated = !!localStorage.getItem('hwc_user')
-    if (!isAuthenticated && to.path !== '/login') {
+  Router.beforeEach(async (to) => {
+    // Importación diferida para evitar que el store se acceda antes de que Pinia esté listo
+    const { useAuthStore } = await import('src/stores/auth')
+    const authStore = useAuthStore(store)
+
+    // Intenta renovar la sesión UNA sola vez por carga de página (evita bucle infinito)
+    await authStore.checkSession()
+
+    if (!authStore.isAuthenticated && to.path !== '/login') {
       return '/login'
     }
-    if (isAuthenticated && to.path === '/login') {
+    if (authStore.isAuthenticated && to.path === '/login') {
       return '/'
     }
   })

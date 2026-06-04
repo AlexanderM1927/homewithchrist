@@ -22,12 +22,14 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from 'src/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const activeTab = ref('inicio')
 
-function logout () {
-  localStorage.removeItem('hwc_user')
+async function logout () {
+  await authStore.logout()
   router.push('/login')
 }
 </script>
