@@ -50,7 +50,9 @@ class ChatService extends ApiService {
           const json = JSON.parse(line.slice(6))
           if (json.error) throw new Error(json.error)
           onToken(json.token ?? '', json.done ?? false)
-        } catch {}
+        } catch {
+            console.log('No se pudo parsear el token recibido:', line)
+        }
       }
     }
   }

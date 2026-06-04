@@ -144,7 +144,7 @@ async function sendMessage () {
     const lastMsg = messages.value[messages.value.length - 1]
     lastMsg.loading = true
 
-    await chatService.chatStream(text, (token, done) => {
+    await chatService.chatStream(text, (token) => {
       if (lastMsg.loading) {
         lastMsg.loading = false
       }
