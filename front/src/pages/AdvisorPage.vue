@@ -6,7 +6,7 @@
         <q-icon name="auto_awesome" color="primary" size="26px" />
       </q-avatar>
       <div>
-        <div class="text-weight-bold text-dark" style="font-size:15px;">Consejero</div>
+        <div class="text-weight-bold text-dark" style="font-size:15px;">Consejero Espiritual</div>
         <div class="text-caption text-grey-6">Powered by IA · siempre disponible</div>
       </div>
       <q-space />
@@ -86,15 +86,13 @@
           @click="sendMessage"
         />
       </div>
-      <div class="text-caption text-grey-5 text-center q-mt-xs">
-        El advisor puede cometer errores. Usa tu discernimiento.
-      </div>
     </div>
   </q-page>
 </template>
 
 <script setup>
 import { ref, nextTick } from 'vue'
+import chatService from 'src/services/ChatService'
 
 const messagesContainer = ref(null)
 const inputText = ref('')
@@ -133,13 +131,18 @@ async function sendMessage () {
   messages.value.push({ role: 'ai', content: '', loading: true })
   await scrollToBottom()
 
-  // TODO: Replace with real Ollama API call when backend is ready
-  await new Promise(resolve => setTimeout(resolve, 1500))
-
-  const lastMsg = messages.value[messages.value.length - 1]
-  lastMsg.loading = false
-  lastMsg.content = 'El backend con Ollama aún no está disponible. Pronto podrás conversar conmigo de verdad. 🙏'
-  isLoading.value = false
+  try {
+    const result = await chatService.chat(text)
+    const lastMsg = messages.value[messages.value.length - 1]
+    lastMsg.loading = false
+    lastMsg.content = result.data?.response || 'No pude obtener una respuesta. Intenta de nuevo.'
+  } catch {
+    const lastMsg = messages.value[messages.value.length - 1]
+    lastMsg.loading = false
+    lastMsg.content = 'Hubo un error al conectar con el consejero. Intenta de nuevo más tarde.'
+  } finally {
+    isLoading.value = false
+  }
   await scrollToBottom()
 }
 </script>

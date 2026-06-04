@@ -5,6 +5,7 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser')
 
 const authRoutes = require('./routes/auth')
+const botRoutes = require('./routes/bot')
 
 const app = express()
 
@@ -20,23 +21,7 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use('/api/auth', authRoutes)
-
-app.get('/', async (req, res) => {
-  const ollamaUrl = process.env.OLLAMA_URL
-  const response = await fetch(`${ollamaUrl}/api/generate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'gemma3',
-      prompt: req.query.prompt,
-      stream: false
-    })
-  })
-  const data = await response.json()
-  res.json({ message: 'Backend Express funcionando', data })
-})
+app.use('/api/bot', botRoutes)
 
 const PORT = process.env.PORT || 8004
 
