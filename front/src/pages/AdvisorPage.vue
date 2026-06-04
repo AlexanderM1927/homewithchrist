@@ -56,7 +56,7 @@
             <span v-if="msg.loading" class="typing-indicator">
               <span /><span /><span />
             </span>
-            <span v-else>{{ msg.content }}</span>
+            <span v-else v-html="formatMessage(msg.content)" />
           </div>
         </div>
       </div>
@@ -93,6 +93,15 @@
 <script setup>
 import { ref, nextTick } from 'vue'
 import chatService from 'src/services/ChatService'
+
+function formatMessage (text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>')
+}
 
 const messagesContainer = ref(null)
 const inputText = ref('')
