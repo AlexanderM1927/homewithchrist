@@ -4,6 +4,18 @@
       <q-card-section class="text-center q-pb-sm">
         <div class="text-h5 text-weight-bold text-primary">Home With Christ</div>
         <div class="text-subtitle2 text-grey-6 q-mt-xs">{{ $t('login.subtitle') }}</div>
+        <div class="q-mt-sm">
+          <q-select
+            v-model="locale"
+            :options="languageOptions"
+            emit-value
+            map-options
+            outlined
+            dense
+            class="language-select"
+            hide-bottom-space
+          />
+        </div>
       </q-card-section>
 
       <q-card-section class="q-pt-md">
@@ -115,9 +127,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'src/stores/auth'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { locale } = useI18n()
 
 const name = ref('')
 const phoneNumber = ref('')
@@ -125,6 +139,11 @@ const loading = ref(false)
 const pinDigits = ref(['', '', '', ''])
 const pinRefs = ref([])
 const errorMsg = ref('')
+
+const languageOptions = [
+  { label: '🇪🇸 Español', value: 'es-ES' },
+  { label: '🇺🇸 English', value: 'en-US' }
+]
 
 function onPinInput(index, event) {
   const val = event.target.value.replace(/\D/g, '')
@@ -211,6 +230,11 @@ async function handleLogin() {
 .country-select {
   width: 130px;
   flex-shrink: 0;
+}
+
+.language-select {
+  max-width: 160px;
+  margin: 0 auto;
 }
 
 .pin-box {
