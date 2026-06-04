@@ -3,7 +3,7 @@
     <q-card class="login-card q-pa-lg">
       <q-card-section class="text-center q-pb-sm">
         <div class="text-h5 text-weight-bold text-primary">Home With Christ</div>
-        <div class="text-subtitle2 text-grey-6 q-mt-xs">Ingresa tus datos para continuar</div>
+        <div class="text-subtitle2 text-grey-6 q-mt-xs">{{ $t('login.subtitle') }}</div>
       </q-card-section>
 
       <q-card-section class="q-pt-md">
@@ -12,11 +12,11 @@
           <!-- Nombre -->
           <q-input
             v-model="name"
-            label="Nombre (opcional)"
+            :label="$t('login.name')"
             outlined
             maxlength="15"
             counter
-            :rules="[val => !val || val.length >= 2 || 'Mínimo 2 caracteres']"
+            :rules="[val => !val || val.length >= 2 || $t('login.nameMin')]"
             lazy-rules
           >
             <template #prepend>
@@ -26,7 +26,7 @@
 
           <!-- Celular con indicativo de país -->
           <div class="phone-field">
-            <div class="text-caption text-grey-7 q-mb-xs">Número de celular</div>
+            <div class="text-caption text-grey-7 q-mb-xs">{{ $t('login.phone') }}</div>
             <div class="row no-wrap items-start q-gutter-x-sm">
               <q-select
                 v-model="selectedCountry"
@@ -58,11 +58,11 @@
                 outlined
                 dense
                 class="col"
-                placeholder="Número de celular"
+                :placeholder="$t('login.phone')"
                 type="tel"
                 :rules="[
-                  val => !!val || 'El número es requerido',
-                  val => /^\d{6,15}$/.test(val) || 'Ingresa un número válido'
+                  val => !!val || $t('login.phoneRequired'),
+                  val => /^\d{6,15}$/.test(val) || $t('login.phoneInvalid')
                 ]"
                 lazy-rules
               />
@@ -71,7 +71,7 @@
 
           <!-- Clave de 4 dígitos -->
           <div class="pin-field">
-            <div class="text-caption text-grey-7 q-mb-xs">Clave (4 dígitos)</div>
+            <div class="text-caption text-grey-7 q-mb-xs">{{ $t('login.pin') }}</div>
             <div class="row justify-center q-gutter-sm">
               <input
                 v-for="(_, i) in 4"
@@ -96,7 +96,7 @@
             </q-banner>
             <q-btn
               type="submit"
-              label="Ingresar"
+              :label="$t('login.submit')"
               color="primary"
               class="full-width"
               size="md"

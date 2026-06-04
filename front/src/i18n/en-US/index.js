@@ -94,6 +94,16 @@ export default {
       crisis: 'Crisis'
     }
   },
+  login: {
+    subtitle: 'Ingresa tus datos para continuar',
+    name: 'Nombre (opcional)',
+    nameMin: 'Mínimo 2 caracteres',
+    phone: 'Número de celular',
+    phoneRequired: 'El número es requerido',
+    phoneInvalid: 'Ingresa un número válido',
+    pin: 'Clave (4 dígitos)',
+    submit: 'Ingresar'
+  },
   profile: {
     title: 'Mi perfil',
     subtitle: 'Edita tu información personal',
