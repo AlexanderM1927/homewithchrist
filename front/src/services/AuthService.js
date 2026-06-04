@@ -34,6 +34,15 @@ class AuthService extends ApiService {
   logout() {
     return this.post('/logout', undefined, { _skipRetry: true })
   }
+
+  /**
+   * Actualiza el perfil del usuario autenticado.
+   * @param {{ name?: string, email?: string, phone?: string }} data
+   * @returns {Promise<{ user: object }>}
+   */
+  updateProfile(data) {
+    return this.put('/profile', data)
+  }
 }
 
 export default new AuthService()

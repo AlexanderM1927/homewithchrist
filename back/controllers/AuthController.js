@@ -1,5 +1,6 @@
 'use strict'
 const authService = require('../services/AuthService')
+const userRepository = require('../repositories/UserRepository')
 
 const REFRESH_COOKIE_NAME = 'refresh_token'
 const COOKIE_OPTIONS = {
@@ -71,6 +72,44 @@ class AuthController {
 
     res.clearCookie(REFRESH_COOKIE_NAME)
     return res.status(200).json({ message: 'Sesión cerrada' })
+  }
+
+  /**
+   * PUT /api/auth/profile
+   * Actualiza nombre, email y teléfono del usuario autenticado.
+   * Body: { name?, email?, phone? }
+   */
+  async updateProfile(req, res) {
+    const userId = req.user.sub
+    const { name, email, phone } = req.body
+
+    if (!name && !email && phone === undefined) {
+      return res.status(400).json({ message: 'No se enviaron campos para actualizar' })
+    }
+
+    // Validar teléfono si se envía
+    if (phone !== undefined && !/^\+?[\d\s\-()]{7,20}$/.test(phone)) {
+      return res.status(400).json({ message: 'Número de teléfono inválido' })
+    }
+
+    try {
+      const updatedUser = await userRepository.updateProfile(userId, { name, email, phone })
+      return res.status(200).json({
+        user: {
+          id: updatedUser.user_id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          role: updatedUser.Role?.role_name
+        }
+      })
+    } catch (err) {
+      // Violación de unique en email o phone
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({ message: 'El correo o teléfono ya está en uso' })
+      }
+      return res.status(500).json({ message: err.message })
+    }
   }
 }
 

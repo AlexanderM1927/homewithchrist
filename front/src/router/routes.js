@@ -12,7 +12,8 @@ const routes = [
     children: [
       { path: '', component: () => import('pages/IndexPage.vue') },
       { path: 'advisor', component: () => import('pages/AdvisorPage.vue') },
-      { path: 'training', component: () => import('pages/TrainingPage.vue'), meta: { requiresAdmin: true } }
+      { path: 'training', component: () => import('pages/TrainingPage.vue'), meta: { requiresAdmin: true } },
+      { path: 'profile', component: () => import('pages/ProfilePage.vue') }
     ]
   },
 

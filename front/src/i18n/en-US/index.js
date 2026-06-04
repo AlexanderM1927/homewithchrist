@@ -94,6 +94,18 @@ export default {
       crisis: 'Crisis'
     }
   },
+  profile: {
+    title: 'Mi perfil',
+    subtitle: 'Edita tu información personal',
+    name: 'Nombre',
+    email: 'Correo electrónico',
+    phone: 'Teléfono / Celular',
+    save: 'Guardar cambios',
+    required: 'Campo requerido',
+    invalidEmail: 'Correo inválido',
+    saveSuccess: 'Perfil actualizado correctamente',
+    saveError: 'Error al actualizar el perfil'
+  },
   advisor: {
     title: 'Hope IA',
     subtitle: 'Consejero Espiritual · siempre disponible',

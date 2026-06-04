@@ -10,7 +10,7 @@
           </div>
           <div class="text-caption text-grey-6 q-mt-xs">{{ $t('dashboard.blessing') }}</div>
         </div>
-        <!--q-btn flat round icon="notifications_none" color="dark" size="md" /-->
+        <q-btn flat round icon="person" color="dark" size="md" to="/profile" />
       </div>
     </div>
 

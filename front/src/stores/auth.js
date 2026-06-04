@@ -68,6 +68,16 @@ export const useAuthStore = defineStore('auth', {
         this.accessToken = null
         this.user = null
       }
+    },
+
+    /**
+     * Actualiza el perfil del usuario (nombre, email, teléfono).
+     * @param {{ name?: string, email?: string, phone?: string }} data
+     */
+    async updateProfile(data) {
+      const result = await authService.updateProfile(data)
+      if (result.user) this.user = result.user
+      return result
     }
   }
 })

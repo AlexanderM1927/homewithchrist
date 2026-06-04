@@ -47,6 +47,21 @@ class UserRepository {
       include: [{ model: Role, attributes: ['role_name'] }]
     })
   }
+
+  /**
+   * Actualiza nombre, email y teléfono de un usuario.
+   * @param {number} userId
+   * @param {{ name?: string, email?: string, phone?: string }} data
+   * @returns {Promise<User>}
+   */
+  async updateProfile(userId, { name, email, phone }) {
+    const fields = {}
+    if (name  !== undefined) fields.name  = name
+    if (email !== undefined) fields.email = email || null
+    if (phone !== undefined) fields.phone = phone
+    await User.update(fields, { where: { user_id: userId } })
+    return this.findById(userId)
+  }
 }
 
 module.exports = new UserRepository()
