@@ -10,7 +10,7 @@
           </div>
           <div class="text-caption text-grey-6 q-mt-xs">{{ $t('dashboard.blessing') }}</div>
         </div>
-        <q-btn flat round icon="notifications_none" color="dark" size="md" />
+        <!--q-btn flat round icon="notifications_none" color="dark" size="md" /-->
       </div>
     </div>
 
@@ -28,14 +28,6 @@
               <div class="text-body2 text-grey-8 q-mb-md" style="line-height:1.4;">
                 {{ $t('dashboard.verse.text') }}
               </div>
-              <q-btn
-                unelevated
-                rounded
-                color="primary"
-                :label="$t('dashboard.verse.readMore')"
-                size="sm"
-                no-caps
-              />
             </div>
             <div class="verse-img-wrap col-auto">
               <img
@@ -70,6 +62,7 @@
                 size="sm"
                 no-caps
                 class="text-weight-bold"
+                to="/advisor"
               />
             </div>
             <div class="q-ml-md">
@@ -81,7 +74,7 @@
       </q-card>
 
       <!-- Última entrada del diario -->
-      <q-card flat bordered class="diary-card">
+      <!--q-card flat bordered class="diary-card">
         <q-card-section class="q-pa-md">
           <div class="row items-center justify-between no-wrap">
             <div class="col">
@@ -96,7 +89,7 @@
             <q-icon name="menu_book" size="40px" color="primary" class="q-ml-md" style="opacity:0.25;" />
           </div>
         </q-card-section>
-      </q-card>
+      </q-card-->
 
     </div>
   </q-page>

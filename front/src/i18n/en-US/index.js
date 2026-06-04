@@ -76,8 +76,8 @@ export default {
     }
   },
   advisor: {
-    title: 'Consejero Espiritual',
-    subtitle: 'Powered by IA · siempre disponible',
+    title: 'Hope IA',
+    subtitle: 'Consejero Espiritual · siempre disponible',
     welcomeTitle: 'Hola, soy tu Consejero',
     welcomeDesc: 'Estoy aquí para escucharte y acompañarte desde la fe. Puedes contarme lo que tengas en el corazón.',
     inputPlaceholder: 'Escribe tu mensaje...',

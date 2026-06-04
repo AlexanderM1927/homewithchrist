@@ -26,13 +26,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from 'src/stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
-const activeTab = ref('index')
+
+const routeToTab = {
+  '/': 'index',
+  '/advisor': 'advisor',
+  '/training': 'training'
+}
+
+const activeTab = ref(routeToTab[route.path] ?? 'index')
+
+watch(() => route.path, (path) => {
+  activeTab.value = routeToTab[path] ?? 'index'
+})
 
 const tabRoutes = {
   index: '/',

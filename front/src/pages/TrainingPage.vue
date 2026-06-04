@@ -158,7 +158,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import trainingService from 'src/services/TrainingService'
@@ -256,7 +256,7 @@ const reference = computed(() => {
 
 function resetForm () {
   form.value = defaultForm()
-  formRef.value?.resetValidation()
+  nextTick(() => formRef.value?.resetValidation())
 }
 
 async function onSubmit () {
