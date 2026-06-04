@@ -78,6 +78,7 @@ export default {
     history: 'Versículos guardados',
     empty: 'Aún no hay versículos guardados.',
     required: 'Campo requerido',
+    topics: 'Temas',
     loadTopicsError: 'No se pudieron cargar los temas',
     loadVersesError: 'No se pudieron cargar los versículos',
     saveSuccess: 'Versículo guardado correctamente',

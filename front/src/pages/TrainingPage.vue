@@ -174,12 +174,12 @@ const loadingVerses = ref(false)
 const verses = ref({ rows: [], total: 0 })
 const pagination = ref({ page: 1, rowsPerPage: 10, rowsNumber: 0 })
 
-const tableColumns = [
-  { name: 'reference', label: 'Referencia', field: 'reference', align: 'left', sortable: false },
-  { name: 'version',   label: 'Versión',    field: 'version',   align: 'left', sortable: false },
-  { name: 'topics',    label: 'Temas',      field: 'Topics',    align: 'left', sortable: false },
-  { name: 'text',      label: 'Texto',      field: 'text',      align: 'left', sortable: false }
-]
+const tableColumns = computed(() => [
+  { name: 'reference', label: t('training.reference'), field: 'reference', align: 'left', sortable: false },
+  { name: 'version',   label: t('training.version'),   field: 'version',   align: 'left', sortable: false },
+  { name: 'topics',    label: t('training.topics'),    field: 'Topics',    align: 'left', sortable: false },
+  { name: 'text',      label: t('training.text'),      field: 'text',      align: 'left', sortable: false }
+])
 
 // Topics cargados desde el backend
 const categoryOptions = ref([])

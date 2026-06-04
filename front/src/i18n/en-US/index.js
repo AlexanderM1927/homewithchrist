@@ -78,6 +78,7 @@ export default {
     history: 'Saved verses',
     empty: 'No verses saved yet.',
     required: 'Required field',
+    topics: 'Topics',
     loadTopicsError: 'Could not load topics',
     loadVersesError: 'Could not load verses',
     saveSuccess: 'Verse saved successfully',
