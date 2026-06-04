@@ -27,6 +27,9 @@ export default defineRouter(({ store }) => {
     if (authStore.isAuthenticated && to.path === '/login') {
       return '/'
     }
+    if (to.meta.requiresAdmin && !authStore.isAdmin) {
+      return '/'
+    }
   })
 
   return Router

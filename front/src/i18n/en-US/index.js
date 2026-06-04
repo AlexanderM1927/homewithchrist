@@ -6,7 +6,8 @@ export default {
     advisor:  'Consejero',
     diary: 'Diario',
     mood: 'Ánimo',
-    logout: 'Salir'
+    logout: 'Salir',
+    training: 'Entrenar'
   },
   dashboard: {
     greeting: 'Buenos días,',
@@ -39,5 +40,24 @@ export default {
       lastEntry: 'Gracias Dios por este nuevo día. Confío en tus planes.',
       timestamp: 'Ayer • 8:30 p.m.'
     }
+  },
+  training: {
+    title: 'Entrenamiento de IA',
+    category: 'Categoría / Tema',
+    book: 'Libro',
+    chapter: 'Capítulo',
+    verseStart: 'Versículo inicio',
+    verseEnd: 'Versículo fin',
+    reference: 'Referencia',
+    version: 'Versión bíblica',
+    text: 'Texto del versículo',
+    weight: 'Peso / Relevancia',
+    weightLow: 'Baja relevancia',
+    weightHigh: 'Alta relevancia',
+    save: 'Guardar versículo',
+    clear: 'Limpiar',
+    history: 'Versículos guardados',
+    empty: 'Aún no hay versículos guardados.',
+    required: 'Campo requerido'
   }
 }

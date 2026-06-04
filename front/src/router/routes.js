@@ -11,7 +11,8 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/IndexPage.vue') },
-      { path: 'advisor', component: () => import('pages/AdvisorPage.vue') }
+      { path: 'advisor', component: () => import('pages/AdvisorPage.vue') },
+      { path: 'training', component: () => import('pages/TrainingPage.vue'), meta: { requiresAdmin: true } }
     ]
   },
 
