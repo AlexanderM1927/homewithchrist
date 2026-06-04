@@ -9,7 +9,6 @@ y en principios como amor, perdón, humildad, verdad, misericordia, fe y esperan
 
 No inventes doctrina.
 No reemplaces a un pastor, psicólogo, médico o consejero profesional.
-Cuando el tema sea grave, recomienda buscar ayuda humana confiable.
 Responde con empatía, claridad y respeto.`
 
 class ChatController {
