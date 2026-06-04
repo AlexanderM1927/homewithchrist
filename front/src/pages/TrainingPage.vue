@@ -120,25 +120,40 @@
     <q-separator class="q-my-lg" />
     <div class="text-subtitle1 q-mb-sm">{{ $t('training.history') }}</div>
 
-    <q-list bordered separator v-if="entries.length">
-      <q-item v-for="(entry, i) in entries" :key="i">
-        <q-item-section>
-          <q-item-label>
-            <q-badge :label="entry.category" color="primary" class="q-mr-xs" />
-            <strong>{{ entry.reference }}</strong>
-            <span class="text-grey q-ml-xs">({{ entry.version }})</span>
-          </q-item-label>
-          <q-item-label caption lines="2">{{ entry.text }}</q-item-label>
-        </q-item-section>
-        <q-item-section side>
-          <q-badge :label="$t('training.weightBadge', { weight: entry.weight })" color="secondary" />
-        </q-item-section>
-      </q-item>
-    </q-list>
+    <q-table
+      :rows="verses.rows"
+      :columns="tableColumns"
+      :loading="loadingVerses"
+      :rows-per-page-options="[10, 20, 50]"
+      v-model:pagination="pagination"
+      row-key="id"
+      flat
+      bordered
+      @request="onTableRequest"
+    >
+      <template #body-cell-topics="props">
+        <q-td :props="props">
+          <q-badge
+            v-for="topic in props.row.Topics"
+            :key="topic.id"
+            :label="topic.name"
+            color="primary"
+            class="q-mr-xs"
+          />
+        </q-td>
+      </template>
 
-    <div v-else class="text-grey text-center q-mt-md">
-      {{ $t('training.empty') }}
-    </div>
+      <template #body-cell-text="props">
+        <q-td :props="props">
+          <span>{{ props.row.text.length > 80 ? props.row.text.slice(0, 80) + '…' : props.row.text }}</span>
+          <q-tooltip v-if="props.row.text.length > 80" max-width="300px">{{ props.row.text }}</q-tooltip>
+        </q-td>
+      </template>
+
+      <template #no-data>
+        <div class="text-grey text-center full-width q-py-md">{{ $t('training.empty') }}</div>
+      </template>
+    </q-table>
   </q-page>
 </template>
 
@@ -154,7 +169,17 @@ const { t } = useI18n()
 const formRef = ref(null)
 const saving = ref(false)
 const loadingTopics = ref(false)
-const entries = ref([])
+const loadingVerses = ref(false)
+
+const verses = ref({ rows: [], total: 0 })
+const pagination = ref({ page: 1, rowsPerPage: 10, rowsNumber: 0 })
+
+const tableColumns = [
+  { name: 'reference', label: 'Referencia', field: 'reference', align: 'left', sortable: false },
+  { name: 'version',   label: 'Versión',    field: 'version',   align: 'left', sortable: false },
+  { name: 'topics',    label: 'Temas',      field: 'Topics',    align: 'left', sortable: false },
+  { name: 'text',      label: 'Texto',      field: 'text',      align: 'left', sortable: false }
+]
 
 // Topics cargados desde el backend
 const categoryOptions = ref([])
@@ -171,7 +196,29 @@ async function loadTopics() {
   }
 }
 
-onMounted(loadTopics)
+onMounted(() => {
+  loadTopics()
+  loadVerses()
+})
+
+async function loadVerses (page = 1, limit = pagination.value.rowsPerPage) {
+  loadingVerses.value = true
+  try {
+    const data = await trainingService.getVerses({ page, limit })
+    verses.value = data
+    pagination.value.rowsNumber = data.total
+    pagination.value.page = data.page
+  } catch {
+    $q.notify({ type: 'negative', message: t('training.loadVersesError') })
+  } finally {
+    loadingVerses.value = false
+  }
+}
+
+function onTableRequest ({ pagination: p }) {
+  pagination.value.rowsPerPage = p.rowsPerPage
+  loadVerses(p.page, p.rowsPerPage)
+}
 
 const versionOptions = [
   { label: 'RVR1960', value: 'RVR1960' },
@@ -226,11 +273,10 @@ async function onSubmit () {
       version: form.value.version,
       weight: form.value.weight
     }
-    const result = await trainingService.createVerse(payload)
-    const topicName = categoryOptions.value.find(o => o.value === form.value.category)?.label ?? ''
-    entries.value.unshift({ ...result.verse, category: topicName, reference: reference.value, weight: form.value.weight })
+    await trainingService.createVerse(payload)
     $q.notify({ type: 'positive', message: t('training.saveSuccess') })
     resetForm()
+    await loadVerses(1, pagination.value.rowsPerPage)
   } catch (err) {
     $q.notify({ type: 'negative', message: err.message || t('training.saveError') })
   } finally {
