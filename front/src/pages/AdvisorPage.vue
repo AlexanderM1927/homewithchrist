@@ -2,6 +2,16 @@
   <q-page class="advisor-page column">
     <!-- Header -->
     <div class="advisor-header bg-white q-px-md q-py-sm row items-center no-wrap" style="border-bottom: 1px solid #e0e0e0;">
+      <q-btn
+        v-if="messages.length > 0"
+        flat
+        round
+        icon="arrow_back"
+        color="grey-7"
+        size="sm"
+        class="q-mr-xs"
+        @click="clearChat"
+      />
       <q-avatar size="38px" class="q-mr-sm">
         <q-icon name="auto_awesome" color="primary" size="26px" />
       </q-avatar>
@@ -125,6 +135,12 @@ async function scrollToBottom () {
 function sendSuggestion (text) {
   inputText.value = text
   sendMessage()
+}
+
+function clearChat () {
+  messages.value = []
+  inputText.value = ''
+  isLoading.value = false
 }
 
 async function sendMessage () {
