@@ -24,9 +24,9 @@
               <div class="text-overline text-weight-bold text-primary q-mb-xs" style="font-size:10px; letter-spacing:1px;">
                 {{ $t('dashboard.verse.label') }}
               </div>
-              <div class="text-h6 text-weight-bold text-dark q-mb-xs">{{ $t('dashboard.verse.reference') }}</div>
+              <div class="text-h6 text-weight-bold text-dark q-mb-xs">{{ dailyVerse.reference }}</div>
               <div class="text-body2 text-grey-8 q-mb-md" style="line-height:1.4;">
-                {{ $t('dashboard.verse.text') }}
+                {{ dailyVerse.text }}
               </div>
             </div>
             <div class="verse-img-wrap col-auto">
@@ -98,10 +98,17 @@
 <script setup>
 import { computed } from 'vue'
 import { useAuthStore } from 'src/stores/auth'
+import { useI18n } from 'vue-i18n'
 
 const authStore = useAuthStore()
+const { tm } = useI18n()
 
 const userName = computed(() => authStore.user?.name || 'usuario')
+
+const dailyVerse = computed(() => {
+  const list = tm('dashboard.verse.list')
+  return list[Math.floor(Math.random() * list.length)]
+})
 </script>
 
 <style scoped>
