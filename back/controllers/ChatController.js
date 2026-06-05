@@ -1,7 +1,8 @@
 'use strict'
 const trainingRepository = require('../repositories/TrainingRepository')
 
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma3'
+const MAIN_OLLAMA_MODEL = process.env.MAIN_OLLAMA_MODEL || 'gemma3:4b'
+const SECONDARY_OLLAMA_MODEL = process.env.SECONDARY_OLLAMA_MODEL || 'qwen3:0.6b'
 
 const SYSTEM_PROMPT = `Te llamas Hope, eres un asistente cristiano de acompañamiento espiritual.
 Tus respuestas deben estar basadas en la Biblia, en la vida y enseñanzas de Jesús,
@@ -88,7 +89,7 @@ No incluyas texto adicional, solo el JSON.`
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: OLLAMA_MODEL,
+          model: SECONDARY_OLLAMA_MODEL,
           prompt: classificationPrompt,
           stream: false,
           format: 'json'
@@ -152,7 +153,7 @@ No incluyas texto adicional, solo el JSON.`
         headers: { 'Content-Type': 'application/json' },
         signal: AbortSignal.timeout(60000),
         body: JSON.stringify({
-          model: OLLAMA_MODEL,
+          model: MAIN_OLLAMA_MODEL,
           messages,
           stream: true
         })
