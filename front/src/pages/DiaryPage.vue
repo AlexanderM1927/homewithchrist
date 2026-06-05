@@ -8,7 +8,7 @@
 
       <q-card flat bordered class="entry-card q-mb-lg">
         <q-card-section>
-          <q-form class="q-gutter-md" @submit="saveEntry">
+          <q-form ref="entryFormRef" class="q-gutter-md" @submit="saveEntry">
             <q-input
               v-model="form.title"
               outlined
@@ -92,7 +92,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { nextTick, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import diaryService from 'src/services/DiaryService'
@@ -105,6 +105,7 @@ const loading = ref(true)
 const saving = ref(false)
 const page = ref(1)
 const totalPages = ref(1)
+const entryFormRef = ref(null)
 const form = reactive({
   title: '',
   content: ''
@@ -147,6 +148,8 @@ async function saveEntry() {
     })
     form.title = ''
     form.content = ''
+    await nextTick()
+    entryFormRef.value?.resetValidation()
     await loadEntries(1)
     $q.notify({ type: 'positive', message: t('diary.saveSuccess') })
   } catch (err) {

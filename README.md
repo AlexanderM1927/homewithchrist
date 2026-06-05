@@ -243,6 +243,18 @@ docker exec -it ollama_hwc ollama pull gemma3
 docker compose logs -f backend
 ```
 
+### Comandos Node/NPM
+
+Todos los comandos de `node` o `npm` deben ejecutarse dentro del contenedor Docker correspondiente, no directamente en el host.
+
+```bash
+# Frontend
+docker compose exec -T frontend npm run lint
+
+# Backend
+docker compose exec -T backend node --check server.js
+```
+
 Servicios disponibles:
 
 | Servicio | URL |
