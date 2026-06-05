@@ -119,7 +119,9 @@ export default {
     empty: 'No hay usuarios registrados.',
     loadError: 'No se pudieron cargar los usuarios',
     updateSuccess: 'Rol actualizado correctamente',
-    updateError: 'Error al actualizar el rol'
+    updateError: 'Error al actualizar el rol',
+    contactUpdateSuccess: 'Contacto actualizado correctamente',
+    contactUpdateError: 'Error al actualizar contacto'
   },
   login: {
     subtitle: 'Ingresa tus datos para continuar',

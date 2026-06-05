@@ -61,6 +61,16 @@ class AuthService extends ApiService {
   updateUserRole (userId, roleId) {
     return this.put(`/users/${userId}/role`, { role_id: roleId })
   }
+
+  /**
+   * Actualiza correo y/o teléfono de un usuario (solo admin).
+   * @param {number} userId
+   * @param {{ email?: string, phone?: string }} data
+   * @returns {Promise<{ user: object }>}
+   */
+  updateUserContact (userId, data) {
+    return this.put(`/users/${userId}/contact`, data)
+  }
 }
 
 export default new AuthService()

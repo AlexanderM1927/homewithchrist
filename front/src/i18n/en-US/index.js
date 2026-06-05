@@ -119,7 +119,9 @@ export default {
     empty: 'No registered users.',
     loadError: 'Could not load users',
     updateSuccess: 'Role updated successfully',
-    updateError: 'Error updating role'
+    updateError: 'Error updating role',
+    contactUpdateSuccess: 'Contact updated successfully',
+    contactUpdateError: 'Error updating contact'
   },
   login: {
     subtitle: 'Enter your details to continue',

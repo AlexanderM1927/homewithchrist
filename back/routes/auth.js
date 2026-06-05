@@ -12,5 +12,6 @@ router.post('/logout', (req, res) => authController.logout(req, res))
 router.put('/profile', authMiddleware, (req, res) => authController.updateProfile(req, res))
 router.get('/users', authMiddleware, adminMiddleware, (req, res) => authController.getUsers(req, res))
 router.put('/users/:id/role', authMiddleware, adminMiddleware, (req, res) => authController.updateUserRole(req, res))
+router.put('/users/:id/contact', authMiddleware, adminMiddleware, (req, res) => authController.updateUserContact(req, res))
 
 module.exports = router

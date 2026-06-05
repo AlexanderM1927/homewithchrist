@@ -125,6 +125,46 @@ class AuthController {
   }
 
   /**
+   * PUT /api/auth/users/:id/contact  (solo admin)
+   * Actualiza correo y/o teléfono de un usuario.
+   * Body: { email?, phone? }
+   */
+  async updateUserContact (req, res) {
+    const userId = req.params.id
+    const { email, phone } = req.body
+
+    if (email === undefined && phone === undefined) {
+      return res.status(400).json({ message: 'No se enviaron campos para actualizar' })
+    }
+
+    if (phone !== undefined && !/^\+?[\d\s\-()]{7,20}$/.test(phone)) {
+      return res.status(400).json({ message: 'Número de teléfono inválido' })
+    }
+
+    try {
+      const updatedUser = await userRepository.updateProfile(userId, { email, phone })
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'Usuario no encontrado' })
+      }
+
+      return res.status(200).json({
+        user: {
+          id: updatedUser.user_id,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          role: updatedUser.Role?.role_name,
+          role_id: updatedUser.Role?.role_id
+        }
+      })
+    } catch (err) {
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({ message: 'El correo o teléfono ya está en uso' })
+      }
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  /**
    * PUT /api/auth/profile
    * Actualiza nombre, email y teléfono del usuario autenticado.
    * Body: { name?, email?, phone? }
