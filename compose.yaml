@@ -56,17 +56,6 @@ services:
     networks:
       - network_hwc
 
-  ollama:
-    container_name: ollama_hwc
-    image: ollama/ollama
-    restart: unless-stopped
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - network_hwc
-
 volumes:
   db_data:
   ollama_data:
