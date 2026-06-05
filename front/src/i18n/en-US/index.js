@@ -7,7 +7,8 @@ export default {
     diary: 'Diary',
     mood: 'Mood',
     logout: 'Logout',
-    training: 'Training'
+    training: 'Training',
+    admin: 'Admin'
   },
   dashboard: {
     greeting: 'Good morning,',
@@ -94,6 +95,31 @@ export default {
       decision: 'Decision',
       crisis: 'Crisis'
     }
+  },
+  admin: {
+    title: 'Administration Panel',
+    options: {
+      training: {
+        label: 'Train AI',
+        desc: 'Add and manage Bible training verses'
+      },
+      users: {
+        label: 'Manage Users',
+        desc: 'View and change roles for registered users'
+      }
+    }
+  },
+  users: {
+    title: 'User Management',
+    id: 'ID',
+    name: 'Name',
+    phone: 'Phone',
+    email: 'Email',
+    role: 'Role',
+    empty: 'No registered users.',
+    loadError: 'Could not load users',
+    updateSuccess: 'Role updated successfully',
+    updateError: 'Error updating role'
   },
   login: {
     subtitle: 'Enter your details to continue',

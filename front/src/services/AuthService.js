@@ -43,6 +43,24 @@ class AuthService extends ApiService {
   updateProfile(data) {
     return this.put('/profile', data)
   }
+
+  /**
+   * Obtiene la lista de todos los usuarios (solo admin).
+   * @returns {Promise<{ users: object[] }>}
+   */
+  getUsers () {
+    return this.get('/users')
+  }
+
+  /**
+   * Cambia el rol de un usuario (solo admin).
+   * @param {number} userId
+   * @param {number} roleId
+   * @returns {Promise<{ user: object }>}
+   */
+  updateUserRole (userId, roleId) {
+    return this.put(`/users/${userId}/role`, { role_id: roleId })
+  }
 }
 
 export default new AuthService()

@@ -1,6 +1,10 @@
 <template>
   <q-page class="q-pa-md">
-    <div class="text-h6 q-mb-md">{{ $t('training.title') }}</div>
+    <!-- Header con botón volver -->
+    <div class="flex items-center q-mb-md q-gutter-sm">
+      <q-btn flat round dense icon="arrow_back" @click="$router.push('/admin')" />
+      <div class="text-h6">{{ $t('training.title') }}</div>
+    </div>
 
     <q-form ref="formRef" @submit.prevent="onSubmit" class="q-gutter-md">
 

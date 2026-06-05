@@ -75,6 +75,56 @@ class AuthController {
   }
 
   /**
+   * GET /api/auth/users  (solo admin)
+   * Devuelve la lista de todos los usuarios con su rol.
+   */
+  async getUsers (req, res) {
+    try {
+      const users = await userRepository.findAll()
+      return res.status(200).json({
+        users: users.map(u => ({
+          id: u.user_id,
+          name: u.name,
+          phone: u.phone,
+          email: u.email,
+          role: u.Role?.role_name,
+          role_id: u.Role?.role_id
+        }))
+      })
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  /**
+   * PUT /api/auth/users/:id/role  (solo admin)
+   * Body: { role_id: number }
+   */
+  async updateUserRole (req, res) {
+    const userId = req.params.id
+    const { role_id } = req.body
+
+    if (!role_id) {
+      return res.status(400).json({ message: 'role_id es requerido' })
+    }
+
+    try {
+      const user = await userRepository.updateRole(userId, role_id)
+      if (!user) return res.status(404).json({ message: 'Usuario no encontrado' })
+      return res.status(200).json({
+        user: {
+          id: user.user_id,
+          name: user.name,
+          role: user.Role?.role_name,
+          role_id: user.Role?.role_id
+        }
+      })
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  /**
    * PUT /api/auth/profile
    * Actualiza nombre, email y teléfono del usuario autenticado.
    * Body: { name?, email?, phone? }

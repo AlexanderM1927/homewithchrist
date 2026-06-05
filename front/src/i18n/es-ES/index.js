@@ -7,7 +7,8 @@ export default {
     diary: 'Diario',
     mood: 'Ánimo',
     logout: 'Salir',
-    training: 'Entrenar'
+    training: 'Entrenar',
+    admin: 'Administrar'
   },
   dashboard: {
     greeting: 'Hola,',
@@ -94,6 +95,31 @@ export default {
       decision: 'Decisión',
       crisis: 'Crisis'
     }
+  },
+  admin: {
+    title: 'Panel de Administración',
+    options: {
+      training: {
+        label: 'Entrenar IA',
+        desc: 'Agregar y gestionar versículos bíblicos de entrenamiento'
+      },
+      users: {
+        label: 'Gestionar Usuarios',
+        desc: 'Ver y cambiar el rol de los usuarios registrados'
+      }
+    }
+  },
+  users: {
+    title: 'Gestión de Usuarios',
+    id: 'ID',
+    name: 'Nombre',
+    phone: 'Teléfono',
+    email: 'Correo',
+    role: 'Rol',
+    empty: 'No hay usuarios registrados.',
+    loadError: 'No se pudieron cargar los usuarios',
+    updateSuccess: 'Rol actualizado correctamente',
+    updateError: 'Error al actualizar el rol'
   },
   login: {
     subtitle: 'Ingresa tus datos para continuar',

@@ -49,6 +49,28 @@ class UserRepository {
   }
 
   /**
+   * Devuelve todos los usuarios con su rol.
+   * @returns {Promise<User[]>}
+   */
+  async findAll () {
+    return User.findAll({
+      include: [{ model: Role, attributes: ['role_id', 'role_name'] }],
+      order: [['user_id', 'ASC']]
+    })
+  }
+
+  /**
+   * Cambia el rol de un usuario.
+   * @param {number} userId
+   * @param {number} roleId
+   * @returns {Promise<User>}
+   */
+  async updateRole (userId, roleId) {
+    await User.update({ role_id: roleId }, { where: { user_id: userId } })
+    return this.findById(userId)
+  }
+
+  /**
    * Actualiza nombre, email y teléfono de un usuario.
    * @param {number} userId
    * @param {{ name?: string, email?: string, phone?: string }} data
