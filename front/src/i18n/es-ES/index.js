@@ -10,7 +10,7 @@ export default {
     training: 'Entrenar'
   },
   dashboard: {
-    greeting: 'Buenos días,',
+    greeting: 'Hola,',
     blessing: 'Que Dios bendiga tu día ✨',
     verse: {
       label: '☀️ VERSÍCULO DEL DÍA',
