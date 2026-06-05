@@ -74,7 +74,7 @@
       </q-card>
 
       <!-- Última entrada del diario -->
-      <!--q-card flat bordered class="diary-card">
+      <q-card flat bordered class="diary-card">
         <q-card-section class="q-pa-md">
           <div class="row items-center justify-between no-wrap">
             <div class="col">
@@ -89,7 +89,7 @@
             <q-icon name="menu_book" size="40px" color="primary" class="q-ml-md" style="opacity:0.25;" />
           </div>
         </q-card-section>
-      </q-card-->
+      </q-card>
 
     </div>
   </q-page>

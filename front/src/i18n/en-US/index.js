@@ -61,6 +61,21 @@ export default {
       timestamp: 'Yesterday • 8:30 p.m.'
     }
   },
+  diary: {
+    title: 'My diary',
+    subtitle: 'Write what is on your heart and save your reflections.',
+    entryTitle: 'Title',
+    optional: 'Optional',
+    content: 'Content',
+    contentPlaceholder: 'Write your reflection here...',
+    contentRequired: 'Content is required',
+    save: 'Save entry',
+    myEntries: 'My entries',
+    empty: 'You have no entries yet. Start by writing a reflection.',
+    loadError: 'Could not load diary entries',
+    saveSuccess: 'Entry saved successfully',
+    saveError: 'Could not save entry'
+  },
   training: {
     title: 'AI Training',
     category: 'Category / Topic',

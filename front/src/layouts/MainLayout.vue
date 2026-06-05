@@ -18,6 +18,7 @@
       >
         <q-tab name="index" icon="home" :label="$t('nav.home')" />
         <q-tab name="advisor" icon="chat" :label="$t('nav.advisor')" />
+        <q-tab name="diary" icon="book" :label="$t('nav.diary')" />
         <q-tab v-if="authStore.isAdmin" name="admin" icon="admin_panel_settings" :label="$t('nav.admin')" />
         <q-tab name="logout" icon="logout" :label="$t('nav.logout')" class="text-negative" @click="logout" />
       </q-tabs>
@@ -37,6 +38,7 @@ const authStore = useAuthStore()
 const routeToTab = {
   '/': 'index',
   '/advisor': 'advisor',
+  '/diary': 'diary',
   '/admin': 'admin',
   '/training': 'admin',
   '/users': 'admin'
@@ -51,6 +53,7 @@ watch(() => route.path, (path) => {
 const tabRoutes = {
   index: '/',
   advisor: '/advisor',
+  diary: '/diary',
   admin: '/admin'
 }
 

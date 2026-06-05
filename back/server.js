@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser')
 const authRoutes = require('./routes/auth')
 const botRoutes = require('./routes/bot')
 const trainingRoutes = require('./routes/training')
+const diaryRoutes = require('./routes/diary')
 
 const app = express()
 
@@ -31,6 +32,7 @@ app.use(cookieParser())
 app.use('/api/auth', authRoutes)
 app.use('/api/bot', botRoutes)
 app.use('/api/training', trainingRoutes)
+app.use('/api/diary', diaryRoutes)
 
 app.use(express.static(path.join(__dirname, '../public')))
 

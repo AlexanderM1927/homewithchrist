@@ -61,6 +61,21 @@ export default {
       timestamp: 'Ayer • 8:30 p.m.'
     }
   },
+  diary: {
+    title: 'Mi diario',
+    subtitle: 'Escribe lo que hay en tu corazón y guarda tus reflexiones.',
+    entryTitle: 'Título',
+    optional: 'Opcional',
+    content: 'Contenido',
+    contentPlaceholder: 'Escribe aquí tu reflexión...',
+    contentRequired: 'El contenido es requerido',
+    save: 'Guardar entrada',
+    myEntries: 'Mis entradas',
+    empty: 'Aún no tienes entradas. Comienza escribiendo una reflexión.',
+    loadError: 'No se pudieron cargar las entradas',
+    saveSuccess: 'Entrada guardada correctamente',
+    saveError: 'No se pudo guardar la entrada'
+  },
   training: {
     title: 'Entrenamiento de IA',
     category: 'Categoría / Tema',
