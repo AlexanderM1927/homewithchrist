@@ -101,7 +101,16 @@
       </q-card>
 
       <!-- Última entrada del diario -->
-      <q-card flat bordered class="diary-card">
+      <q-card
+        flat
+        bordered
+        class="diary-card"
+        :class="{ 'diary-card--clickable': latestDiaryEntry }"
+        :tabindex="latestDiaryEntry ? 0 : undefined"
+        @click="openLatestDiaryEntry"
+        @keydown.enter="openLatestDiaryEntry"
+        @keydown.space.prevent="openLatestDiaryEntry"
+      >
         <q-card-section class="q-pa-md">
           <div class="row items-center justify-between no-wrap">
             <div class="col">
@@ -130,10 +139,12 @@
 <script setup>
 import { computed, onActivated, ref } from 'vue'
 import { useAuthStore } from 'src/stores/auth'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import diaryService from 'src/services/DiaryService'
 
 const authStore = useAuthStore()
+const router = useRouter()
 const { locale, tm } = useI18n()
 const latestDiaryEntry = ref(null)
 const diaryLoading = ref(true)
@@ -156,6 +167,11 @@ function getDiaryPreview(entry) {
   if (entry.title) return entry.title
   if (entry.content.length <= 100) return entry.content
   return `${entry.content.slice(0, 97)}...`
+}
+
+function openLatestDiaryEntry() {
+  if (!latestDiaryEntry.value) return
+  router.push(`/diary/${latestDiaryEntry.value.diary_entry_id}`)
 }
 
 async function loadLatestDiaryEntry() {
@@ -219,5 +235,17 @@ onActivated(loadLatestDiaryEntry)
   border-radius: 16px !important;
   background: #ffffff;
   border-color: #e8e8e8;
+}
+
+.diary-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.diary-card--clickable:hover,
+.diary-card--clickable:focus {
+  border-color: #7B2FBE;
+  box-shadow: 0 4px 14px rgba(123, 47, 190, 0.14);
+  outline: none;
 }
 </style>
