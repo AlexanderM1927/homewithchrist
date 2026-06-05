@@ -20,7 +20,7 @@
         <div class="text-caption text-grey-6">{{ $t('advisor.subtitle') }}</div>
       </div>
       <q-space />
-      <q-btn flat round icon="more_vert" color="grey-7" size="sm" />
+      <q-btn flat round icon="history" color="grey-7" size="sm" />
     </div>
 
     <!-- Messages area -->
