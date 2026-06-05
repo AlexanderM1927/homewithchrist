@@ -206,7 +206,7 @@ export default defineConfig((ctx) => {
       builder: {
         // https://www.electron.build/configuration
 
-        appId: 'front'
+        appId: 'HWC'
       }
     },
 
