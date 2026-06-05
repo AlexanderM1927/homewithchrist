@@ -2,11 +2,11 @@
   <q-page class="q-pa-md">
     <div class="text-h6 q-mb-lg">{{ $t('admin.title') }}</div>
 
-    <div class="row q-gutter-md">
+    <div class="column q-gutter-md">
       <q-card
         v-for="option in adminOptions"
         :key="option.key"
-        class="admin-card col-12 col-sm-5 cursor-pointer"
+        class="admin-card cursor-pointer"
         flat
         bordered
         @click="$router.push(option.route)"
