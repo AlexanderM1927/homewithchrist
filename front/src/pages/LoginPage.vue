@@ -141,8 +141,8 @@ const pinRefs = ref([])
 const errorMsg = ref('')
 
 const languageOptions = [
-  { label: '🇪🇸 Español', value: 'es-ES' },
-  { label: '🇺🇸 English', value: 'en-US' }
+  { label: 'Español', value: 'es-ES' },
+  { label: 'English', value: 'en-US' }
 ]
 
 function onPinInput(index, event) {
