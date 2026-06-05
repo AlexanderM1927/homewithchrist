@@ -100,7 +100,7 @@
     </div>
 
     <!-- Chat history modal -->
-    <q-dialog v-model="historyModalOpen" position="bottom">
+    <q-dialog v-model="historyModalOpen" position="bottom" @hide="onHistoryDialogHide">
       <q-card class="history-modal-card">
         <q-card-section class="row items-center q-pb-sm">
           <div class="text-subtitle1 text-weight-bold">{{ $t('advisor.historyTitle') }}</div>
@@ -180,14 +180,37 @@ const chatHistory = ref([])
 
 const currentChatId = ref(null)
 const currentChatTitle = ref('')
+const pendingScrollAfterHistoryClose = ref(false)
 
 const suggestions = computed(() => tm('advisor.suggestions'))
 
 async function scrollToBottom () {
   await nextTick()
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  const container = messagesContainer.value
+  if (container) {
+    container.scrollTop = container.scrollHeight
   }
+
+  // Fallback for layouts where page scroll is handled by the document instead of the inner container.
+  window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' })
+}
+
+function forceScrollToBottom (retries = 12, delay = 40) {
+  scrollToBottom().then(() => {
+    const container = messagesContainer.value
+    if (!container) return
+
+    const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 2
+    if (!isAtBottom && retries > 0) {
+      setTimeout(() => forceScrollToBottom(retries - 1, delay), delay)
+    }
+  })
+}
+
+function onHistoryDialogHide () {
+  if (!pendingScrollAfterHistoryClose.value) return
+  pendingScrollAfterHistoryClose.value = false
+  forceScrollToBottom(15, 45)
 }
 
 function buildHistory () {
@@ -237,9 +260,10 @@ async function selectChat (chatId) {
       role: msg.role === 'assistant' ? 'ai' : 'user',
       content: msg.content
     }))
+    pendingScrollAfterHistoryClose.value = true
     historyModalOpen.value = false
-    await scrollToBottom()
   } catch {
+    pendingScrollAfterHistoryClose.value = false
     historyModalOpen.value = false
   }
 }
@@ -269,7 +293,7 @@ async function sendMessage () {
       (token, done, phase) => {
         if (phase) {
           lastMsg.phase = phase
-          scrollToBottom()
+          forceScrollToBottom()
           return
         }
         if (lastMsg.loading) {
@@ -278,7 +302,7 @@ async function sendMessage () {
         }
         if (done && !token) return
         lastMsg.content += token
-        scrollToBottom()
+        forceScrollToBottom()
       },
       currentChatId.value,
       (meta) => {
@@ -301,7 +325,7 @@ async function sendMessage () {
   } finally {
     isLoading.value = false
   }
-  await scrollToBottom()
+  forceScrollToBottom()
 }
 
 onMounted(() => {
@@ -313,6 +337,12 @@ onMounted(() => {
 .advisor-page {
   background: #f8f5ff;
   height: 100%;
+}
+
+.advisor-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .messages-area {
