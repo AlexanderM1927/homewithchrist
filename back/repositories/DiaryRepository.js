@@ -30,6 +30,18 @@ class DiaryRepository {
       }
     })
   }
+
+  async findRecentForContext(userId, limit = 20) {
+    return DiaryEntry.findAll({
+      where: { user_id: userId },
+      attributes: ['diary_entry_id', 'title', 'content', 'createdAt'],
+      order: [
+        ['createdAt', 'DESC'],
+        ['diary_entry_id', 'DESC']
+      ],
+      limit
+    })
+  }
 }
 
 module.exports = new DiaryRepository()
