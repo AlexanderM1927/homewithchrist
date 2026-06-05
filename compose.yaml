@@ -58,7 +58,6 @@ services:
 
 volumes:
   db_data:
-  ollama_data:
 
 networks:
   network_hwc: {}
