@@ -10,10 +10,24 @@ class DiaryRepository {
     })
   }
 
-  async findByUser(userId) {
-    return DiaryEntry.findAll({
+  async findByUser(userId, { limit, offset }) {
+    return DiaryEntry.findAndCountAll({
       where: { user_id: userId },
-      order: [['createdAt', 'DESC']]
+      order: [
+        ['createdAt', 'DESC'],
+        ['diary_entry_id', 'DESC']
+      ],
+      limit,
+      offset
+    })
+  }
+
+  async findByIdAndUser(entryId, userId) {
+    return DiaryEntry.findOne({
+      where: {
+        diary_entry_id: entryId,
+        user_id: userId
+      }
     })
   }
 }

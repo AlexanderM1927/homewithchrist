@@ -57,13 +57,35 @@
       <div v-else class="q-gutter-y-md">
         <q-card v-for="entry in entries" :key="entry.diary_entry_id" flat bordered class="entry-card">
           <q-card-section>
-            <div v-if="entry.title" class="text-subtitle1 text-weight-bold q-mb-xs">
+            <div v-if="entry.title" class="entry-title text-subtitle1 text-weight-bold q-mb-xs">
               {{ entry.title }}
             </div>
-            <div class="entry-content text-body2 text-grey-9">{{ entry.content }}</div>
+            <div class="entry-content text-body2 text-grey-9">{{ getContentPreview(entry.content) }}</div>
             <div class="text-caption text-grey-6 q-mt-md">{{ formatDate(entry.createdAt) }}</div>
+            <div v-if="entry.content.length > 100" class="row justify-end q-mt-sm">
+              <q-btn
+                flat
+                rounded
+                no-caps
+                color="primary"
+                :label="$t('diary.seeMore')"
+                :to="`/diary/${entry.diary_entry_id}`"
+              />
+            </div>
           </q-card-section>
         </q-card>
+
+        <div v-if="totalPages > 1" class="row justify-center q-pt-sm">
+          <q-pagination
+            v-model="page"
+            :max="totalPages"
+            :max-pages="6"
+            direction-links
+            boundary-links
+            color="primary"
+            @update:model-value="loadEntries"
+          />
+        </div>
       </div>
     </div>
   </q-page>
@@ -81,6 +103,8 @@ const { t, locale } = useI18n()
 const entries = ref([])
 const loading = ref(true)
 const saving = ref(false)
+const page = ref(1)
+const totalPages = ref(1)
 const form = reactive({
   title: '',
   content: ''
@@ -93,11 +117,18 @@ function formatDate(date) {
   }).format(new Date(date))
 }
 
-async function loadEntries() {
+function getContentPreview(content) {
+  if (content.length <= 100) return content
+  return `${content.slice(0, 97)}...`
+}
+
+async function loadEntries(requestedPage = page.value) {
   loading.value = true
   try {
-    const data = await diaryService.getEntries()
+    const data = await diaryService.getEntries(requestedPage)
     entries.value = data.entries
+    page.value = data.pagination.page
+    totalPages.value = Math.max(data.pagination.totalPages, 1)
   } catch {
     $q.notify({ type: 'negative', message: t('diary.loadError') })
   } finally {
@@ -110,13 +141,13 @@ async function saveEntry() {
 
   saving.value = true
   try {
-    const data = await diaryService.createEntry({
+    await diaryService.createEntry({
       title: form.title.trim(),
       content: form.content.trim()
     })
-    entries.value.unshift(data.entry)
     form.title = ''
     form.content = ''
+    await loadEntries(1)
     $q.notify({ type: 'positive', message: t('diary.saveSuccess') })
   } catch (err) {
     $q.notify({ type: 'negative', message: err.message || t('diary.saveError') })
@@ -151,5 +182,10 @@ onMounted(loadEntries)
   line-height: 1.6;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.entry-title {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 </style>

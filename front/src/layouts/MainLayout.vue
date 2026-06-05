@@ -44,10 +44,12 @@ const routeToTab = {
   '/users': 'admin'
 }
 
-const activeTab = ref(routeToTab[route.path] ?? 'index')
+const activeTab = ref(
+  route.path.startsWith('/diary/') ? 'diary' : (routeToTab[route.path] ?? 'index')
+)
 
 watch(() => route.path, (path) => {
-  activeTab.value = routeToTab[path] ?? 'index'
+  activeTab.value = path.startsWith('/diary/') ? 'diary' : (routeToTab[path] ?? 'index')
 })
 
 const tabRoutes = {
