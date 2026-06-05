@@ -41,6 +41,33 @@
       </q-card>
 
       <!-- Racha + Estado de ánimo -->
+      <!--div class="row q-gutter-x-md">
+        <q-card flat bordered class="col stat-card">
+          <q-card-section class="q-pa-md">
+            <div class="text-overline text-weight-bold text-grey-6" style="font-size:10px; letter-spacing:1px;">
+              {{ $t('dashboard.streak.label') }}
+            </div>
+            <div class="row items-center q-gutter-x-xs q-mt-xs">
+              <span style="font-size:28px;">🔥</span>
+              <span class="text-h4 text-weight-bold text-dark">12</span>
+            </div>
+            <div class="text-caption text-grey-7">{{ $t('dashboard.streak.days') }}</div>
+            <div class="text-caption text-grey-6 q-mt-xs">{{ $t('dashboard.streak.encouragement') }}</div>
+          </q-card-section>
+        </q-card>
+
+        <q-card flat bordered class="col stat-card">
+          <q-card-section class="q-pa-md">
+            <div class="text-overline text-weight-bold text-grey-6" style="font-size:10px; letter-spacing:1px;">
+              {{ $t('dashboard.mood.label') }}
+            </div>
+            <div class="row items-center q-gutter-x-xs q-mt-xs">
+              <span style="font-size:22px;">😊</span>
+              <span class="text-subtitle1 text-weight-bold text-dark">{{ $t('dashboard.mood.value') }}</span>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div-->
 
       <!-- Consejero Espiritual IA -->
       <q-card flat class="counselor-card">
@@ -81,10 +108,15 @@
               <div class="text-overline text-weight-bold text-primary q-mb-xs" style="font-size:10px; letter-spacing:1px;">
                 {{ $t('dashboard.diary.label') }}
               </div>
-              <div class="text-body2 text-dark q-mb-xs" style="line-height:1.4;">
-                {{ $t('dashboard.diary.lastEntry') }}
-              </div>
-              <div class="text-caption text-grey-6">{{ $t('dashboard.diary.timestamp') }}</div>
+              <q-skeleton v-if="diaryLoading" type="text" width="85%" />
+              <template v-else>
+                <div class="text-body2 text-dark q-mb-xs" style="line-height:1.4;">
+                  {{ latestDiaryEntry ? getDiaryPreview(latestDiaryEntry) : $t('dashboard.diary.empty') }}
+                </div>
+                <div v-if="latestDiaryEntry" class="text-caption text-grey-6">
+                  {{ formatDiaryDate(latestDiaryEntry.createdAt) }}
+                </div>
+              </template>
             </div>
             <q-icon name="menu_book" size="40px" color="primary" class="q-ml-md" style="opacity:0.25;" />
           </div>
@@ -96,12 +128,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useAuthStore } from 'src/stores/auth'
 import { useI18n } from 'vue-i18n'
+import diaryService from 'src/services/DiaryService'
 
 const authStore = useAuthStore()
-const { tm } = useI18n()
+const { locale, tm } = useI18n()
+const latestDiaryEntry = ref(null)
+const diaryLoading = ref(true)
 
 const userName = computed(() => authStore.user?.name || 'usuario')
 
@@ -109,6 +144,32 @@ const dailyVerse = computed(() => {
   const list = tm('dashboard.verse.list')
   return list[Math.floor(Math.random() * list.length)]
 })
+
+function formatDiaryDate(date) {
+  return new Intl.DateTimeFormat(locale.value, {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(new Date(date))
+}
+
+function getDiaryPreview(entry) {
+  if (entry.title) return entry.title
+  if (entry.content.length <= 100) return entry.content
+  return `${entry.content.slice(0, 97)}...`
+}
+
+async function loadLatestDiaryEntry() {
+  try {
+    const data = await diaryService.getEntries()
+    latestDiaryEntry.value = data.entries[0] || null
+  } catch {
+    latestDiaryEntry.value = null
+  } finally {
+    diaryLoading.value = false
+  }
+}
+
+onMounted(loadLatestDiaryEntry)
 </script>
 
 <style scoped>

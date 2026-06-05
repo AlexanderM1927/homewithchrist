@@ -57,8 +57,7 @@ export default {
     },
     diary: {
       label: 'LAST DIARY ENTRY',
-      lastEntry: 'Thank you God for this new day. I trust in your plans.',
-      timestamp: 'Yesterday • 8:30 p.m.'
+      empty: 'You do not have any entries yet'
     }
   },
   diary: {

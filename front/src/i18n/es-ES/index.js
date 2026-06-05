@@ -57,8 +57,7 @@ export default {
     },
     diary: {
       label: 'ÚLTIMA ENTRADA DEL DIARIO',
-      lastEntry: 'Gracias Dios por este nuevo día. Confío en tus planes.',
-      timestamp: 'Ayer • 8:30 p.m.'
+      empty: 'No tienes ninguna entrada hasta ahora'
     }
   },
   diary: {
