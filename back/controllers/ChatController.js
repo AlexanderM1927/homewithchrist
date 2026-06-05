@@ -150,6 +150,7 @@ No incluyas texto adicional, solo el JSON.`
       ollamaResponse = await fetch(`${ollamaUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(60000),
         body: JSON.stringify({
           model: OLLAMA_MODEL,
           messages,
@@ -157,7 +158,7 @@ No incluyas texto adicional, solo el JSON.`
         })
       })
     } catch {
-      res.write(`data: ${JSON.stringify({ error: 'No se pudo conectar con Ollama' })}\n\n`)
+      res.write(`data: ${JSON.stringify({ error: 'unavailable' })}\n\n`)
       return res.end()
     }
 

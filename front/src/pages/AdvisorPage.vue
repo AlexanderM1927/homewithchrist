@@ -177,10 +177,12 @@ async function sendMessage () {
       lastMsg.content += token
       scrollToBottom()
     })
-  } catch {
+  } catch (err) {
     const lastMsg = messages.value[messages.value.length - 1]
     lastMsg.loading = false
-    lastMsg.content = t('advisor.errorMessage')
+    lastMsg.content = err.message === 'unavailable'
+      ? t('advisor.unavailableMessage')
+      : t('advisor.errorMessage')
   } finally {
     isLoading.value = false
   }

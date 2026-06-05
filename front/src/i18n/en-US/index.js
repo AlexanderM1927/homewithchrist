@@ -125,6 +125,7 @@ export default {
     welcomeDesc: 'I am here to listen to you and accompany you in faith. You can share whatever is on your heart.',
     inputPlaceholder: 'Type your message...',
     errorMessage: 'There was an error connecting to the counselor. Please try again later.',
+    unavailableMessage: 'Hope is not available right now. Please try again in a moment 🙏',
     phases: {
       classifying: 'Classifying your question...',
       searching: 'Searching biblical references...',

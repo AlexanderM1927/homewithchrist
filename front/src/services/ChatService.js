@@ -49,7 +49,7 @@ class ChatService extends ApiService {
         if (!line.startsWith('data: ')) continue
         try {
           const json = JSON.parse(line.slice(6))
-          if (json.error) throw new Error(json.error)
+          if (json.error) throw new Error(json.error === 'unavailable' ? 'unavailable' : json.error)
           if (json.phase) { onToken('', false, json.phase); continue }
           onToken(json.token ?? '', json.done ?? false, null)
         } catch {
