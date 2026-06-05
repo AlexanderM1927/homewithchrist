@@ -180,9 +180,9 @@ export default {
     errorMessage: 'Hubo un error al conectar con el consejero. Intenta de nuevo más tarde.',
     unavailableMessage: 'Hope no está disponible ahora mismo. Intenta en un rato 🙏',
     phases: {
-      classifying: 'Clasificando tu pregunta...',
+      classifying: 'Meditando...',
       searching: 'Buscando referencias bíblicas...',
-      generating: 'Generando respuesta...'
+      generating: 'Organizando ideas...'
     },
     suggestions: [
       'Me siento ansioso y no sé por qué',

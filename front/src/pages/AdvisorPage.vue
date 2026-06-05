@@ -274,7 +274,6 @@ async function sendMessage () {
 
   inputText.value = ''
   messages.value.push({ role: 'user', content: text })
-  await scrollToBottom()
 
   // Build prior turns excluding current user message.
   const history = buildHistory().slice(0, -1)
@@ -282,7 +281,6 @@ async function sendMessage () {
   // Placeholder loading bubble
   isLoading.value = true
   messages.value.push({ role: 'ai', content: '', loading: true, phase: 'classifying' })
-  await scrollToBottom()
 
   try {
     const lastMsg = messages.value[messages.value.length - 1]
@@ -293,7 +291,6 @@ async function sendMessage () {
       (token, done, phase) => {
         if (phase) {
           lastMsg.phase = phase
-          forceScrollToBottom()
           return
         }
         if (lastMsg.loading) {
@@ -302,7 +299,6 @@ async function sendMessage () {
         }
         if (done && !token) return
         lastMsg.content += token
-        forceScrollToBottom()
       },
       currentChatId.value,
       (meta) => {
@@ -325,7 +321,6 @@ async function sendMessage () {
   } finally {
     isLoading.value = false
   }
-  forceScrollToBottom()
 }
 
 onMounted(() => {
