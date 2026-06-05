@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Backend prepare and build') {
             tools {
-                nodejs 'node-21.11.1'
+                nodejs 'node-22.22.3'
             }
 
             steps {
@@ -44,7 +44,7 @@ pipeline {
 
         stage('Frontend prepare') {
             tools {
-                nodejs 'node-21.11.1'
+                nodejs 'node-22.22.3'
             }
 
             steps {
@@ -69,7 +69,7 @@ pipeline {
 
         stage('Frontend build') {
             tools {
-                nodejs 'node-21.11.1'
+                nodejs 'node-22.22.3'
             }
 
             steps {
@@ -91,7 +91,7 @@ pipeline {
 
         stage('Deploy') {
             tools {
-                nodejs 'node-21.11.1'
+                nodejs 'node-22.22.3'
             }
 
             steps {
@@ -129,7 +129,7 @@ pipeline {
 
         stage('Verify Deployment') {
             tools {
-                nodejs 'node-21.11.1'
+                nodejs 'node-22.22.3'
             }
 
             steps {
