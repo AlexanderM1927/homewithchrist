@@ -80,6 +80,9 @@ pipeline {
                     echo "[frontend] Building Quasar PWA..."
                     quasar build -m pwa
 
+                    echo "[frontend] Creating version.json..."
+                    echo "{\"version\":\"${BUILD_NUMBER}-$(date +%s)\"}" > ./dist/pwa/version.json
+
                     echo "[frontend] Copying PWA into backend public..."
                     rm -rf ../back/public
                     mkdir -p ../back/public
