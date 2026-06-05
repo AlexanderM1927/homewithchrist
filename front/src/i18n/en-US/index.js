@@ -76,7 +76,12 @@ export default {
     empty: 'You have no entries yet. Start by writing a reflection.',
     loadError: 'Could not load diary entries',
     saveSuccess: 'Entry saved successfully',
-    saveError: 'Could not save entry'
+    saveError: 'Could not save entry',
+    edit: 'Edit',
+    cancel: 'Cancel',
+    saveChanges: 'Save changes',
+    updateSuccess: 'Entry updated successfully',
+    updateError: 'Could not update entry'
   },
   training: {
     title: 'AI Training',

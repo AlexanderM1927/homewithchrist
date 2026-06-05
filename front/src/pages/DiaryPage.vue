@@ -62,7 +62,7 @@
             </div>
             <div class="entry-content text-body2 text-grey-9">{{ getContentPreview(entry.content) }}</div>
             <div class="text-caption text-grey-6 q-mt-md">{{ formatDate(entry.createdAt) }}</div>
-            <div v-if="entry.content.length > 100" class="row justify-end q-mt-sm">
+            <div class="row justify-end q-mt-sm">
               <q-btn
                 flat
                 rounded

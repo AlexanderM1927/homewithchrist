@@ -31,6 +31,19 @@ class DiaryRepository {
     })
   }
 
+  async updateByIdAndUser(entryId, userId, { title, content }) {
+    const entry = await this.findByIdAndUser(entryId, userId)
+
+    if (!entry) {
+      return null
+    }
+
+    entry.title = title || null
+    entry.content = content
+
+    return entry.save()
+  }
+
   async findRecentForContext(userId, limit = 20) {
     return DiaryEntry.findAll({
       where: { user_id: userId },

@@ -76,7 +76,12 @@ export default {
     empty: 'Aún no tienes entradas. Comienza escribiendo una reflexión.',
     loadError: 'No se pudieron cargar las entradas',
     saveSuccess: 'Entrada guardada correctamente',
-    saveError: 'No se pudo guardar la entrada'
+    saveError: 'No se pudo guardar la entrada',
+    edit: 'Editar',
+    cancel: 'Cancelar',
+    saveChanges: 'Guardar cambios',
+    updateSuccess: 'Entrada actualizada correctamente',
+    updateError: 'No se pudo actualizar la entrada'
   },
   training: {
     title: 'Entrenamiento de IA',

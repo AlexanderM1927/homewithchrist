@@ -18,11 +18,70 @@
 
       <q-card v-else-if="entry" flat bordered class="entry-card">
         <q-card-section>
-          <div v-if="entry.title" class="entry-title text-h5 text-weight-bold text-dark q-mb-md">
-            {{ entry.title }}
+          <div class="row items-center justify-between q-gutter-sm q-mb-md">
+            <div class="text-caption text-grey-6">{{ formatDate(entry.createdAt) }}</div>
+            <q-btn
+              v-if="!editing"
+              flat
+              round
+              color="primary"
+              icon="edit"
+              :aria-label="$t('diary.edit')"
+              @click="startEditing"
+            >
+              <q-tooltip>{{ $t('diary.edit') }}</q-tooltip>
+            </q-btn>
           </div>
-          <div class="entry-content text-body1 text-grey-9">{{ entry.content }}</div>
-          <div class="text-caption text-grey-6 q-mt-lg">{{ formatDate(entry.createdAt) }}</div>
+
+          <q-form v-if="editing" ref="editFormRef" class="q-gutter-md" @submit="saveChanges">
+            <q-input
+              v-model="form.title"
+              outlined
+              maxlength="150"
+              :label="$t('diary.entryTitle')"
+              :hint="$t('diary.optional')"
+            />
+
+            <q-input
+              v-model="form.content"
+              outlined
+              autogrow
+              type="textarea"
+              :label="$t('diary.content')"
+              :placeholder="$t('diary.contentPlaceholder')"
+              :rules="[value => Boolean(value && value.trim()) || $t('diary.contentRequired')]"
+            />
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn
+                flat
+                rounded
+                no-caps
+                color="grey-7"
+                type="button"
+                :label="$t('diary.cancel')"
+                :disable="saving"
+                @click="cancelEditing"
+              />
+              <q-btn
+                unelevated
+                rounded
+                no-caps
+                color="primary"
+                icon="save"
+                type="submit"
+                :label="$t('diary.saveChanges')"
+                :loading="saving"
+              />
+            </div>
+          </q-form>
+
+          <template v-else>
+            <div v-if="entry.title" class="entry-title text-h5 text-weight-bold text-dark q-mb-md">
+              {{ entry.title }}
+            </div>
+            <div class="entry-content text-body1 text-grey-9">{{ entry.content }}</div>
+          </template>
         </q-card-section>
       </q-card>
 
@@ -35,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { nextTick, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
@@ -48,6 +107,13 @@ const { t, locale } = useI18n()
 
 const entry = ref(null)
 const loading = ref(true)
+const saving = ref(false)
+const editing = ref(false)
+const editFormRef = ref(null)
+const form = reactive({
+  title: '',
+  content: ''
+})
 
 function formatDate(date) {
   return new Intl.DateTimeFormat(locale.value, {
@@ -63,11 +129,46 @@ async function loadEntry(entryId) {
   try {
     const data = await diaryService.getEntry(entryId)
     entry.value = data.entry
+    editing.value = false
   } catch {
     entry.value = null
+    editing.value = false
     $q.notify({ type: 'negative', message: t('diary.entryNotFound') })
   } finally {
     loading.value = false
+  }
+}
+
+function startEditing() {
+  form.title = entry.value?.title || ''
+  form.content = entry.value?.content || ''
+  editing.value = true
+}
+
+async function cancelEditing() {
+  editing.value = false
+  await nextTick()
+  editFormRef.value?.resetValidation()
+}
+
+async function saveChanges() {
+  if (!entry.value || !form.content.trim()) return
+
+  saving.value = true
+  try {
+    const data = await diaryService.updateEntry(entry.value.diary_entry_id, {
+      title: form.title.trim(),
+      content: form.content.trim()
+    })
+    entry.value = data.entry
+    editing.value = false
+    await nextTick()
+    editFormRef.value?.resetValidation()
+    $q.notify({ type: 'positive', message: t('diary.updateSuccess') })
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err.message || t('diary.updateError') })
+  } finally {
+    saving.value = false
   }
 }
 

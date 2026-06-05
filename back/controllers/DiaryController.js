@@ -71,6 +71,39 @@ class DiaryController {
       return res.status(500).json({ message: err.message })
     }
   }
+
+  async update(req, res) {
+    const entryId = Number(req.params.id)
+    const title = typeof req.body.title === 'string' ? req.body.title.trim() : ''
+    const content = typeof req.body.content === 'string' ? req.body.content.trim() : ''
+
+    if (!Number.isInteger(entryId) || entryId <= 0) {
+      return res.status(400).json({ message: 'Entrada invalida' })
+    }
+
+    if (!content) {
+      return res.status(400).json({ message: 'El contenido es requerido' })
+    }
+
+    if (title.length > 150) {
+      return res.status(400).json({ message: 'El titulo no puede superar 150 caracteres' })
+    }
+
+    try {
+      const entry = await diaryRepository.updateByIdAndUser(entryId, req.user.sub, {
+        title,
+        content
+      })
+
+      if (!entry) {
+        return res.status(404).json({ message: 'Entrada no encontrada' })
+      }
+
+      return res.status(200).json({ entry })
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
 }
 
 module.exports = new DiaryController()

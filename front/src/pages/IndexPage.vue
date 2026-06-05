@@ -128,7 +128,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onActivated, ref } from 'vue'
 import { useAuthStore } from 'src/stores/auth'
 import { useI18n } from 'vue-i18n'
 import diaryService from 'src/services/DiaryService'
@@ -159,6 +159,7 @@ function getDiaryPreview(entry) {
 }
 
 async function loadLatestDiaryEntry() {
+  diaryLoading.value = true
   try {
     const data = await diaryService.getEntries()
     latestDiaryEntry.value = data.entries[0] || null
@@ -169,7 +170,7 @@ async function loadLatestDiaryEntry() {
   }
 }
 
-onMounted(loadLatestDiaryEntry)
+onActivated(loadLatestDiaryEntry)
 </script>
 
 <style scoped>

@@ -16,6 +16,10 @@ class DiaryService extends ApiService {
   createEntry(payload) {
     return this.post('/', payload)
   }
+
+  updateEntry(entryId, payload) {
+    return this.put(`/${entryId}`, payload)
+  }
 }
 
 export default new DiaryService()
