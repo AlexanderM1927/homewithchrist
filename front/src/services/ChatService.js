@@ -10,6 +10,14 @@ class ChatService extends ApiService {
     super('/bot')
   }
 
+  async getRecentChats (limit = 10) {
+    return this.get(`/chats?limit=${limit}`)
+  }
+
+  async getChat (chatId) {
+    return this.get(`/chats/${chatId}`)
+  }
+
   /**
    * Envía un prompt con historial y recibe la respuesta token a token via SSE.
    * @param {string} prompt - Mensaje actual del usuario
@@ -17,7 +25,7 @@ class ChatService extends ApiService {
    * @param {(token: string, done: boolean, phase: string|null) => void} onToken
    * @returns {Promise<void>}
    */
-  async chatStream (prompt, history, onToken) {
+  async chatStream (prompt, history, onToken, chatId = null, onMeta = null) {
     const { useAuthStore } = await import('src/stores/auth')
     const authStore = useAuthStore()
 
@@ -30,7 +38,7 @@ class ChatService extends ApiService {
       method: 'POST',
       headers,
       credentials: 'include',
-      body: JSON.stringify({ prompt, history })
+      body: JSON.stringify({ prompt, history, chatId })
     })
 
     if (!response.ok) {
@@ -47,14 +55,23 @@ class ChatService extends ApiService {
       const chunk = decoder.decode(value, { stream: true })
       for (const line of chunk.split('\n')) {
         if (!line.startsWith('data: ')) continue
+        let json
         try {
-          const json = JSON.parse(line.slice(6))
-          if (json.error) throw new Error(json.error === 'unavailable' ? 'unavailable' : json.error)
-          if (json.phase) { onToken('', false, json.phase); continue }
-          onToken(json.token ?? '', json.done ?? false, null)
+          json = JSON.parse(line.slice(6))
         } catch {
-            console.log('No se pudo parsear el token recibido:', line)
+          console.log('No se pudo parsear el token recibido:', line)
+          continue
         }
+
+        if (json.error) {
+          throw new Error(json.error === 'unavailable' ? 'unavailable' : json.error)
+        }
+        if (json.chatId) {
+          onMeta?.({ chatId: json.chatId, title: json.title || '' })
+          continue
+        }
+        if (json.phase) { onToken('', false, json.phase); continue }
+        onToken(json.token ?? '', json.done ?? false, null)
       }
     }
   }

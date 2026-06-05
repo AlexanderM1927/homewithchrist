@@ -24,14 +24,22 @@ const User = require('./User')(sequelize, DataTypes)
 const Topic = require('./Topic')(sequelize, DataTypes)
 const Verse = require('./Verse')(sequelize, DataTypes)
 const TopicVerse = require('./TopicVerse')(sequelize, DataTypes)
+const Chat = require('./Chat')(sequelize, DataTypes)
+const ChatMessage = require('./ChatMessage')(sequelize, DataTypes)
 
 // Associations
 Role.hasMany(User, { foreignKey: 'role_id' })
 User.belongsTo(Role, { foreignKey: 'role_id' })
+
+User.hasMany(Chat, { foreignKey: 'user_id' })
+Chat.belongsTo(User, { foreignKey: 'user_id' })
+
+Chat.hasMany(ChatMessage, { as: 'messages', foreignKey: 'chat_id', onDelete: 'CASCADE' })
+ChatMessage.belongsTo(Chat, { foreignKey: 'chat_id' })
 
 Topic.belongsToMany(Verse, { through: TopicVerse, foreignKey: 'topic_id', otherKey: 'verse_id' })
 Verse.belongsToMany(Topic, { through: TopicVerse, foreignKey: 'verse_id', otherKey: 'topic_id' })
 TopicVerse.belongsTo(Topic, { foreignKey: 'topic_id' })
 TopicVerse.belongsTo(Verse, { foreignKey: 'verse_id' })
 
-module.exports = { sequelize, Role, User, Topic, Verse, TopicVerse }
+module.exports = { sequelize, Role, User, Topic, Verse, TopicVerse, Chat, ChatMessage }

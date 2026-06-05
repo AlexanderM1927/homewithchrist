@@ -147,6 +147,9 @@ export default {
   advisor: {
     title: 'Hope IA',
     subtitle: 'Consejero Espiritual · siempre disponible',
+    historyTitle: 'Tus ultimos chats',
+    loadingHistory: 'Cargando historial...',
+    emptyHistory: 'Aun no tienes chats guardados.',
     welcomeTitle: 'Hola, soy tu Consejero',
     welcomeDesc: 'Estoy aquí para escucharte y acompañarte desde la fe. Puedes contarme lo que tengas en el corazón.',
     inputPlaceholder: 'Escribe tu mensaje...',

@@ -17,10 +17,10 @@
       </q-avatar>
       <div>
         <div class="text-weight-bold text-dark" style="font-size:15px;">{{ $t('advisor.title') }}</div>
-        <div class="text-caption text-grey-6">{{ $t('advisor.subtitle') }}</div>
+        <div class="text-caption text-grey-6">{{ currentChatTitle || $t('advisor.subtitle') }}</div>
       </div>
       <q-space />
-      <q-btn flat round icon="history" color="grey-7" size="sm" />
+      <q-btn flat round icon="history" color="grey-7" size="sm" @click="openHistoryModal" />
     </div>
 
     <!-- Messages area -->
@@ -98,15 +98,56 @@
         />
       </div>
     </div>
+
+    <!-- Chat history modal -->
+    <q-dialog v-model="historyModalOpen" position="bottom">
+      <q-card class="history-modal-card">
+        <q-card-section class="row items-center q-pb-sm">
+          <div class="text-subtitle1 text-weight-bold">{{ $t('advisor.historyTitle') }}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pa-none">
+          <q-list separator>
+            <q-item v-if="historyLoading">
+              <q-item-section>{{ $t('advisor.loadingHistory') }}</q-item-section>
+            </q-item>
+
+            <q-item v-else-if="chatHistory.length === 0">
+              <q-item-section>{{ $t('advisor.emptyHistory') }}</q-item-section>
+            </q-item>
+
+            <q-item
+              v-for="chat in chatHistory"
+              v-else
+              :key="chat.chat_id"
+              clickable
+              @click="selectChat(chat.chat_id)"
+            >
+              <q-item-section>
+                <q-item-label lines="1">{{ chat.title }}</q-item-label>
+                <q-item-label caption lines="1">{{ chat.preview || '-' }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-item-label caption>{{ formatDate(chat.updatedAt) }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script setup>
-import { ref, nextTick, computed } from 'vue'
+import { ref, nextTick, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import chatService from 'src/services/ChatService'
 
-const { t, tm } = useI18n()
+const { t, tm, locale } = useI18n()
 
 function formatMessage (text) {
   return text
@@ -117,10 +158,28 @@ function formatMessage (text) {
     .replace(/\n/g, '<br>')
 }
 
+function formatDate (date) {
+  try {
+    return new Date(date).toLocaleDateString(locale.value, {
+      day: '2-digit',
+      month: 'short'
+    })
+  } catch {
+    return ''
+  }
+}
+
 const messagesContainer = ref(null)
 const inputText = ref('')
 const isLoading = ref(false)
 const messages = ref([])
+
+const historyModalOpen = ref(false)
+const historyLoading = ref(false)
+const chatHistory = ref([])
+
+const currentChatId = ref(null)
+const currentChatTitle = ref('')
 
 const suggestions = computed(() => tm('advisor.suggestions'))
 
@@ -129,6 +188,12 @@ async function scrollToBottom () {
   if (messagesContainer.value) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
   }
+}
+
+function buildHistory () {
+  return messages.value
+    .filter(m => !m.loading && m.content)
+    .map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }))
 }
 
 function sendSuggestion (text) {
@@ -140,6 +205,43 @@ function clearChat () {
   messages.value = []
   inputText.value = ''
   isLoading.value = false
+  currentChatId.value = null
+  currentChatTitle.value = ''
+}
+
+async function loadRecentChats () {
+  historyLoading.value = true
+  try {
+    const data = await chatService.getRecentChats(10)
+    chatHistory.value = data.chats || []
+  } catch {
+    chatHistory.value = []
+  } finally {
+    historyLoading.value = false
+  }
+}
+
+async function openHistoryModal () {
+  historyModalOpen.value = true
+  await loadRecentChats()
+}
+
+async function selectChat (chatId) {
+  try {
+    const data = await chatService.getChat(chatId)
+    const selected = data.chat
+
+    currentChatId.value = selected.chat_id
+    currentChatTitle.value = selected.title
+    messages.value = (selected.messages || []).map(msg => ({
+      role: msg.role === 'assistant' ? 'ai' : 'user',
+      content: msg.content
+    }))
+    historyModalOpen.value = false
+    await scrollToBottom()
+  } catch {
+    historyModalOpen.value = false
+  }
 }
 
 async function sendMessage () {
@@ -150,11 +252,8 @@ async function sendMessage () {
   messages.value.push({ role: 'user', content: text })
   await scrollToBottom()
 
-  // Construir historial de la conversación (todos los turnos completados, sin el que acabamos de agregar)
-  const history = messages.value
-    .slice(0, -1) // excluir el mensaje actual que acabamos de pushear
-    .filter(m => !m.loading && m.content)
-    .map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }))
+  // Build prior turns excluding current user message.
+  const history = buildHistory().slice(0, -1)
 
   // Placeholder loading bubble
   isLoading.value = true
@@ -164,19 +263,35 @@ async function sendMessage () {
   try {
     const lastMsg = messages.value[messages.value.length - 1]
 
-    await chatService.chatStream(text, history, (token, done, phase) => {
-      if (phase) {
-        lastMsg.phase = phase
+    await chatService.chatStream(
+      text,
+      history,
+      (token, done, phase) => {
+        if (phase) {
+          lastMsg.phase = phase
+          scrollToBottom()
+          return
+        }
+        if (lastMsg.loading) {
+          lastMsg.loading = false
+          lastMsg.phase = null
+        }
+        if (done && !token) return
+        lastMsg.content += token
         scrollToBottom()
-        return
+      },
+      currentChatId.value,
+      (meta) => {
+        if (meta.chatId) {
+          currentChatId.value = meta.chatId
+        }
+        if (meta.title) {
+          currentChatTitle.value = meta.title
+        }
       }
-      if (lastMsg.loading) {
-        lastMsg.loading = false
-        lastMsg.phase = null
-      }
-      lastMsg.content += token
-      scrollToBottom()
-    })
+    )
+
+    await loadRecentChats()
   } catch (err) {
     const lastMsg = messages.value[messages.value.length - 1]
     lastMsg.loading = false
@@ -188,6 +303,10 @@ async function sendMessage () {
   }
   await scrollToBottom()
 }
+
+onMounted(() => {
+  loadRecentChats()
+})
 </script>
 
 <style scoped>
@@ -242,6 +361,12 @@ async function sendMessage () {
   text-transform: none;
   letter-spacing: 0;
   font-size: 13px;
+}
+
+.history-modal-card {
+  width: min(640px, 100vw);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
 }
 
 /* Phase label */

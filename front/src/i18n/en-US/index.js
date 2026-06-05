@@ -147,6 +147,9 @@ export default {
   advisor: {
     title: 'Hope AI',
     subtitle: 'Spiritual Counselor · always available',
+    historyTitle: 'Your latest chats',
+    loadingHistory: 'Loading history...',
+    emptyHistory: 'You do not have saved chats yet.',
     welcomeTitle: 'Hello, I am your Counselor',
     welcomeDesc: 'I am here to listen to you and accompany you in faith. You can share whatever is on your heart.',
     inputPlaceholder: 'Type your message...',
