@@ -64,6 +64,54 @@ class TrainingRepository {
     })
   }
 
+  async findTopicSlugsBySearchTerms(terms, limit = 5) {
+    if (!terms || terms.length === 0) return []
+
+    const matches = terms.flatMap(term => [
+      { name: { [Op.like]: `%${term}%` } },
+      { slug: { [Op.like]: `%${term}%` } },
+      { description: { [Op.like]: `%${term}%` } }
+    ])
+
+    const topics = await Topic.findAll({
+      where: {
+        is_active: true,
+        [Op.or]: matches
+      },
+      attributes: ['slug'],
+      limit
+    })
+
+    return topics.map(topic => topic.slug)
+  }
+
+  async findVersesBySearchTerms(terms, limit = 6) {
+    if (!terms || terms.length === 0) return []
+
+    const matches = terms.flatMap(term => [
+      { reference: { [Op.like]: `%${term}%` } },
+      { book: { [Op.like]: `%${term}%` } },
+      { text: { [Op.like]: `%${term}%` } }
+    ])
+
+    return Verse.findAll({
+      where: {
+        is_active: true,
+        [Op.or]: matches
+      },
+      include: [
+        {
+          model: Topic,
+          where: { is_active: true },
+          through: { attributes: ['weight'] },
+          required: false
+        }
+      ],
+      order: [[Topic, TopicVerse, 'weight', 'DESC']],
+      limit
+    })
+  }
+
   /** Lista versículos con sus temas, paginados */
   async findVerses({ page = 1, limit = 20 } = {}) {
     const offset = (page - 1) * limit

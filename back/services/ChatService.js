@@ -8,6 +8,16 @@ const DIARY_CANDIDATE_LIMIT = 20
 const DIARY_CONTEXT_LIMIT = 3
 const DIARY_CONTEXT_LIMIT_WITH_TRAINING = 1
 const DIARY_ENTRY_CONTENT_LIMIT = 1500
+const FALLBACK_TOPIC_LIMIT = 5
+const FALLBACK_VERSE_LIMIT = 6
+const SEARCH_TERM_LIMIT = 8
+
+const SEARCH_STOP_WORDS = new Set([
+  'como', 'para', 'pero', 'porque', 'cuando', 'donde', 'sobre', 'quiero',
+  'necesito', 'ayuda', 'ayudame', 'estoy', 'tengo', 'siento', 'hacer',
+  'this', 'that', 'with', 'from', 'about', 'what', 'when', 'where', 'need',
+  'help', 'please', 'the', 'and', 'for', 'you', 'are'
+])
 
 const SYSTEM_PROMPT = `Te llamas Hope, eres un asistente cristiano de acompanamiento espiritual.
 Tus respuestas deben estar basadas en la Biblia, en la vida y ensenanzas de Jesus,
@@ -67,16 +77,25 @@ class ChatService {
     emit({ phase: 'classifying' })
     const topics = await trainingRepository.findAllTopics()
     const matchedSlugs = await aiProvider.classifyTopics(userMessage, topics)
+    const searchTerms = this._extractSearchTerms(userMessage)
+    const fallbackSlugs = matchedSlugs.length === 0
+      ? await trainingRepository.findTopicSlugsBySearchTerms(searchTerms, FALLBACK_TOPIC_LIMIT)
+      : []
+    const trainingSlugs = this._uniqueValues([...matchedSlugs, ...fallbackSlugs])
 
     emit({ phase: 'searching' })
-    const verses = matchedSlugs.length > 0
-      ? await trainingRepository.findVersesByTopicSlugs(matchedSlugs)
+    const topicVerses = trainingSlugs.length > 0
+      ? await trainingRepository.findVersesByTopicSlugs(trainingSlugs)
       : []
+    const fallbackVerses = topicVerses.length === 0
+      ? await trainingRepository.findVersesBySearchTerms(searchTerms, FALLBACK_VERSE_LIMIT)
+      : []
+    const verses = this._uniqueBy([...topicVerses, ...fallbackVerses], 'id')
 
     const diaryLimit = verses.length > 0
       ? DIARY_CONTEXT_LIMIT_WITH_TRAINING
       : DIARY_CONTEXT_LIMIT
-    const diaryEntries = await this._findRelevantDiaryEntries(userId, userMessage, diaryLimit)
+    const diaryEntries = await this._findRelevantDiaryEntries(userId, userMessage, diaryLimit, searchTerms)
 
     emit({ phase: 'generating' })
     const messages = this._buildMessages(userMessage, verses, diaryEntries, history)
@@ -111,12 +130,18 @@ class ChatService {
     return chatRepository.create(userId, title)
   }
 
-  async _findRelevantDiaryEntries(userId, userMessage, maxEntries = DIARY_CONTEXT_LIMIT) {
+  async _findRelevantDiaryEntries(userId, userMessage, maxEntries = DIARY_CONTEXT_LIMIT, searchTerms = []) {
     try {
-      const entries = await diaryRepository.findRecentForContext(
+      const recentEntries = await diaryRepository.findRecentForContext(
         userId,
         DIARY_CANDIDATE_LIMIT
       )
+      const matchingEntries = await diaryRepository.findBySearchTermsForContext(
+        userId,
+        searchTerms,
+        DIARY_CANDIDATE_LIMIT
+      )
+      const entries = this._uniqueBy([...recentEntries, ...matchingEntries], 'diary_entry_id')
       const selectedIds = await aiProvider.selectRelevantDiaryEntries(
         userMessage,
         entries,
@@ -160,6 +185,32 @@ class ChatService {
 
     messages.push({ role: 'user', content: currentContent })
     return messages
+  }
+
+  _extractSearchTerms(text) {
+    return this._uniqueValues(
+      String(text || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .match(/[a-z0-9]{4,}/g) || []
+    )
+      .filter(term => !SEARCH_STOP_WORDS.has(term))
+      .slice(0, SEARCH_TERM_LIMIT)
+  }
+
+  _uniqueValues(values) {
+    return [...new Set(values.filter(Boolean))]
+  }
+
+  _uniqueBy(items, key) {
+    const seen = new Set()
+    return items.filter(item => {
+      const value = item?.[key]
+      if (!value || seen.has(value)) return false
+      seen.add(value)
+      return true
+    })
   }
 }
 

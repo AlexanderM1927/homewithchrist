@@ -1,4 +1,5 @@
 'use strict'
+const { Op } = require('sequelize')
 const { DiaryEntry } = require('../models')
 
 class DiaryRepository {
@@ -51,6 +52,28 @@ class DiaryRepository {
   async findRecentForContext(userId, limit = 20) {
     return DiaryEntry.findAll({
       where: { user_id: userId },
+      attributes: ['diary_entry_id', 'title', 'content', 'createdAt'],
+      order: [
+        ['createdAt', 'DESC'],
+        ['diary_entry_id', 'DESC']
+      ],
+      limit
+    })
+  }
+
+  async findBySearchTermsForContext(userId, terms, limit = 20) {
+    if (!terms || terms.length === 0) return []
+
+    const matches = terms.flatMap(term => [
+      { title: { [Op.like]: `%${term}%` } },
+      { content: { [Op.like]: `%${term}%` } }
+    ])
+
+    return DiaryEntry.findAll({
+      where: {
+        user_id: userId,
+        [Op.or]: matches
+      },
       attributes: ['diary_entry_id', 'title', 'content', 'createdAt'],
       order: [
         ['createdAt', 'DESC'],
