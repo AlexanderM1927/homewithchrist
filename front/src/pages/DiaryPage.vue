@@ -122,7 +122,7 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { nextTick, onActivated, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import diaryService from 'src/services/DiaryService'
@@ -209,6 +209,7 @@ async function saveEntry() {
 }
 
 onMounted(loadEntries)
+onActivated(loadEntries)
 onBeforeUnmount(clearImagePreview)
 </script>
 
