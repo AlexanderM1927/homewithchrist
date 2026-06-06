@@ -33,7 +33,7 @@
             </q-btn>
           </div>
 
-          <q-form v-if="editing" ref="editFormRef" class="q-gutter-md" @submit="saveChanges">
+          <q-form v-if="editing" ref="editFormRef" class="q-gutter-y-md" @submit="saveChanges">
             <q-input
               v-model="form.title"
               outlined
@@ -50,6 +50,29 @@
               :label="$t('diary.content')"
               :placeholder="$t('diary.contentPlaceholder')"
               :rules="[value => Boolean(value && value.trim()) || $t('diary.contentRequired')]"
+            />
+
+            <q-file
+              v-model="form.image"
+              outlined
+              clearable
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              :label="$t('diary.image')"
+              :hint="$t('diary.imageEditHint')"
+              @update:model-value="updateImagePreview"
+              @clear="clearImageSelection"
+            >
+              <template #prepend>
+                <q-icon name="image" />
+              </template>
+            </q-file>
+
+            <q-img
+              v-if="displayImage"
+              :src="displayImage"
+              :alt="$t('diary.imagePreview')"
+              class="entry-image"
+              fit="cover"
             />
 
             <div class="row justify-end q-gutter-sm">
@@ -81,6 +104,13 @@
               {{ entry.title }}
             </div>
             <div class="entry-content text-body1 text-grey-9">{{ entry.content }}</div>
+            <q-img
+              v-if="entry.image_path"
+              :src="diaryService.getImageUrl(entry.image_path)"
+              :alt="entry.title || $t('diary.imagePreview')"
+              class="entry-image q-mb-md"
+              fit="cover"
+            />
           </template>
         </q-card-section>
       </q-card>
@@ -94,7 +124,7 @@
 </template>
 
 <script setup>
-import { nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
@@ -112,8 +142,13 @@ const editing = ref(false)
 const editFormRef = ref(null)
 const form = reactive({
   title: '',
-  content: ''
+  content: '',
+  image: null
 })
+const selectedImagePreview = ref('')
+const displayImage = computed(() => (
+  selectedImagePreview.value || diaryService.getImageUrl(entry.value?.image_path)
+))
 
 function formatDate(date) {
   return new Intl.DateTimeFormat(locale.value, {
@@ -142,11 +177,34 @@ async function loadEntry(entryId) {
 function startEditing() {
   form.title = entry.value?.title || ''
   form.content = entry.value?.content || ''
+  form.image = null
+  clearImagePreview()
   editing.value = true
+}
+
+function clearImagePreview() {
+  if (selectedImagePreview.value) {
+    URL.revokeObjectURL(selectedImagePreview.value)
+  }
+  selectedImagePreview.value = ''
+}
+
+function clearImageSelection() {
+  form.image = null
+  clearImagePreview()
+}
+
+function updateImagePreview(file) {
+  clearImagePreview()
+  if (file) {
+    selectedImagePreview.value = URL.createObjectURL(file)
+  }
 }
 
 async function cancelEditing() {
   editing.value = false
+  form.image = null
+  clearImagePreview()
   await nextTick()
   editFormRef.value?.resetValidation()
 }
@@ -158,10 +216,13 @@ async function saveChanges() {
   try {
     const data = await diaryService.updateEntry(entry.value.diary_entry_id, {
       title: form.title.trim(),
-      content: form.content.trim()
+      content: form.content.trim(),
+      image: form.image
     })
     entry.value = data.entry
     editing.value = false
+    form.image = null
+    clearImagePreview()
     await nextTick()
     editFormRef.value?.resetValidation()
     $q.notify({ type: 'positive', message: t('diary.updateSuccess') })
@@ -175,6 +236,8 @@ async function saveChanges() {
 watch(() => route.params.id, (entryId) => {
   if (entryId) loadEntry(entryId)
 }, { immediate: true })
+
+onBeforeUnmount(clearImagePreview)
 </script>
 
 <style scoped>
@@ -204,5 +267,15 @@ watch(() => route.params.id, (entryId) => {
 .entry-title {
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.entry-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: 360px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid #e5dcef;
 }
 </style>

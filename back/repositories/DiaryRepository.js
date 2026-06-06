@@ -2,11 +2,12 @@
 const { DiaryEntry } = require('../models')
 
 class DiaryRepository {
-  async create({ userId, title, content }) {
+  async create({ userId, title, content, imagePath }) {
     return DiaryEntry.create({
       user_id: userId,
       title: title || null,
-      content
+      content,
+      image_path: imagePath || null
     })
   }
 
@@ -31,7 +32,7 @@ class DiaryRepository {
     })
   }
 
-  async updateByIdAndUser(entryId, userId, { title, content }) {
+  async updateByIdAndUser(entryId, userId, { title, content, imagePath }) {
     const entry = await this.findByIdAndUser(entryId, userId)
 
     if (!entry) {
@@ -40,6 +41,9 @@ class DiaryRepository {
 
     entry.title = title || null
     entry.content = content
+    if (imagePath !== undefined) {
+      entry.image_path = imagePath || null
+    }
 
     return entry.save()
   }

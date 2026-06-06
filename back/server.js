@@ -11,6 +11,7 @@ const trainingRoutes = require('./routes/training')
 const diaryRoutes = require('./routes/diary')
 
 const app = express()
+const publicDir = path.join(process.cwd(), 'public')
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -34,10 +35,10 @@ app.use('/api/bot', botRoutes)
 app.use('/api/training', trainingRoutes)
 app.use('/api/diary', diaryRoutes)
 
-app.use(express.static(path.join(__dirname, '../public')))
+app.use(express.static(publicDir))
 
 app.get('/{*path}', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public', 'index.html'))
+  res.sendFile(path.join(publicDir, 'index.html'))
 })
 
 const PORT = process.env.PORT || 8004

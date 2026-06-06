@@ -8,7 +8,7 @@
 
       <q-card flat bordered class="entry-card q-mb-lg">
         <q-card-section>
-          <q-form ref="entryFormRef" class="q-gutter-md" @submit="saveEntry">
+          <q-form ref="entryFormRef" class="q-gutter-y-md" @submit="saveEntry">
             <q-input
               v-model="form.title"
               outlined
@@ -25,6 +25,29 @@
               :label="$t('diary.content')"
               :placeholder="$t('diary.contentPlaceholder')"
               :rules="[value => Boolean(value && value.trim()) || $t('diary.contentRequired')]"
+            />
+
+            <q-file
+              v-model="form.image"
+              outlined
+              clearable
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              :label="$t('diary.image')"
+              :hint="$t('diary.imageHint')"
+              @update:model-value="updateImagePreview"
+              @clear="clearImagePreview"
+            >
+              <template #prepend>
+                <q-icon name="image" />
+              </template>
+            </q-file>
+
+            <q-img
+              v-if="imagePreview"
+              :src="imagePreview"
+              :alt="$t('diary.imagePreview')"
+              class="image-preview"
+              fit="cover"
             />
 
             <div class="row justify-end">
@@ -56,6 +79,13 @@
 
       <div v-else class="q-gutter-y-md">
         <q-card v-for="entry in entries" :key="entry.diary_entry_id" flat bordered class="entry-card">
+          <q-img
+            v-if="entry.image_path"
+            :src="diaryService.getImageUrl(entry.image_path)"
+            :alt="entry.title || $t('diary.imagePreview')"
+            class="entry-thumb"
+            fit="cover"
+          />
           <q-card-section>
             <div v-if="entry.title" class="entry-title text-subtitle1 text-weight-bold q-mb-xs">
               {{ entry.title }}
@@ -92,7 +122,7 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, reactive, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import diaryService from 'src/services/DiaryService'
@@ -108,8 +138,10 @@ const totalPages = ref(1)
 const entryFormRef = ref(null)
 const form = reactive({
   title: '',
-  content: ''
+  content: '',
+  image: null
 })
+const imagePreview = ref('')
 
 function formatDate(date) {
   return new Intl.DateTimeFormat(locale.value, {
@@ -121,6 +153,20 @@ function formatDate(date) {
 function getContentPreview(content) {
   if (content.length <= 100) return content
   return `${content.slice(0, 97)}...`
+}
+
+function clearImagePreview() {
+  if (imagePreview.value) {
+    URL.revokeObjectURL(imagePreview.value)
+  }
+  imagePreview.value = ''
+}
+
+function updateImagePreview(file) {
+  clearImagePreview()
+  if (file) {
+    imagePreview.value = URL.createObjectURL(file)
+  }
 }
 
 async function loadEntries(requestedPage = page.value) {
@@ -144,10 +190,13 @@ async function saveEntry() {
   try {
     await diaryService.createEntry({
       title: form.title.trim(),
-      content: form.content.trim()
+      content: form.content.trim(),
+      image: form.image
     })
     form.title = ''
     form.content = ''
+    form.image = null
+    clearImagePreview()
     await nextTick()
     entryFormRef.value?.resetValidation()
     await loadEntries(1)
@@ -160,6 +209,7 @@ async function saveEntry() {
 }
 
 onMounted(loadEntries)
+onBeforeUnmount(clearImagePreview)
 </script>
 
 <style scoped>
@@ -179,6 +229,24 @@ onMounted(loadEntries)
   border-radius: 16px;
   border-color: #e5dcef;
   background: #fff;
+}
+
+.entry-thumb,
+.image-preview {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: 280px;
+  box-sizing: border-box;
+}
+
+.image-preview {
+  border-radius: 12px;
+  border: 1px solid #e5dcef;
+}
+
+.entry-thumb {
+  border-radius: 16px 16px 0 0;
 }
 
 .entry-content {

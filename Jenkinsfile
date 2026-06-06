@@ -84,9 +84,10 @@ pipeline {
                     echo "{\"version\":\"${BUILD_NUMBER}-$(date +%s)\"}" > ./dist/pwa/version.json
 
                     echo "[frontend] Copying PWA into backend public..."
-                    rm -rf ../back/public
+                    mkdir -p ../back/public/uploads
+                    find ../back/public -mindepth 1 -maxdepth 1 ! -name uploads -exec rm -rf {} +
                     mkdir -p ../back/public
-                    rsync -az --delete ./dist/pwa/ ../back/public/
+                    rsync -az --delete --exclude uploads/ ./dist/pwa/ ../back/public/
                     '''
                 }
             }
@@ -108,6 +109,7 @@ pipeline {
 
                     rsync -az --delete \
                       --exclude node_modules \
+                      --exclude public/uploads/ \
                       ./ "$HWC_APP_DIR/"
 
                     echo "[deploy] Syncing dependencies..."

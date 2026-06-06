@@ -33,8 +33,9 @@ class ApiService {
     // Extraer flag interno antes de pasar options a fetch
     const { _skipRetry, ...fetchOptions } = options
 
+    const isFormData = fetchOptions.body instanceof FormData
     const headers = {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(fetchOptions.headers || {})
     }
 
@@ -78,17 +79,19 @@ class ApiService {
   }
 
   post(path, body, options) {
+    const isFormData = body instanceof FormData
     return this._request(path, {
       method: 'POST',
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body !== undefined ? (isFormData ? body : JSON.stringify(body)) : undefined,
       ...options
     })
   }
 
   put(path, body, options) {
+    const isFormData = body instanceof FormData
     return this._request(path, {
       method: 'PUT',
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body !== undefined ? (isFormData ? body : JSON.stringify(body)) : undefined,
       ...options
     })
   }
