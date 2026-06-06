@@ -63,15 +63,28 @@ class ApiService {
       }
     }
 
-    const data = await response.json()
+    const contentType = response.headers.get('content-type') || ''
+    const responseText = await response.text()
+    let data = null
+
+    if (responseText && contentType.includes('application/json')) {
+      try {
+        data = JSON.parse(responseText)
+      } catch {
+        data = null
+      }
+    }
 
     if (!response.ok) {
-      const err = new Error(data.message || 'Error en la petición')
+      const fallbackMessages = {
+        413: 'El archivo es demasiado grande. Usa una imagen de 5 MB o menos.'
+      }
+      const err = new Error(data?.message || fallbackMessages[response.status] || 'Error en la petición')
       err.status = response.status
       throw err
     }
 
-    return data
+    return data ?? {}
   }
 
   get(path, options) {

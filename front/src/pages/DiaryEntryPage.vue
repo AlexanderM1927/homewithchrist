@@ -57,10 +57,12 @@
               outlined
               clearable
               accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              :max-file-size="maxImageSizeBytes"
               :label="$t('diary.image')"
               :hint="$t('diary.imageEditHint')"
               @update:model-value="updateImagePreview"
               @clear="clearImageSelection"
+              @rejected="notifyImageRejected"
             >
               <template #prepend>
                 <q-icon name="image" />
@@ -146,6 +148,7 @@ const form = reactive({
   image: null
 })
 const selectedImagePreview = ref('')
+const maxImageSizeBytes = 5 * 1024 * 1024
 const displayImage = computed(() => (
   selectedImagePreview.value || diaryService.getImageUrl(entry.value?.image_path)
 ))
@@ -197,8 +200,17 @@ function clearImageSelection() {
 function updateImagePreview(file) {
   clearImagePreview()
   if (file) {
+    if (file.size > maxImageSizeBytes) {
+      form.image = null
+      notifyImageRejected()
+      return
+    }
     selectedImagePreview.value = URL.createObjectURL(file)
   }
+}
+
+function notifyImageRejected() {
+  $q.notify({ type: 'negative', message: t('diary.imageTooLarge') })
 }
 
 async function cancelEditing() {

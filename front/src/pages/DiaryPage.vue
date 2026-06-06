@@ -32,10 +32,12 @@
               outlined
               clearable
               accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              :max-file-size="maxImageSizeBytes"
               :label="$t('diary.image')"
               :hint="$t('diary.imageHint')"
               @update:model-value="updateImagePreview"
               @clear="clearImagePreview"
+              @rejected="notifyImageRejected"
             >
               <template #prepend>
                 <q-icon name="image" />
@@ -142,6 +144,7 @@ const form = reactive({
   image: null
 })
 const imagePreview = ref('')
+const maxImageSizeBytes = 5 * 1024 * 1024
 
 function formatDate(date) {
   return new Intl.DateTimeFormat(locale.value, {
@@ -165,8 +168,17 @@ function clearImagePreview() {
 function updateImagePreview(file) {
   clearImagePreview()
   if (file) {
+    if (file.size > maxImageSizeBytes) {
+      form.image = null
+      notifyImageRejected()
+      return
+    }
     imagePreview.value = URL.createObjectURL(file)
   }
+}
+
+function notifyImageRejected() {
+  $q.notify({ type: 'negative', message: t('diary.imageTooLarge') })
 }
 
 async function loadEntries(requestedPage = page.value) {

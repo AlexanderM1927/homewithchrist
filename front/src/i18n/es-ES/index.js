@@ -71,6 +71,7 @@ export default {
     image: 'Imagen',
     imageHint: 'JPG, JPEG o PNG. Opcional.',
     imageEditHint: 'Selecciona una nueva imagen para reemplazar la actual.',
+    imageTooLarge: 'La imagen no puede superar 5 MB',
     imagePreview: 'Vista previa de la imagen',
     save: 'Guardar entrada',
     myEntries: 'Mis entradas',

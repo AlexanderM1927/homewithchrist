@@ -10,6 +10,8 @@ const router = express.Router()
 const uploadDir = path.join(process.cwd(), 'public', 'uploads')
 const allowedImageTypes = new Set(['image/jpeg', 'image/png'])
 const allowedImageExtensions = new Set(['.jpg', '.jpeg', '.png'])
+const maxImageSizeMb = 5
+const maxImageSizeBytes = maxImageSizeMb * 1024 * 1024
 
 fs.mkdirSync(uploadDir, { recursive: true })
 
@@ -24,7 +26,7 @@ const storage = multer.diskStorage({
 
 const uploadImage = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: maxImageSizeBytes },
   fileFilter: (req, file, cb) => {
     const extension = path.extname(file.originalname).toLowerCase()
     if (!allowedImageTypes.has(file.mimetype) || !allowedImageExtensions.has(extension)) {
@@ -39,7 +41,7 @@ function handleImageUpload(req, res, next) {
     if (!err) return next()
 
     if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ message: 'La imagen no puede superar 5 MB' })
+      return res.status(413).json({ message: `La imagen no puede superar ${maxImageSizeMb} MB` })
     }
 
     return res.status(400).json({ message: err.message || 'No se pudo subir la imagen' })
