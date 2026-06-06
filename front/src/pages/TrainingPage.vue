@@ -154,6 +154,17 @@
         </q-td>
       </template>
 
+      <template #body-cell-weight="props">
+        <q-td :props="props">
+          <q-badge
+            v-for="(weight, index) in getTopicWeights(props.row)"
+            :key="`${weight}-${index}`"
+            :label="weight"
+            color="secondary"
+          />
+        </q-td>
+      </template>
+
       <template #no-data>
         <div class="text-grey text-center full-width q-py-md">{{ $t('training.empty') }}</div>
       </template>
@@ -182,6 +193,7 @@ const tableColumns = computed(() => [
   { name: 'reference', label: t('training.reference'), field: 'reference', align: 'left', sortable: false },
   { name: 'version',   label: t('training.version'),   field: 'version',   align: 'left', sortable: false },
   { name: 'topics',    label: t('training.topics'),    field: 'Topics',    align: 'left', sortable: false },
+  { name: 'weight',    label: t('training.weight'),    field: row => getTopicWeights(row).join(', '), align: 'left', sortable: false },
   { name: 'text',      label: t('training.text'),      field: 'text',      align: 'left', sortable: false }
 ])
 
@@ -222,6 +234,12 @@ async function loadVerses (page = 1, limit = pagination.value.rowsPerPage) {
 function onTableRequest ({ pagination: p }) {
   pagination.value.rowsPerPage = p.rowsPerPage
   loadVerses(p.page, p.rowsPerPage)
+}
+
+function getTopicWeights (row) {
+  return row.Topics
+    ?.map(topic => topic.TopicVerse?.weight)
+    .filter(weight => weight !== undefined && weight !== null) || []
 }
 
 const versionOptions = [
