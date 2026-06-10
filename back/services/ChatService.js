@@ -99,7 +99,9 @@ class ChatService {
     const fallbackVerses = topicVerses.length === 0
       ? await this._findFallbackBibleVerses(searchTerms, FALLBACK_VERSE_LIMIT)
       : []
-    const verses = this._uniqueBy([...semanticVerses, ...topicVerses, ...fallbackVerses], 'id')
+    const verses = topicVerses.length > 0
+      ? this._uniqueBy([...topicVerses, ...semanticVerses, ...fallbackVerses], 'id')
+      : this._uniqueBy([...semanticVerses, ...fallbackVerses], 'id')
 
     const diaryLimit = verses.length > 0
       ? DIARY_CONTEXT_LIMIT_WITH_TRAINING
