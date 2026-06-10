@@ -247,7 +247,8 @@ const versionOptions = [
   { label: 'NVI', value: 'NVI' },
   { label: 'LBLA', value: 'LBLA' },
   { label: 'DHH', value: 'DHH' },
-  { label: 'RVC', value: 'RVC' }
+  { label: 'RVC', value: 'RVC' },
+  { label: 'CEE', value: 'CEE' }
 ]
 
 function defaultForm () {
@@ -257,7 +258,7 @@ function defaultForm () {
     chapter: null,
     verse_start: null,
     verse_end: null,
-    version: 'RVR1960',
+    version: 'CEE',
     text: '',
     weight: 5
   }

@@ -1,6 +1,7 @@
 .DS_Store
 .thumbs.db
 node_modules
+imports/
 
 # Log files
 npm-debug.log*

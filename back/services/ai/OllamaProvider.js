@@ -4,11 +4,13 @@ class OllamaProvider {
   constructor({
     baseUrl = process.env.OLLAMA_URL,
     mainModel = process.env.MAIN_OLLAMA_MODEL || 'gemma3:4b',
-    secondaryModel = process.env.SECONDARY_OLLAMA_MODEL || 'qwen3:0.6b'
+    secondaryModel = process.env.SECONDARY_OLLAMA_MODEL || 'qwen3:0.6b',
+    embeddingModel = process.env.EMBEDDING_OLLAMA_MODEL || 'nomic-embed-text'
   } = {}) {
     this.baseUrl = baseUrl
     this.mainModel = mainModel
     this.secondaryModel = secondaryModel
+    this.embeddingModel = embeddingModel
   }
 
   async generateTitle(userMessage) {
@@ -168,6 +170,41 @@ Si ninguna entrada es util responde: {"entryIds": []}`
     }
 
     return fullContent || null
+  }
+
+  canEmbed() {
+    return Boolean(this.baseUrl && this.embeddingModel)
+  }
+
+  async generateEmbedding(input) {
+    const embeddings = await this.generateEmbeddings([input])
+    return embeddings[0]
+  }
+
+  async generateEmbeddings(inputs) {
+    if (!this.canEmbed()) {
+      throw this._unavailableError()
+    }
+
+    const response = await fetch(`${this.baseUrl}/api/embed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: this.embeddingModel,
+        input: inputs
+      })
+    })
+
+    if (!response.ok) {
+      throw this._unavailableError()
+    }
+
+    const data = await response.json()
+    if (!Array.isArray(data.embeddings)) {
+      throw this._unavailableError()
+    }
+
+    return data.embeddings
   }
 
   async _generate({ model, prompt, format }) {
