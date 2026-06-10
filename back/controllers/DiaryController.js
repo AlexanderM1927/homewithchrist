@@ -10,6 +10,14 @@ function deleteUploadedFile(file) {
   fs.unlink(filePath, () => {})
 }
 
+function deleteStoredImage(imagePath) {
+  if (!imagePath) return
+
+  const filename = path.basename(imagePath)
+  const filePath = path.join(process.cwd(), 'public', 'uploads', filename)
+  fs.unlink(filePath, () => {})
+}
+
 class DiaryController {
   async create(req, res) {
     const title = typeof req.body.title === 'string' ? req.body.title.trim() : ''
@@ -122,6 +130,27 @@ class DiaryController {
       return res.status(200).json({ entry })
     } catch (err) {
       deleteUploadedFile(req.file)
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  async delete(req, res) {
+    const entryId = Number(req.params.id)
+
+    if (!Number.isInteger(entryId) || entryId <= 0) {
+      return res.status(400).json({ message: 'Entrada invalida' })
+    }
+
+    try {
+      const entry = await diaryRepository.deleteByIdAndUser(entryId, req.user.sub)
+
+      if (!entry) {
+        return res.status(404).json({ message: 'Entrada no encontrada' })
+      }
+
+      deleteStoredImage(entry.image_path)
+      return res.status(200).json({ message: 'Entrada eliminada correctamente' })
+    } catch (err) {
       return res.status(500).json({ message: err.message })
     }
   }

@@ -49,6 +49,17 @@ class DiaryRepository {
     return entry.save()
   }
 
+  async deleteByIdAndUser(entryId, userId) {
+    const entry = await this.findByIdAndUser(entryId, userId)
+
+    if (!entry) {
+      return null
+    }
+
+    await entry.destroy()
+    return entry
+  }
+
   async findRecentForContext(userId, limit = 20) {
     return DiaryEntry.findAll({
       where: { user_id: userId },

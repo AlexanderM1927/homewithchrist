@@ -86,7 +86,12 @@ export default {
     cancel: 'Cancel',
     saveChanges: 'Save changes',
     updateSuccess: 'Entry updated successfully',
-    updateError: 'Could not update entry'
+    updateError: 'Could not update entry',
+    delete: 'Delete',
+    deleteConfirmTitle: 'Delete entry',
+    deleteConfirmMessage: 'This action cannot be undone. Do you want to delete this entry?',
+    deleteSuccess: 'Entry deleted successfully',
+    deleteError: 'Could not delete entry'
   },
   training: {
     title: 'AI Training',

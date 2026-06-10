@@ -24,6 +24,10 @@ class DiaryService extends ApiService {
     return this.put(`/${entryId}`, this._buildPayload(payload))
   }
 
+  deleteEntry(entryId) {
+    return this.delete(`/${entryId}`)
+  }
+
   getImageUrl(path) {
     if (!path) return ''
     if (/^https?:\/\//.test(path)) return path

@@ -20,17 +20,30 @@
         <q-card-section>
           <div class="row items-center justify-between q-gutter-sm q-mb-md">
             <div class="text-caption text-grey-6">{{ formatDate(entry.createdAt) }}</div>
-            <q-btn
-              v-if="!editing"
-              flat
-              round
-              color="primary"
-              icon="edit"
-              :aria-label="$t('diary.edit')"
-              @click="startEditing"
-            >
-              <q-tooltip>{{ $t('diary.edit') }}</q-tooltip>
-            </q-btn>
+            <div v-if="!editing" class="row items-center q-gutter-xs">
+              <q-btn
+                flat
+                round
+                color="primary"
+                icon="edit"
+                :aria-label="$t('diary.edit')"
+                :disable="deleting"
+                @click="startEditing"
+              >
+                <q-tooltip>{{ $t('diary.edit') }}</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                color="negative"
+                icon="delete"
+                :aria-label="$t('diary.delete')"
+                :loading="deleting"
+                @click="confirmDelete"
+              >
+                <q-tooltip>{{ $t('diary.delete') }}</q-tooltip>
+              </q-btn>
+            </div>
           </div>
 
           <q-form v-if="editing" ref="editFormRef" class="q-gutter-y-md" @submit="saveChanges">
@@ -140,6 +153,7 @@ const { t, locale } = useI18n()
 const entry = ref(null)
 const loading = ref(true)
 const saving = ref(false)
+const deleting = ref(false)
 const editing = ref(false)
 const editFormRef = ref(null)
 const form = reactive({
@@ -242,6 +256,41 @@ async function saveChanges() {
     $q.notify({ type: 'negative', message: err.message || t('diary.updateError') })
   } finally {
     saving.value = false
+  }
+}
+
+function confirmDelete() {
+  if (!entry.value) return
+
+  $q.dialog({
+    title: t('diary.deleteConfirmTitle'),
+    message: t('diary.deleteConfirmMessage'),
+    cancel: {
+      label: t('diary.cancel'),
+      flat: true,
+      color: 'grey-7'
+    },
+    ok: {
+      label: t('diary.delete'),
+      color: 'negative',
+      unelevated: true
+    },
+    persistent: true
+  }).onOk(deleteEntry)
+}
+
+async function deleteEntry() {
+  if (!entry.value) return
+
+  deleting.value = true
+  try {
+    await diaryService.deleteEntry(entry.value.diary_entry_id)
+    $q.notify({ type: 'positive', message: t('diary.deleteSuccess') })
+    router.push('/diary')
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err.message || t('diary.deleteError') })
+  } finally {
+    deleting.value = false
   }
 }
 

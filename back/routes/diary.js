@@ -52,5 +52,6 @@ router.get('/', authMiddleware, (req, res) => diaryController.getAll(req, res))
 router.get('/:id', authMiddleware, (req, res) => diaryController.getOne(req, res))
 router.post('/', authMiddleware, handleImageUpload, (req, res) => diaryController.create(req, res))
 router.put('/:id', authMiddleware, handleImageUpload, (req, res) => diaryController.update(req, res))
+router.delete('/:id', authMiddleware, (req, res) => diaryController.delete(req, res))
 
 module.exports = router

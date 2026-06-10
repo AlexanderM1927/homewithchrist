@@ -86,7 +86,12 @@ export default {
     cancel: 'Cancelar',
     saveChanges: 'Guardar cambios',
     updateSuccess: 'Entrada actualizada correctamente',
-    updateError: 'No se pudo actualizar la entrada'
+    updateError: 'No se pudo actualizar la entrada',
+    delete: 'Eliminar',
+    deleteConfirmTitle: 'Eliminar entrada',
+    deleteConfirmMessage: 'Esta accion no se puede deshacer. ¿Quieres eliminar esta entrada?',
+    deleteSuccess: 'Entrada eliminada correctamente',
+    deleteError: 'No se pudo eliminar la entrada'
   },
   training: {
     title: 'Entrenamiento de IA',
