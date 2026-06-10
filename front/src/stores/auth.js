@@ -18,11 +18,21 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     /**
-     * Llama al backend para hacer login o registro automático.
+     * Llama al backend para iniciar sesión.
+     * @param {{ phone: string, pin: string }} credentials
+     */
+    async login({ phone, pin }) {
+      const data = await authService.login({ phone, pin })
+      this.accessToken = data.accessToken
+      this.user = data.user
+    },
+
+    /**
+     * Llama al backend para registrar una cuenta nueva.
      * @param {{ name: string, phone: string, pin: string }} credentials
      */
-    async login({ name, phone, pin }) {
-      const data = await authService.login({ name, phone, pin })
+    async register({ name, phone, pin }) {
+      const data = await authService.register({ name, phone, pin })
       this.accessToken = data.accessToken
       this.user = data.user
     },

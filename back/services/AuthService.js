@@ -16,30 +16,7 @@ function generateRefreshToken(payload) {
 }
 
 class AuthService {
-  /**
-   * Inicia sesión o crea el usuario si no existe.
-   * @param {{ name: string, phone: string, pin: string }} data
-   * @returns {Promise<{ accessToken: string, refreshToken: string, user: object }>}
-   */
-  async login({ name, phone, pin }) {
-    let user = await userRepository.findByPhone(phone)
-
-    if (!user) {
-      // Crear nuevo usuario con el PIN hasheado como contraseña
-      const hashedPin = await bcrypt.hash(pin, SALT_ROUNDS)
-      user = await userRepository.create({ name, phone, password: hashedPin })
-      // Recargar con Role incluido
-      user = await userRepository.findByPhone(phone)
-    } else {
-      // Verificar contraseña
-      const valid = await bcrypt.compare(pin, user.password)
-      if (!valid) {
-        const err = new Error('Credenciales inválidas')
-        err.status = 401
-        throw err
-      }
-    }
-
+  async issueSession(user) {
     const tokenPayload = {
       sub: user.user_id,
       name: user.name,
@@ -50,7 +27,6 @@ class AuthService {
     const accessToken = generateAccessToken(tokenPayload)
     const refreshToken = generateRefreshToken({ sub: user.user_id })
 
-    // Guardar refresh token hasheado en DB
     const hashedRefresh = await bcrypt.hash(refreshToken, 10)
     await userRepository.saveRefreshToken(user.user_id, hashedRefresh)
 
@@ -67,6 +43,51 @@ class AuthService {
   }
 
   /**
+   * Registra un usuario nuevo.
+   * @param {{ name: string, phone: string, pin: string }} data
+   * @returns {Promise<{ accessToken: string, refreshToken: string, user: object }>}
+   */
+  async register({ name, phone, pin }) {
+    const existingUser = await userRepository.findByPhone(phone)
+
+    if (existingUser) {
+      const err = new Error('Este telefono ya esta registrado. Inicia sesion.')
+      err.status = 409
+      throw err
+    }
+
+    const hashedPin = await bcrypt.hash(pin, SALT_ROUNDS)
+    await userRepository.create({ name, phone, password: hashedPin })
+    const user = await userRepository.findByPhone(phone)
+
+    return this.issueSession(user)
+  }
+
+  /**
+   * Inicia sesion con una cuenta existente.
+   * @param {{ phone: string, pin: string }} data
+   * @returns {Promise<{ accessToken: string, refreshToken: string, user: object }>}
+   */
+  async login({ phone, pin }) {
+    const user = await userRepository.findByPhone(phone)
+
+    if (!user) {
+      const err = new Error('No encontramos una cuenta con ese telefono. Registrate para continuar.')
+      err.status = 404
+      throw err
+    }
+
+    const valid = await bcrypt.compare(pin, user.password)
+    if (!valid) {
+      const err = new Error('Credenciales invalidas')
+      err.status = 401
+      throw err
+    }
+
+    return this.issueSession(user)
+  }
+
+  /**
    * Rota el access token usando el refresh token de la cookie.
    * @param {string} refreshToken
    * @returns {Promise<{ accessToken: string }>}
@@ -76,54 +97,30 @@ class AuthService {
     try {
       payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
     } catch {
-      const err = new Error('Refresh token inválido o expirado')
+      const err = new Error('Refresh token invalido o expirado')
       err.status = 401
       throw err
     }
 
     const user = await userRepository.findById(payload.sub)
     if (!user || !user.refresh_token) {
-      const err = new Error('Sesión no encontrada')
+      const err = new Error('Sesion no encontrada')
       err.status = 401
       throw err
     }
 
-    // Validar que el refresh token coincida con el guardado en DB
     const valid = await bcrypt.compare(refreshToken, user.refresh_token)
     if (!valid) {
-      const err = new Error('Refresh token no válido')
+      const err = new Error('Refresh token no valido')
       err.status = 401
       throw err
     }
 
-    const tokenPayload = {
-      sub: user.user_id,
-      name: user.name,
-      phone: user.phone,
-      role: user.Role?.role_name || 'user'
-    }
-
-    const newAccessToken = generateAccessToken(tokenPayload)
-    const newRefreshToken = generateRefreshToken({ sub: user.user_id })
-
-    // Rotar refresh token en DB
-    const hashedRefresh = await bcrypt.hash(newRefreshToken, 10)
-    await userRepository.saveRefreshToken(user.user_id, hashedRefresh)
-
-    return {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-      user: {
-        id: user.user_id,
-        name: user.name,
-        phone: user.phone,
-        role: user.Role?.role_name || 'user'
-      }
-    }
+    return this.issueSession(user)
   }
 
   /**
-   * Cierra sesión: invalida el refresh token en DB y limpia la cookie.
+   * Cierra sesion: invalida el refresh token en DB y limpia la cookie.
    * @param {string} refreshToken
    */
   async logout(refreshToken) {
@@ -131,7 +128,7 @@ class AuthService {
       const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
       await userRepository.saveRefreshToken(payload.sub, null)
     } catch {
-      // Si el token ya expiró, no hay nada que invalidar
+      // Si el token ya expiro, no hay nada que invalidar
     }
   }
 }

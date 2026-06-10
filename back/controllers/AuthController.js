@@ -13,10 +13,10 @@ const COOKIE_OPTIONS = {
 class AuthController {
   /**
    * POST /api/auth/login
-   * Body: { name, phone, pin }
+   * Body: { phone, pin }
    */
   async login(req, res) {
-    const { name, phone, pin } = req.body
+    const { phone, pin } = req.body
 
     if (!phone || !pin) {
       return res.status(400).json({ message: 'Teléfono y PIN son requeridos' })
@@ -26,11 +26,43 @@ class AuthController {
     }
 
     try {
-      const { accessToken, refreshToken, user } = await authService.login({ name, phone, pin })
+      const { accessToken, refreshToken, user } = await authService.login({ phone, pin })
 
       res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS)
 
       return res.status(200).json({ accessToken, user })
+    } catch (err) {
+      return res.status(err.status || 500).json({ message: err.message })
+    }
+  }
+
+  /**
+   * POST /api/auth/register
+   * Body: { name, phone, pin }
+   */
+  async register(req, res) {
+    const { name, phone, pin } = req.body
+
+    if (!name || !phone || !pin) {
+      return res.status(400).json({ message: 'Nombre, teléfono y PIN son requeridos' })
+    }
+    if (name.trim().length < 2) {
+      return res.status(400).json({ message: 'El nombre debe tener al menos 2 caracteres' })
+    }
+    if (!/^\d{4}$/.test(pin)) {
+      return res.status(400).json({ message: 'El PIN debe ser de 4 dígitos' })
+    }
+
+    try {
+      const { accessToken, refreshToken, user } = await authService.register({
+        name: name.trim(),
+        phone,
+        pin
+      })
+
+      res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS)
+
+      return res.status(201).json({ accessToken, user })
     } catch (err) {
       return res.status(err.status || 500).json({ message: err.message })
     }

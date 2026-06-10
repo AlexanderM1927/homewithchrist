@@ -1,7 +1,7 @@
 import ApiService from 'src/boot/api'
 
 /**
- * AuthService — encapsula todas las llamadas HTTP relacionadas con autenticación.
+ * AuthService - encapsula todas las llamadas HTTP relacionadas con autenticacion.
  * El store (src/stores/auth.js) consume este servicio y gestiona el estado resultante.
  */
 class AuthService extends ApiService {
@@ -10,12 +10,21 @@ class AuthService extends ApiService {
   }
 
   /**
-   * Inicia sesión (o registra automáticamente si el usuario no existe).
-   * @param {{ name: string, phone: string, pin: string }} credentials
+   * Inicia sesion con una cuenta existente.
+   * @param {{ phone: string, pin: string }} credentials
    * @returns {Promise<{ accessToken: string, user: object }>}
    */
   login(credentials) {
     return this.post('/login', credentials, { _skipRetry: true })
+  }
+
+  /**
+   * Registra una cuenta nueva.
+   * @param {{ name: string, phone: string, pin: string }} credentials
+   * @returns {Promise<{ accessToken: string, user: object }>}
+   */
+  register(credentials) {
+    return this.post('/register', credentials, { _skipRetry: true })
   }
 
   /**
@@ -28,7 +37,7 @@ class AuthService extends ApiService {
   }
 
   /**
-   * Cierra sesión: invalida el refresh token en el servidor y limpia la cookie.
+   * Cierra sesion: invalida el refresh token en el servidor y limpia la cookie.
    * @returns {Promise<void>}
    */
   logout() {
@@ -63,7 +72,7 @@ class AuthService extends ApiService {
   }
 
   /**
-   * Actualiza correo y/o teléfono de un usuario (solo admin).
+   * Actualiza correo y/o telefono de un usuario (solo admin).
    * @param {number} userId
    * @param {{ email?: string, phone?: string }} data
    * @returns {Promise<{ user: object }>}
