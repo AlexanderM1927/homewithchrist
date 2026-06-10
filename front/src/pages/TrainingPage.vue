@@ -124,6 +124,15 @@
     <q-separator class="q-my-lg" />
     <div class="text-subtitle1 q-mb-sm">{{ $t('training.history') }}</div>
 
+    <TableFilters
+      v-model:search="filters.search"
+      :search-label="$t('tableFilters.search')"
+      :search-placeholder="$t('training.searchPlaceholder')"
+      :clear-label="$t('tableFilters.clear')"
+      @change="onFiltersChange"
+      @clear="onFiltersClear"
+    />
+
     <q-table
       :rows="verses.rows"
       :columns="tableColumns"
@@ -177,6 +186,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import trainingService from 'src/services/TrainingService'
+import TableFilters from 'src/components/TableFilters.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -188,6 +198,7 @@ const loadingVerses = ref(false)
 
 const verses = ref({ rows: [], total: 0 })
 const pagination = ref({ page: 1, rowsPerPage: 10, rowsNumber: 0 })
+const filters = ref({ search: '' })
 
 const tableColumns = computed(() => [
   { name: 'reference', label: t('training.reference'), field: 'reference', align: 'left', sortable: false },
@@ -220,7 +231,7 @@ onMounted(() => {
 async function loadVerses (page = 1, limit = pagination.value.rowsPerPage) {
   loadingVerses.value = true
   try {
-    const data = await trainingService.getVerses({ page, limit })
+    const data = await trainingService.getVerses({ page, limit, search: filters.value.search })
     verses.value = data
     pagination.value.rowsNumber = data.total
     pagination.value.page = data.page
@@ -234,6 +245,14 @@ async function loadVerses (page = 1, limit = pagination.value.rowsPerPage) {
 function onTableRequest ({ pagination: p }) {
   pagination.value.rowsPerPage = p.rowsPerPage
   loadVerses(p.page, p.rowsPerPage)
+}
+
+function onFiltersChange() {
+  loadVerses(1, pagination.value.rowsPerPage)
+}
+
+function onFiltersClear() {
+  filters.value.search = ''
 }
 
 function getTopicWeights (row) {

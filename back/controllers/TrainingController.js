@@ -48,19 +48,20 @@ class TrainingController {
   }
 
   /**
-   * GET /api/training/verses?page=1&limit=20
+   * GET /api/training/verses?page=1&limit=20&search=amor
    * Lista versículos con sus temas asociados.
    */
   async getVerses(req, res) {
     const page = parseInt(req.query.page) || 1
     const limit = parseInt(req.query.limit) || 20
+    const search = (req.query.search || '').trim()
 
     if (page < 1 || limit < 1 || limit > 100) {
       return res.status(400).json({ message: 'Parámetros de paginación inválidos' })
     }
 
     try {
-      const data = await trainingRepository.findVerses({ page, limit })
+      const data = await trainingRepository.findVerses({ page, limit, search })
       return res.status(200).json(data)
     } catch (err) {
       return res.status(500).json({ message: err.message })

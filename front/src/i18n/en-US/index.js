@@ -109,6 +109,7 @@ export default {
     save: 'Save verse',
     clear: 'Clear',
     history: 'Saved verses',
+    searchPlaceholder: 'Search by reference, topic, book, version, or text',
     empty: 'No verses saved yet.',
     required: 'Required field',
     topics: 'Topics',
@@ -127,6 +128,10 @@ export default {
       decision: 'Decision',
       crisis: 'Crisis'
     }
+  },
+  tableFilters: {
+    search: 'Search',
+    clear: 'Clear filters'
   },
   admin: {
     title: 'Administration Panel',

@@ -113,11 +113,32 @@ class TrainingRepository {
   }
 
   /** Lista versículos con sus temas, paginados */
-  async findVerses({ page = 1, limit = 20 } = {}) {
+  async findVerses({ page = 1, limit = 20, search = '' } = {}) {
     const offset = (page - 1) * limit
+    const trimmedSearch = search.trim()
+    const where = { is_active: true }
+
+    if (trimmedSearch) {
+      where[Op.or] = [
+        { reference: { [Op.like]: `%${trimmedSearch}%` } },
+        { book: { [Op.like]: `%${trimmedSearch}%` } },
+        { version: { [Op.like]: `%${trimmedSearch}%` } },
+        { text: { [Op.like]: `%${trimmedSearch}%` } },
+        { '$Topics.name$': { [Op.like]: `%${trimmedSearch}%` } },
+        { '$Topics.slug$': { [Op.like]: `%${trimmedSearch}%` } }
+      ]
+    }
+
     const { count, rows } = await Verse.findAndCountAll({
-      where: { is_active: true },
-      include: [{ model: Topic, through: { attributes: ['weight', 'notes'] }, attributes: ['id', 'name', 'slug'] }],
+      where,
+      include: [{
+        model: Topic,
+        where: { is_active: true },
+        through: { attributes: ['weight', 'notes'] },
+        attributes: ['id', 'name', 'slug'],
+        required: false
+      }],
+      ...(trimmedSearch ? { distinct: true, subQuery: false } : {}),
       order: [['createdAt', 'DESC']],
       limit,
       offset

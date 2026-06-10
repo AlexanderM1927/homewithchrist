@@ -109,6 +109,7 @@ export default {
     save: 'Guardar versículo',
     clear: 'Limpiar',
     history: 'Versículos guardados',
+    searchPlaceholder: 'Buscar por referencia, tema, libro, versión o texto',
     empty: 'Aún no hay versículos guardados.',
     required: 'Campo requerido',
     topics: 'Temas',
@@ -127,6 +128,10 @@ export default {
       decision: 'Decisión',
       crisis: 'Crisis'
     }
+  },
+  tableFilters: {
+    search: 'Buscar',
+    clear: 'Limpiar filtros'
   },
   admin: {
     title: 'Panel de Administración',

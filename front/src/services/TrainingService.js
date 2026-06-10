@@ -19,8 +19,12 @@ class TrainingService extends ApiService {
   }
 
   /** Lista versículos paginados */
-  getVerses({ page = 1, limit = 20 } = {}) {
-    return this.get(`/verses?page=${page}&limit=${limit}`)
+  getVerses({ page = 1, limit = 20, search = '' } = {}) {
+    const params = new URLSearchParams({ page, limit })
+    const trimmedSearch = search.trim()
+    if (trimmedSearch) params.set('search', trimmedSearch)
+
+    return this.get(`/verses?${params.toString()}`)
   }
 }
 
