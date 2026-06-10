@@ -1,21 +1,25 @@
 <template>
   <q-page class="login-page flex flex-center">
+    <div class="language-switch" aria-label="Language selector">
+      <q-btn
+        v-for="option in languageOptions"
+        :key="option.value"
+        :label="option.flag"
+        :title="option.label"
+        :aria-label="option.label"
+        :color="locale === option.value ? 'primary' : 'white'"
+        :text-color="locale === option.value ? 'white' : 'primary'"
+        dense
+        unelevated
+        class="language-flag"
+        @click="locale = option.value"
+      />
+    </div>
+
     <q-card class="login-card q-pa-lg">
       <q-card-section class="text-center q-pb-sm">
         <div class="text-h5 text-weight-bold text-primary">Home With Christ</div>
-        <div class="text-subtitle2 text-grey-6 q-mt-xs">{{ modeSubtitle }}</div>
-        <div class="q-mt-sm">
-          <q-select
-            v-model="locale"
-            :options="languageOptions"
-            emit-value
-            map-options
-            outlined
-            dense
-            class="language-select"
-            hide-bottom-space
-          />
-        </div>
+        <div class="text-subtitle2 text-grey-6 text-center q-mt-xs">{{ modeSubtitle }}</div>
       </q-card-section>
 
       <q-card-section class="q-pt-md">
@@ -199,8 +203,8 @@ const helperText = computed(() => isRegister.value ? t('login.hasAccount') : t('
 const helperActionLabel = computed(() => isRegister.value ? t('login.goToLogin') : t('login.goToRegister'))
 
 const languageOptions = [
-  { label: 'Espanol', value: 'es-ES' },
-  { label: 'English', value: 'en-US' }
+  { label: 'Espanol', value: 'es-ES', flag: '🇪🇸' },
+  { label: 'English', value: 'en-US', flag: '🇺🇸' }
 ]
 
 function switchMode(nextMode) {
@@ -290,6 +294,7 @@ async function handleSubmit() {
 .login-page {
   min-height: 100vh;
   background: #F4F0FA;
+  position: relative;
 }
 
 .login-card {
@@ -333,9 +338,27 @@ async function handleSubmit() {
   font-weight: 700;
 }
 
-.language-select {
-  max-width: 160px;
-  margin: 0 auto;
+.language-switch {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 30px rgba(43, 24, 69, 0.14);
+}
+
+.language-flag {
+  width: 34px;
+  min-height: 28px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .pin-box {
