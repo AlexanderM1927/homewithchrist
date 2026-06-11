@@ -15,7 +15,7 @@ export default {
     greeting: 'Hola,',
     blessing: 'Que Dios bendiga tu día ✨',
     verse: {
-      label: '☀️ VERSÍCULO DEL DÍA',
+      label: '☀️ VERSÍCULO DEL DÍA PARA TÍ',
       altImg: 'Versículo del día',
       list: [
         { reference: 'Jeremías 29:11', text: '"Porque yo sé los planes que tengo para vosotros, dice Jehová, planes de bienestar y no de mal, para daros el fin que esperáis."' },
