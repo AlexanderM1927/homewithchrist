@@ -199,7 +199,7 @@ export default {
     historyTitle: 'Your latest chats',
     loadingHistory: 'Loading history...',
     emptyHistory: 'You do not have saved chats yet.',
-    welcomeTitle: 'Hello, I am your Counselor',
+    welcomeTitle: 'Hello, I am Hope your counselor',
     welcomeDesc: 'I am here to listen to you and accompany you in faith. You can share whatever is on your heart.',
     inputPlaceholder: 'Type your message...',
     errorMessage: 'There was an error connecting to the counselor. Please try again later.',

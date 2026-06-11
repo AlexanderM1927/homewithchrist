@@ -199,7 +199,7 @@ export default {
     historyTitle: 'Tus ultimos chats',
     loadingHistory: 'Cargando historial...',
     emptyHistory: 'Aun no tienes chats guardados.',
-    welcomeTitle: 'Hola, soy tu Consejero',
+    welcomeTitle: 'Hola, soy Hope tu consejero',
     welcomeDesc: 'Estoy aquí para escucharte y acompañarte desde la fe. Puedes contarme lo que tengas en el corazón.',
     inputPlaceholder: 'Escribe tu mensaje...',
     errorMessage: 'Hubo un error al conectar con el consejero. Intenta de nuevo más tarde.',
