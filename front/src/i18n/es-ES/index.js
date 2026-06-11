@@ -225,10 +225,10 @@ export default {
       generating: 'Organizando ideas...'
     },
     suggestions: [
-      'Me siento ansioso y no sé por qué',
+      'Siento necesidad de Dios',
       'Necesito orientación espiritual',
-      'Tengo un conflicto familiar',
-      '¿Qué dice la Biblia sobre el perdón?'
+      'Tengo un conflicto personal y espiritual',
+      'Necesito orientación y guía bíblica'
     ]
   }
 }
