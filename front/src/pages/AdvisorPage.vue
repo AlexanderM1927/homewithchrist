@@ -150,12 +150,43 @@ import chatService from 'src/services/ChatService'
 const { t, tm, locale } = useI18n()
 
 function formatMessage (text) {
-  return text
+  const escaped = text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+
+  return escaped
+    .split(/\n{2,}/)
+    .map(formatMessageBlock)
+    .join('')
+}
+
+function formatMessageBlock (block) {
+  const lines = block.split('\n')
+  const firstLine = lines[0].trim()
+  const headingMatch = firstLine.match(/^(#{1,3})\s+(.+)$/)
+
+  if (headingMatch && lines.length === 1) {
+    const level = headingMatch[1].length
+    return `<h${level} class="ai-message-heading">${formatInlineMarkdown(headingMatch[2])}</h${level}>`
+  }
+
+  if (lines.every(line => /^\s*[-*]\s+/.test(line))) {
+    const items = lines
+      .map(line => line.replace(/^\s*[-*]\s+/, ''))
+      .map(line => `<li>${formatInlineMarkdown(line)}</li>`)
+      .join('')
+
+    return `<ul class="ai-message-list">${items}</ul>`
+  }
+
+  return `<p class="ai-message-paragraph">${formatInlineMarkdown(lines.join('<br>'))}</p>`
+}
+
+function formatInlineMarkdown (text) {
+  return text
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
 }
 
 function formatDate (date) {
@@ -373,6 +404,40 @@ onMounted(() => {
   line-height: 1.5;
   word-break: break-word;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.ai-bubble :deep(.ai-message-heading) {
+  margin: 0 0 6px;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.ai-bubble :deep(h1.ai-message-heading) {
+  font-size: 17px;
+}
+
+.ai-bubble :deep(h2.ai-message-heading) {
+  font-size: 16px;
+}
+
+.ai-bubble :deep(.ai-message-paragraph) {
+  margin: 0 0 8px;
+}
+
+.ai-bubble :deep(.ai-message-paragraph:last-child),
+.ai-bubble :deep(.ai-message-list:last-child),
+.ai-bubble :deep(.ai-message-heading:last-child) {
+  margin-bottom: 0;
+}
+
+.ai-bubble :deep(.ai-message-list) {
+  margin: 0 0 8px;
+  padding-left: 18px;
+}
+
+.ai-bubble :deep(.ai-message-list li + li) {
+  margin-top: 4px;
 }
 
 .ai-avatar {
