@@ -25,6 +25,7 @@ const Topic = require('./Topic')(sequelize, DataTypes)
 const Verse = require('./Verse')(sequelize, DataTypes)
 const TopicVerse = require('./TopicVerse')(sequelize, DataTypes)
 const VerseEmbedding = require('./VerseEmbedding')(sequelize, DataTypes)
+const AiUsageEvent = require('./AiUsageEvent')(sequelize, DataTypes)
 const Chat = require('./Chat')(sequelize, DataTypes)
 const ChatMessage = require('./ChatMessage')(sequelize, DataTypes)
 const DiaryEntry = require('./DiaryEntry')(sequelize, DataTypes)
@@ -42,6 +43,9 @@ ChatMessage.belongsTo(Chat, { foreignKey: 'chat_id' })
 User.hasMany(DiaryEntry, { as: 'diaryEntries', foreignKey: 'user_id', onDelete: 'CASCADE' })
 DiaryEntry.belongsTo(User, { foreignKey: 'user_id' })
 
+User.hasMany(AiUsageEvent, { as: 'aiUsageEvents', foreignKey: 'user_id', onDelete: 'SET NULL' })
+AiUsageEvent.belongsTo(User, { foreignKey: 'user_id' })
+
 Topic.belongsToMany(Verse, { through: TopicVerse, foreignKey: 'topic_id', otherKey: 'verse_id' })
 Verse.belongsToMany(Topic, { through: TopicVerse, foreignKey: 'verse_id', otherKey: 'topic_id' })
 TopicVerse.belongsTo(Topic, { foreignKey: 'topic_id' })
@@ -49,4 +53,4 @@ TopicVerse.belongsTo(Verse, { foreignKey: 'verse_id' })
 Verse.hasMany(VerseEmbedding, { as: 'embeddings', foreignKey: 'verse_id', onDelete: 'CASCADE' })
 VerseEmbedding.belongsTo(Verse, { foreignKey: 'verse_id' })
 
-module.exports = { sequelize, Role, User, Topic, Verse, TopicVerse, VerseEmbedding, Chat, ChatMessage, DiaryEntry }
+module.exports = { sequelize, Role, User, Topic, Verse, TopicVerse, VerseEmbedding, AiUsageEvent, Chat, ChatMessage, DiaryEntry }

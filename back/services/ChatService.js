@@ -110,7 +110,7 @@ class ChatService {
 
     emit({ phase: 'generating' })
     const messages = this._buildMessages(userMessage, verses, diaryEntries, history)
-    const assistantContent = await aiProvider.streamChat(messages, emit)
+    const assistantContent = await aiProvider.streamChat(messages, emit, { userId })
 
     if (assistantContent) {
       nextOrder += 1

@@ -68,7 +68,9 @@ class ChatController {
       emit({
         error: err.code === 'AI_UNAVAILABLE'
           ? 'unavailable'
-          : 'Error interno del consejero'
+          : err.code === 'AI_BUDGET_EXCEEDED'
+            ? 'budget_exceeded'
+            : 'Error interno del consejero'
       })
     } finally {
       res.end()
