@@ -1,6 +1,7 @@
 'use strict'
 const OllamaProvider = require('./OllamaProvider')
 const OpenAIProvider = require('./OpenAIProvider')
+const HybridProvider = require('./HybridProvider')
 
 function createAIProvider() {
   const provider = (process.env.AI_PROVIDER || 'ollama').toLowerCase()
@@ -11,6 +12,10 @@ function createAIProvider() {
 
   if (provider === 'openai') {
     return new OpenAIProvider()
+  }
+
+  if (provider === 'hybrid') {
+    return new HybridProvider()
   }
 
   throw new Error(`Proveedor de IA no soportado: ${provider}`)

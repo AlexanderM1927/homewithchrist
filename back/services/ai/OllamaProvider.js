@@ -5,12 +5,14 @@ class OllamaProvider {
     baseUrl = process.env.OLLAMA_URL,
     mainModel = process.env.MAIN_OLLAMA_MODEL || 'gemma3:4b',
     secondaryModel = process.env.SECONDARY_OLLAMA_MODEL || 'qwen3:0.6b',
-    embeddingModel = process.env.EMBEDDING_OLLAMA_MODEL || 'nomic-embed-text'
+    embeddingModel = process.env.EMBEDDING_OLLAMA_MODEL || 'nomic-embed-text',
+    timeoutMs = Number(process.env.OLLAMA_TIMEOUT_MS) || 60000
   } = {}) {
     this.baseUrl = baseUrl
     this.mainModel = mainModel
     this.secondaryModel = secondaryModel
     this.embeddingModel = embeddingModel
+    this.timeoutMs = timeoutMs
   }
 
   async generateTitle(userMessage) {
@@ -126,7 +128,7 @@ Si ninguna entrada es util responde: {"entryIds": []}`
       response = await fetch(`${this.baseUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(60000),
+        signal: AbortSignal.timeout(this.timeoutMs),
         body: JSON.stringify({
           model: this.mainModel,
           messages,
@@ -189,6 +191,7 @@ Si ninguna entrada es util responde: {"entryIds": []}`
     const response = await fetch(`${this.baseUrl}/api/embed`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(this.timeoutMs),
       body: JSON.stringify({
         model: this.embeddingModel,
         input: inputs
@@ -211,6 +214,7 @@ Si ninguna entrada es util responde: {"entryIds": []}`
     const response = await fetch(`${this.baseUrl}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(this.timeoutMs),
       body: JSON.stringify({
         model,
         prompt,
