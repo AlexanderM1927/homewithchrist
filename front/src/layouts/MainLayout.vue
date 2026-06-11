@@ -43,7 +43,8 @@ const routeToTab = {
   '/diary': 'diary',
   '/admin': 'admin',
   '/training': 'admin',
-  '/users': 'admin'
+  '/users': 'admin',
+  '/daily-verses': 'admin'
 }
 
 const activeTab = ref(

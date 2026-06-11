@@ -158,8 +158,32 @@ export default {
       users: {
         label: 'Manage Users',
         desc: 'View and change roles for registered users'
+      },
+      dailyVerses: {
+        label: 'Daily verses',
+        desc: 'Add and delete verses shown on the home screen'
       }
     }
+  },
+  dailyVerses: {
+    title: 'Daily verses',
+    reference: 'Reference',
+    text: 'Verse text',
+    actions: 'Actions',
+    save: 'Save verse',
+    clear: 'Clear',
+    history: 'Saved verses',
+    searchPlaceholder: 'Search by reference or text',
+    empty: 'No daily verses saved yet.',
+    required: 'Required field',
+    loadError: 'Could not load daily verses',
+    saveSuccess: 'Daily verse saved successfully',
+    saveError: 'Error saving',
+    deleteTitle: 'Delete verse',
+    deleteMessage: 'Delete "{reference}" from daily verses?',
+    deleteConfirm: 'Delete',
+    deleteSuccess: 'Verse deleted successfully',
+    deleteError: 'Error deleting'
   },
   users: {
     title: 'User Management',

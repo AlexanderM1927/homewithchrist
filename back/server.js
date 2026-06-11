@@ -10,6 +10,7 @@ const botRoutes = require('./routes/bot')
 const trainingRoutes = require('./routes/training')
 const diaryRoutes = require('./routes/diary')
 const bibleRoutes = require('./routes/bible')
+const dailyVerseRoutes = require('./routes/dailyVerse')
 
 const app = express()
 const publicDir = path.join(process.cwd(), 'public')
@@ -36,6 +37,7 @@ app.use('/api/bot', botRoutes)
 app.use('/api/training', trainingRoutes)
 app.use('/api/diary', diaryRoutes)
 app.use('/api/bible', bibleRoutes)
+app.use('/api/daily-verses', dailyVerseRoutes)
 
 app.use(express.static(publicDir))
 

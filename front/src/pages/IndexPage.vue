@@ -24,10 +24,14 @@
               <div class="text-overline text-weight-bold text-primary q-mb-xs" style="font-size:10px; letter-spacing:1px;">
                 {{ $t('dashboard.verse.label') }}
               </div>
-              <div class="text-h6 text-weight-bold text-dark q-mb-xs">{{ dailyVerse.reference }}</div>
-              <div class="text-body2 text-grey-8 q-mb-md" style="line-height:1.4;">
-                {{ dailyVerse.text }}
-              </div>
+              <q-skeleton v-if="dailyVerseLoading" type="text" width="70%" class="q-mb-sm" />
+              <q-skeleton v-if="dailyVerseLoading" type="text" width="95%" />
+              <template v-else>
+                <div class="text-h6 text-weight-bold text-dark q-mb-xs">{{ dailyVerse.reference }}</div>
+                <div class="text-body2 text-grey-8 q-mb-md" style="line-height:1.4;">
+                  {{ dailyVerse.text }}
+                </div>
+              </template>
             </div>
             <div class="verse-img-wrap col-auto">
               <img
@@ -142,19 +146,17 @@ import { useAuthStore } from 'src/stores/auth'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import diaryService from 'src/services/DiaryService'
+import dailyVerseService from 'src/services/DailyVerseService'
 
 const authStore = useAuthStore()
 const router = useRouter()
-const { locale, tm } = useI18n()
+const { locale } = useI18n()
 const latestDiaryEntry = ref(null)
 const diaryLoading = ref(true)
+const dailyVerse = ref({ reference: '', text: '' })
+const dailyVerseLoading = ref(true)
 
 const userName = computed(() => authStore.user?.name || 'usuario')
-
-const dailyVerse = computed(() => {
-  const list = tm('dashboard.verse.list')
-  return list[Math.floor(Math.random() * list.length)]
-})
 
 function formatDiaryDate(date) {
   return new Intl.DateTimeFormat(locale.value, {
@@ -174,6 +176,17 @@ function openLatestDiaryEntry() {
   router.push(`/diary/${latestDiaryEntry.value.diary_entry_id}`)
 }
 
+async function loadDailyVerse() {
+  dailyVerseLoading.value = true
+  try {
+    dailyVerse.value = await dailyVerseService.getToday()
+  } catch {
+    dailyVerse.value = { reference: '', text: '' }
+  } finally {
+    dailyVerseLoading.value = false
+  }
+}
+
 async function loadLatestDiaryEntry() {
   diaryLoading.value = true
   try {
@@ -186,7 +199,10 @@ async function loadLatestDiaryEntry() {
   }
 }
 
-onActivated(loadLatestDiaryEntry)
+onActivated(() => {
+  loadDailyVerse()
+  loadLatestDiaryEntry()
+})
 </script>
 
 <style scoped>

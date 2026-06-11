@@ -26,6 +26,7 @@ const Verse = require('./Verse')(sequelize, DataTypes)
 const TopicVerse = require('./TopicVerse')(sequelize, DataTypes)
 const VerseEmbedding = require('./VerseEmbedding')(sequelize, DataTypes)
 const AiUsageEvent = require('./AiUsageEvent')(sequelize, DataTypes)
+const DailyVerse = require('./DailyVerse')(sequelize, DataTypes)
 const Chat = require('./Chat')(sequelize, DataTypes)
 const ChatMessage = require('./ChatMessage')(sequelize, DataTypes)
 const DiaryEntry = require('./DiaryEntry')(sequelize, DataTypes)
@@ -53,4 +54,4 @@ TopicVerse.belongsTo(Verse, { foreignKey: 'verse_id' })
 Verse.hasMany(VerseEmbedding, { as: 'embeddings', foreignKey: 'verse_id', onDelete: 'CASCADE' })
 VerseEmbedding.belongsTo(Verse, { foreignKey: 'verse_id' })
 
-module.exports = { sequelize, Role, User, Topic, Verse, TopicVerse, VerseEmbedding, AiUsageEvent, Chat, ChatMessage, DiaryEntry }
+module.exports = { sequelize, Role, User, Topic, Verse, TopicVerse, VerseEmbedding, AiUsageEvent, DailyVerse, Chat, ChatMessage, DiaryEntry }

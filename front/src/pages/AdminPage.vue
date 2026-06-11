@@ -40,6 +40,13 @@ const adminOptions = [
     labelKey: 'admin.options.users.label',
     descKey: 'admin.options.users.desc',
     route: '/users'
+  },
+  {
+    key: 'dailyVerses',
+    icon: 'wb_sunny',
+    labelKey: 'admin.options.dailyVerses.label',
+    descKey: 'admin.options.dailyVerses.desc',
+    route: '/daily-verses'
   }
 ]
 </script>
