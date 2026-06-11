@@ -217,12 +217,21 @@ Si ninguna entrada es util responde: {"entryIds": []}`
     return Boolean(this.apiKey && this.embeddingModel)
   }
 
+  getEmbeddingIdentity() {
+    return { provider: 'openai', model: this.embeddingModel }
+  }
+
   async generateEmbedding(input) {
-    const embeddings = await this.generateEmbeddings([input])
-    return embeddings[0]
+    const result = await this.generateEmbeddingsWithMetadata([input])
+    return result.embeddings[0]
   }
 
   async generateEmbeddings(inputs) {
+    const result = await this.generateEmbeddingsWithMetadata(inputs)
+    return result.embeddings
+  }
+
+  async generateEmbeddingsWithMetadata(inputs) {
     if (!this.canEmbed()) {
       throw this._unavailableError()
     }
@@ -257,9 +266,13 @@ Si ninguna entrada es util responde: {"entryIds": []}`
       fallbackOutputTokens: 0
     })
 
-    return data.data
-      .sort((a, b) => a.index - b.index)
-      .map(item => item.embedding)
+    return {
+      provider: 'openai',
+      model: this.embeddingModel,
+      embeddings: data.data
+        .sort((a, b) => a.index - b.index)
+        .map(item => item.embedding)
+    }
   }
 
   async _createResponse({ model, input, maxOutputTokens, textFormat, operation }) {

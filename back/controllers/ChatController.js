@@ -52,8 +52,12 @@ class ChatController {
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders?.()
 
     const emit = data => res.write(`data: ${JSON.stringify(data)}\n\n`)
+    const heartbeat = setInterval(() => {
+      res.write(': keep-alive\n\n')
+    }, 15000)
 
     try {
       await chatService.sendMessage({
@@ -73,6 +77,7 @@ class ChatController {
             : 'Error interno del consejero'
       })
     } finally {
+      clearInterval(heartbeat)
       res.end()
     }
   }

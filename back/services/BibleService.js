@@ -152,7 +152,7 @@ class BibleService {
     batchSize = DEFAULT_EMBEDDING_BATCH_SIZE,
     limit = null
   } = {}) {
-    const model = aiProvider.embeddingModel
+    const embeddingIdentity = this._embeddingIdentity()
     const where = { is_active: true }
     if (version) where.version = version
 
@@ -163,7 +163,7 @@ class BibleService {
           model: VerseEmbedding,
           as: 'embeddings',
           required: false,
-          where: { provider: 'ollama', model }
+          where: embeddingIdentity
         }
       ],
       order: [['id', 'ASC']],
@@ -187,28 +187,32 @@ class BibleService {
       pending.push({ verse, text, textHash })
 
       if (pending.length >= batchSize) {
-        created += await this._createEmbeddingBatch(pending, model)
+        created += await this._createEmbeddingBatch(pending)
         pending = []
         console.log(`[BibleService] Embeddings generados: ${created}`)
       }
     }
 
     if (pending.length > 0) {
-      created += await this._createEmbeddingBatch(pending, model)
+      created += await this._createEmbeddingBatch(pending)
     }
 
-    return { created, skipped, model }
+    return { created, skipped, ...embeddingIdentity }
   }
 
   async findRelevantVerses(userMessage, { limit = DEFAULT_SEMANTIC_LIMIT, version = null } = {}) {
     if (!userMessage || !aiProvider.canEmbed()) return []
 
     try {
-      const queryEmbedding = await aiProvider.generateEmbedding(userMessage)
+      const queryEmbeddingResult = await aiProvider.generateEmbeddingsWithMetadata([userMessage])
+      const queryEmbedding = queryEmbeddingResult.embeddings[0]
       const where = { is_active: true }
       if (version) where.version = version
 
-      const rows = await this._getEmbeddingRows(where)
+      const rows = await this._getEmbeddingRows(where, {
+        provider: queryEmbeddingResult.provider,
+        model: queryEmbeddingResult.model
+      })
 
       return rows
         .map(row => ({
@@ -378,13 +382,13 @@ class BibleService {
     return `${verse.reference} (${verse.version}): ${verse.text}`
   }
 
-  async _createEmbeddingBatch(items, model) {
-    const embeddings = await aiProvider.generateEmbeddings(items.map(item => item.text))
+  async _createEmbeddingBatch(items) {
+    const result = await aiProvider.generateEmbeddingsWithMetadata(items.map(item => item.text))
     const rows = items.map((item, index) => ({
       verse_id: item.verse.id,
-      provider: 'ollama',
-      model,
-      embedding: embeddings[index],
+      provider: result.provider,
+      model: result.model,
+      embedding: result.embeddings[index],
       text_hash: item.textHash
     }))
 
@@ -396,17 +400,16 @@ class BibleService {
     return rows.length
   }
 
-  async _getEmbeddingRows(verseWhere) {
+  async _getEmbeddingRows(verseWhere, embeddingIdentity = this._embeddingIdentity()) {
     const cacheKey = JSON.stringify({
-      provider: 'ollama',
-      model: aiProvider.embeddingModel,
+      ...embeddingIdentity,
       verseWhere
     })
 
     if (this.embeddingCache.has(cacheKey)) return this.embeddingCache.get(cacheKey)
 
     const rows = await VerseEmbedding.findAll({
-      where: { provider: 'ollama', model: aiProvider.embeddingModel },
+      where: embeddingIdentity,
       include: [
         {
           model: Verse,
@@ -422,6 +425,17 @@ class BibleService {
 
     this.embeddingCache.set(cacheKey, normalizedRows)
     return normalizedRows
+  }
+
+  _embeddingIdentity() {
+    if (typeof aiProvider.getEmbeddingIdentity === 'function') {
+      return aiProvider.getEmbeddingIdentity()
+    }
+
+    return {
+      provider: 'ollama',
+      model: aiProvider.embeddingModel
+    }
   }
 }
 

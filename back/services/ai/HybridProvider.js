@@ -49,24 +49,41 @@ class HybridProvider {
     return this.primary.canEmbed() || this.fallback.canEmbed()
   }
 
+  getEmbeddingIdentity() {
+    const provider = this.primary.canEmbed() && !this._isPrimaryCoolingDown()
+      ? this.primary
+      : this.fallback
+    return provider.getEmbeddingIdentity()
+  }
+
   async generateEmbedding(input) {
-    const embeddings = await this.generateEmbeddings([input])
-    return embeddings[0]
+    const result = await this.generateEmbeddingsWithMetadata([input])
+    return result.embeddings[0]
   }
 
   async generateEmbeddings(inputs) {
+    const result = await this.generateEmbeddingsWithMetadata(inputs)
+    return result.embeddings
+  }
+
+  async generateEmbeddingsWithMetadata(inputs) {
+    if (!this.primary.canEmbed()) {
+      console.warn('[HybridProvider] Ollama no configurado para embeddings. Usando OpenAI.')
+      return this.fallback.generateEmbeddingsWithMetadata(inputs)
+    }
+
     if (this._isPrimaryCoolingDown()) {
       console.warn('[HybridProvider] Ollama en cooldown para embeddings. Usando OpenAI.')
-      return this.fallback.generateEmbeddings(inputs)
+      return this.fallback.generateEmbeddingsWithMetadata(inputs)
     }
 
     try {
-      return await this.primary.generateEmbeddings(inputs)
+      return await this.primary.generateEmbeddingsWithMetadata(inputs)
     } catch (err) {
       if (!this._canFallback(err)) throw err
       this._markPrimaryUnavailable()
       console.warn('[HybridProvider] Ollama no disponible para embeddings. Usando OpenAI.')
-      return this.fallback.generateEmbeddings(inputs)
+      return this.fallback.generateEmbeddingsWithMetadata(inputs)
     }
   }
 

@@ -6,13 +6,17 @@ class OllamaProvider {
     mainModel = process.env.MAIN_OLLAMA_MODEL || 'gemma3:4b',
     secondaryModel = process.env.SECONDARY_OLLAMA_MODEL || 'qwen3:0.6b',
     embeddingModel = process.env.EMBEDDING_OLLAMA_MODEL || 'nomic-embed-text',
-    timeoutMs = Number(process.env.OLLAMA_TIMEOUT_MS) || 60000
+    timeoutMs = Number(process.env.OLLAMA_TIMEOUT_MS) || 60000,
+    chatTimeoutMs = Number(process.env.OLLAMA_CHAT_TIMEOUT_MS) || timeoutMs,
+    keepAlive = process.env.OLLAMA_KEEP_ALIVE || '10m'
   } = {}) {
     this.baseUrl = baseUrl
     this.mainModel = mainModel
     this.secondaryModel = secondaryModel
     this.embeddingModel = embeddingModel
     this.timeoutMs = timeoutMs
+    this.chatTimeoutMs = chatTimeoutMs
+    this.keepAlive = keepAlive
   }
 
   async generateTitle(userMessage) {
@@ -128,18 +132,21 @@ Si ninguna entrada es util responde: {"entryIds": []}`
       response = await fetch(`${this.baseUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(this.timeoutMs),
+        signal: AbortSignal.timeout(this.chatTimeoutMs),
         body: JSON.stringify({
           model: this.mainModel,
           messages,
-          stream: true
+          stream: true,
+          keep_alive: this.keepAlive
         })
       })
-    } catch {
+    } catch (err) {
+      console.error('[OllamaProvider] Error conectando chat:', err.message)
       throw this._unavailableError()
     }
 
     if (!response.ok || !response.body) {
+      console.error('[OllamaProvider] Respuesta invalida de chat:', response.status, response.statusText)
       throw this._unavailableError()
     }
 
@@ -178,27 +185,44 @@ Si ninguna entrada es util responde: {"entryIds": []}`
     return Boolean(this.baseUrl && this.embeddingModel)
   }
 
+  getEmbeddingIdentity() {
+    return { provider: 'ollama', model: this.embeddingModel }
+  }
+
   async generateEmbedding(input) {
-    const embeddings = await this.generateEmbeddings([input])
-    return embeddings[0]
+    const result = await this.generateEmbeddingsWithMetadata([input])
+    return result.embeddings[0]
   }
 
   async generateEmbeddings(inputs) {
+    const result = await this.generateEmbeddingsWithMetadata(inputs)
+    return result.embeddings
+  }
+
+  async generateEmbeddingsWithMetadata(inputs) {
     if (!this.canEmbed()) {
       throw this._unavailableError()
     }
 
-    const response = await fetch(`${this.baseUrl}/api/embed`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(this.timeoutMs),
-      body: JSON.stringify({
-        model: this.embeddingModel,
-        input: inputs
+    let response
+    try {
+      response = await fetch(`${this.baseUrl}/api/embed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(this.timeoutMs),
+        body: JSON.stringify({
+          model: this.embeddingModel,
+          input: inputs,
+          keep_alive: this.keepAlive
+        })
       })
-    })
+    } catch (err) {
+      console.error('[OllamaProvider] Error conectando embeddings:', err.message)
+      throw this._unavailableError()
+    }
 
     if (!response.ok) {
+      console.error('[OllamaProvider] Respuesta invalida de embeddings:', response.status, response.statusText)
       throw this._unavailableError()
     }
 
@@ -207,7 +231,11 @@ Si ninguna entrada es util responde: {"entryIds": []}`
       throw this._unavailableError()
     }
 
-    return data.embeddings
+    return {
+      provider: 'ollama',
+      model: this.embeddingModel,
+      embeddings: data.embeddings
+    }
   }
 
   async _generate({ model, prompt, format }) {
@@ -219,11 +247,13 @@ Si ninguna entrada es util responde: {"entryIds": []}`
         model,
         prompt,
         stream: false,
+        keep_alive: this.keepAlive,
         ...(format ? { format } : {})
       })
     })
 
     if (!response.ok) {
+      console.error('[OllamaProvider] Respuesta invalida de generate:', response.status, response.statusText)
       throw this._unavailableError()
     }
 

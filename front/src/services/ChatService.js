@@ -47,13 +47,16 @@ class ChatService extends ApiService {
 
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
+    let buffer = ''
 
     while (true) {
       const { done, value } = await reader.read()
-      if (done) break
+      buffer += decoder.decode(value || new Uint8Array(), { stream: !done })
 
-      const chunk = decoder.decode(value, { stream: true })
-      for (const line of chunk.split('\n')) {
+      const lines = buffer.split('\n')
+      buffer = done ? '' : lines.pop()
+
+      for (const line of lines) {
         if (!line.startsWith('data: ')) continue
         let json
         try {
@@ -73,6 +76,8 @@ class ChatService extends ApiService {
         if (json.phase) { onToken('', false, json.phase); continue }
         onToken(json.token ?? '', json.done ?? false, null)
       }
+
+      if (done) break
     }
   }
 }
