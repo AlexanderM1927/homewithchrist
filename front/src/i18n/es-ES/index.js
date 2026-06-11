@@ -4,6 +4,7 @@ export default {
     counselor: 'Consejero',
     verse: 'Versículo',
     advisor:  'Consejero',
+    bible: 'Biblia',
     diary: 'Diario',
     mood: 'Ánimo',
     logout: 'Salir',
@@ -92,6 +93,20 @@ export default {
     deleteConfirmMessage: 'Esta accion no se puede deshacer. ¿Quieres eliminar esta entrada?',
     deleteSuccess: 'Entrada eliminada correctamente',
     deleteError: 'No se pudo eliminar la entrada'
+  },
+  bible: {
+    title: 'Biblia',
+    subtitle: 'Lee por libro y capitulo o busca una palabra en los versiculos guardados.',
+    version: 'Version',
+    book: 'Libro',
+    chapter: 'Capitulo',
+    search: 'Buscar en la Biblia',
+    searchHint: 'Escribe al menos 2 caracteres',
+    empty: 'No hay versiculos para esta seleccion.',
+    noSearchResults: 'No se encontraron versiculos.',
+    resultsFor: 'Resultados para "{query}"',
+    loadError: 'No se pudo cargar la Biblia',
+    searchError: 'No se pudo realizar la busqueda'
   },
   training: {
     title: 'Entrenamiento de IA',

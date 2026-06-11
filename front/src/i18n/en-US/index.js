@@ -4,6 +4,7 @@ export default {
     counselor: 'Counselor',
     verse: 'Verse',
     advisor:  'Counselor',
+    bible: 'Bible',
     diary: 'Diary',
     mood: 'Mood',
     logout: 'Logout',
@@ -92,6 +93,20 @@ export default {
     deleteConfirmMessage: 'This action cannot be undone. Do you want to delete this entry?',
     deleteSuccess: 'Entry deleted successfully',
     deleteError: 'Could not delete entry'
+  },
+  bible: {
+    title: 'Bible',
+    subtitle: 'Read by book and chapter or search a word in the saved verses.',
+    version: 'Version',
+    book: 'Book',
+    chapter: 'Chapter',
+    search: 'Search the Bible',
+    searchHint: 'Type at least 2 characters',
+    empty: 'There are no verses for this selection.',
+    noSearchResults: 'No verses found.',
+    resultsFor: 'Results for "{query}"',
+    loadError: 'Could not load the Bible',
+    searchError: 'Could not complete the search'
   },
   training: {
     title: 'AI Training',
