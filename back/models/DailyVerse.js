@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
       text: {
         type: DataTypes.TEXT,
         allowNull: false
+      },
+      created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true
       }
     },
     {

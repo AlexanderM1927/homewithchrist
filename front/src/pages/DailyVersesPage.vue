@@ -46,6 +46,11 @@
       v-model:search="filters.search"
       :search-label="$t('tableFilters.search')"
       :search-placeholder="$t('dailyVerses.searchPlaceholder')"
+      v-model:select-value="filters.createdBy"
+      :select-options="userFilterOptions"
+      :select-label="$t('dailyVerses.createdBy')"
+      :select-placeholder="$t('dailyVerses.allCreators')"
+      :select-loading="loadingUsers"
       :clear-label="$t('tableFilters.clear')"
       @change="onFiltersChange"
       @clear="onFiltersClear"
@@ -66,6 +71,12 @@
         <q-td :props="props">
           <span>{{ truncateText(props.row.text) }}</span>
           <q-tooltip v-if="props.row.text.length > 90" max-width="320px">{{ props.row.text }}</q-tooltip>
+        </q-td>
+      </template>
+
+      <template #body-cell-createdBy="props">
+        <q-td :props="props">
+          {{ props.row.creator?.name || '-' }}
         </q-td>
       </template>
 
@@ -96,6 +107,7 @@ import { computed, nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import dailyVerseService from 'src/services/DailyVerseService'
+import authService from 'src/services/AuthService'
 import TableFilters from 'src/components/TableFilters.vue'
 
 const $q = useQuasar()
@@ -104,15 +116,18 @@ const { t } = useI18n()
 const formRef = ref(null)
 const saving = ref(false)
 const loading = ref(false)
+const loadingUsers = ref(false)
 const deletingId = ref(null)
 const dailyVerses = ref({ rows: [], total: 0 })
 const pagination = ref({ page: 1, rowsPerPage: 10, rowsNumber: 0 })
-const filters = ref({ search: '' })
+const filters = ref({ search: '', createdBy: null })
+const userFilterOptions = ref([])
 const form = ref(defaultForm())
 
 const tableColumns = computed(() => [
   { name: 'reference', label: t('dailyVerses.reference'), field: 'reference', align: 'left', sortable: false },
   { name: 'text', label: t('dailyVerses.text'), field: 'text', align: 'left', sortable: false },
+  { name: 'createdBy', label: t('dailyVerses.createdBy'), field: row => row.creator?.name || '', align: 'left', sortable: false },
   { name: 'actions', label: t('dailyVerses.actions'), field: 'actions', align: 'right', sortable: false }
 ])
 
@@ -135,7 +150,12 @@ function truncateText(text) {
 async function loadDailyVerses(page = 1, limit = pagination.value.rowsPerPage) {
   loading.value = true
   try {
-    const data = await dailyVerseService.getVerses({ page, limit, search: filters.value.search })
+    const data = await dailyVerseService.getVerses({
+      page,
+      limit,
+      search: filters.value.search,
+      createdBy: filters.value.createdBy
+    })
     dailyVerses.value = data
     pagination.value.rowsNumber = data.total
     pagination.value.page = data.page
@@ -157,6 +177,24 @@ function onFiltersChange() {
 
 function onFiltersClear() {
   filters.value.search = ''
+  filters.value.createdBy = null
+}
+
+async function loadUsers() {
+  loadingUsers.value = true
+  try {
+    const data = await authService.getUsers()
+    userFilterOptions.value = data.users
+      .filter(user => user.role === 'admin' || user.role_id === 3)
+      .map(user => ({
+        label: user.name || user.phone || `#${user.id}`,
+        value: user.id
+      }))
+  } catch {
+    $q.notify({ type: 'negative', message: t('users.loadError') })
+  } finally {
+    loadingUsers.value = false
+  }
 }
 
 async function onSubmit() {
@@ -203,5 +241,8 @@ async function deleteVerse(row) {
   }
 }
 
-onMounted(loadDailyVerses)
+onMounted(() => {
+  loadUsers()
+  loadDailyVerses()
+})
 </script>

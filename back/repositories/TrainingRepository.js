@@ -1,6 +1,6 @@
 'use strict'
 const { Op } = require('sequelize')
-const { Topic, Verse, TopicVerse } = require('../models')
+const { Topic, Verse, TopicVerse, User } = require('../models')
 
 class TrainingRepository {
   /** Devuelve todos los temas activos */
@@ -113,10 +113,14 @@ class TrainingRepository {
   }
 
   /** Lista versículos con sus temas, paginados */
-  async findVerses({ page = 1, limit = 20, search = '' } = {}) {
+  async findVerses({ page = 1, limit = 20, search = '', createdBy = null } = {}) {
     const offset = (page - 1) * limit
     const trimmedSearch = search.trim()
     const where = { is_active: true }
+
+    if (createdBy) {
+      where.created_by = createdBy
+    }
 
     if (trimmedSearch) {
       where[Op.or] = [
@@ -136,6 +140,11 @@ class TrainingRepository {
         where: { is_active: true },
         through: { attributes: ['weight', 'notes'] },
         attributes: ['id', 'name', 'slug'],
+        required: false
+      }, {
+        model: User,
+        as: 'creator',
+        attributes: ['user_id', 'name'],
         required: false
       }],
       ...(trimmedSearch ? { distinct: true, subQuery: false } : {}),

@@ -55,13 +55,18 @@ class TrainingController {
     const page = parseInt(req.query.page) || 1
     const limit = parseInt(req.query.limit) || 20
     const search = (req.query.search || '').trim()
+    const createdBy = req.query.createdBy ? parseInt(req.query.createdBy) : null
 
     if (page < 1 || limit < 1 || limit > 100) {
       return res.status(400).json({ message: 'Parámetros de paginación inválidos' })
     }
 
+    if (req.query.createdBy && (!Number.isInteger(createdBy) || createdBy < 1)) {
+      return res.status(400).json({ message: 'Parametro createdBy invalido' })
+    }
+
     try {
-      const data = await trainingRepository.findVerses({ page, limit, search })
+      const data = await trainingRepository.findVerses({ page, limit, search, createdBy })
       return res.status(200).json(data)
     } catch (err) {
       return res.status(500).json({ message: err.message })

@@ -128,6 +128,11 @@
       v-model:search="filters.search"
       :search-label="$t('tableFilters.search')"
       :search-placeholder="$t('training.searchPlaceholder')"
+      v-model:select-value="filters.createdBy"
+      :select-options="userFilterOptions"
+      :select-label="$t('training.createdBy')"
+      :select-placeholder="$t('training.allCreators')"
+      :select-loading="loadingUsers"
       :clear-label="$t('tableFilters.clear')"
       @change="onFiltersChange"
       @clear="onFiltersClear"
@@ -174,6 +179,12 @@
         </q-td>
       </template>
 
+      <template #body-cell-createdBy="props">
+        <q-td :props="props">
+          {{ props.row.creator?.name || '-' }}
+        </q-td>
+      </template>
+
       <template #no-data>
         <div class="text-grey text-center full-width q-py-md">{{ $t('training.empty') }}</div>
       </template>
@@ -186,6 +197,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import trainingService from 'src/services/TrainingService'
+import authService from 'src/services/AuthService'
 import TableFilters from 'src/components/TableFilters.vue'
 
 const $q = useQuasar()
@@ -195,16 +207,19 @@ const formRef = ref(null)
 const saving = ref(false)
 const loadingTopics = ref(false)
 const loadingVerses = ref(false)
+const loadingUsers = ref(false)
 
 const verses = ref({ rows: [], total: 0 })
 const pagination = ref({ page: 1, rowsPerPage: 10, rowsNumber: 0 })
-const filters = ref({ search: '' })
+const filters = ref({ search: '', createdBy: null })
+const userFilterOptions = ref([])
 
 const tableColumns = computed(() => [
   { name: 'reference', label: t('training.reference'), field: 'reference', align: 'left', sortable: false },
   { name: 'version',   label: t('training.version'),   field: 'version',   align: 'left', sortable: false },
   { name: 'topics',    label: t('training.topics'),    field: 'Topics',    align: 'left', sortable: false },
   { name: 'weight',    label: t('training.weight'),    field: row => getTopicWeights(row).join(', '), align: 'left', sortable: false },
+  { name: 'createdBy', label: t('training.createdBy'), field: row => row.creator?.name || '', align: 'left', sortable: false },
   { name: 'text',      label: t('training.text'),      field: 'text',      align: 'left', sortable: false }
 ])
 
@@ -223,15 +238,38 @@ async function loadTopics() {
   }
 }
 
+async function loadUsers() {
+  loadingUsers.value = true
+  try {
+    const data = await authService.getUsers()
+    userFilterOptions.value = data.users
+      .filter(user => user.role === 'admin' || user.role_id === 3)
+      .map(user => ({
+        label: user.name || user.phone || `#${user.id}`,
+        value: user.id
+      }))
+  } catch {
+    $q.notify({ type: 'negative', message: t('users.loadError') })
+  } finally {
+    loadingUsers.value = false
+  }
+}
+
 onMounted(() => {
   loadTopics()
+  loadUsers()
   loadVerses()
 })
 
 async function loadVerses (page = 1, limit = pagination.value.rowsPerPage) {
   loadingVerses.value = true
   try {
-    const data = await trainingService.getVerses({ page, limit, search: filters.value.search })
+    const data = await trainingService.getVerses({
+      page,
+      limit,
+      search: filters.value.search,
+      createdBy: filters.value.createdBy
+    })
     verses.value = data
     pagination.value.rowsNumber = data.total
     pagination.value.page = data.page
@@ -253,6 +291,7 @@ function onFiltersChange() {
 
 function onFiltersClear() {
   filters.value.search = ''
+  filters.value.createdBy = null
 }
 
 function getTopicWeights (row) {

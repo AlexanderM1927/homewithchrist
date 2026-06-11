@@ -19,10 +19,11 @@ class TrainingService extends ApiService {
   }
 
   /** Lista versículos paginados */
-  getVerses({ page = 1, limit = 20, search = '' } = {}) {
+  getVerses({ page = 1, limit = 20, search = '', createdBy = null } = {}) {
     const params = new URLSearchParams({ page, limit })
     const trimmedSearch = search.trim()
     if (trimmedSearch) params.set('search', trimmedSearch)
+    if (createdBy) params.set('createdBy', createdBy)
 
     return this.get(`/verses?${params.toString()}`)
   }
