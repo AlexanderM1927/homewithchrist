@@ -18,6 +18,18 @@ class TrainingService extends ApiService {
     return this.post('/verses', payload)
   }
 
+  associateVerses(payload) {
+    return this.post('/topic-verses', payload)
+  }
+
+  updateTopicVerse(id, payload) {
+    return this.put(`/topic-verses/${id}`, payload)
+  }
+
+  deleteTopicVerse(id) {
+    return this.delete(`/topic-verses/${id}`)
+  }
+
   /** Lista versículos paginados */
   getVerses({ page = 1, limit = 20, search = '', createdBy = null } = {}) {
     const params = new URLSearchParams({ page, limit })
@@ -26,6 +38,14 @@ class TrainingService extends ApiService {
     if (createdBy) params.set('createdBy', createdBy)
 
     return this.get(`/verses?${params.toString()}`)
+  }
+
+  getTopicVerses({ page = 1, limit = 20, search = '', createdBy = null } = {}) {
+    const params = new URLSearchParams({ page, limit })
+    const trimmedSearch = search.trim()
+    if (trimmedSearch) params.set('search', trimmedSearch)
+    if (createdBy) params.set('createdBy', createdBy)
+    return this.get(`/topic-verses?${params.toString()}`)
   }
 }
 

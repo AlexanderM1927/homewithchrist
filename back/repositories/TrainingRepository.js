@@ -64,6 +64,55 @@ class TrainingRepository {
     })
   }
 
+  async associateVersesWithTopic({ topicId, verseIds, weight, userId }) {
+    return TopicVerse.sequelize.transaction(async transaction => {
+      const topic = await Topic.findOne({
+        where: { id: topicId, is_active: true },
+        transaction
+      })
+      if (!topic) {
+        const error = new Error('El tema seleccionado no existe o esta inactivo')
+        error.status = 404
+        throw error
+      }
+
+      const verses = await Verse.findAll({
+        where: { id: { [Op.in]: verseIds }, is_active: true },
+        attributes: ['id'],
+        transaction
+      })
+      if (verses.length !== verseIds.length) {
+        const error = new Error('Uno o mas versiculos seleccionados no existen o estan inactivos')
+        error.status = 400
+        throw error
+      }
+
+      const rows = verseIds.map(verseId => ({
+        topic_id: topicId,
+        verse_id: verseId,
+        weight,
+        created_by: userId
+      }))
+
+      await TopicVerse.bulkCreate(rows, {
+        updateOnDuplicate: ['weight', 'created_by'],
+        transaction
+      })
+
+      return { associated: rows.length }
+    })
+  }
+
+  async updateTopicVerse(id, { weight }) {
+    const topicVerse = await TopicVerse.findByPk(id)
+    if (!topicVerse) return null
+    return topicVerse.update({ weight })
+  }
+
+  async deleteTopicVerse(id) {
+    return TopicVerse.destroy({ where: { id } })
+  }
+
   async findTopicSlugsBySearchTerms(terms, limit = 5) {
     if (!terms || terms.length === 0) return []
 
@@ -152,6 +201,52 @@ class TrainingRepository {
       limit,
       offset
     })
+    return { total: count, page, limit, rows }
+  }
+
+  async findTopicVerses({ page = 1, limit = 20, search = '', createdBy = null } = {}) {
+    const offset = (page - 1) * limit
+    const trimmedSearch = search.trim()
+    const where = {}
+    if (createdBy) where.created_by = createdBy
+    if (trimmedSearch) {
+      where[Op.or] = [
+        { '$Topic.name$': { [Op.like]: `%${trimmedSearch}%` } },
+        { '$Topic.slug$': { [Op.like]: `%${trimmedSearch}%` } },
+        { '$Verse.reference$': { [Op.like]: `%${trimmedSearch}%` } },
+        { '$Verse.book$': { [Op.like]: `%${trimmedSearch}%` } },
+        { '$Verse.version$': { [Op.like]: `%${trimmedSearch}%` } },
+        { '$Verse.text$': { [Op.like]: `%${trimmedSearch}%` } }
+      ]
+    }
+
+    const include = [{
+      model: Topic,
+      where: { is_active: true },
+      attributes: ['id', 'name', 'slug'],
+      required: true
+    }, {
+      model: Verse,
+      where: { is_active: true },
+      attributes: ['id', 'reference', 'book', 'chapter', 'verse_start', 'text', 'version'],
+      required: true
+    }, {
+      model: User,
+      as: 'creator',
+      attributes: ['user_id', 'name'],
+      required: false
+    }]
+
+    const { count, rows } = await TopicVerse.findAndCountAll({
+      where,
+      include,
+      distinct: true,
+      subQuery: false,
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
+    })
+
     return { total: count, page, limit, rows }
   }
 }

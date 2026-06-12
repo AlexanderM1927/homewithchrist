@@ -51,6 +51,8 @@ Topic.belongsToMany(Verse, { through: TopicVerse, foreignKey: 'topic_id', otherK
 Verse.belongsToMany(Topic, { through: TopicVerse, foreignKey: 'verse_id', otherKey: 'topic_id' })
 TopicVerse.belongsTo(Topic, { foreignKey: 'topic_id' })
 TopicVerse.belongsTo(Verse, { foreignKey: 'verse_id' })
+User.hasMany(TopicVerse, { as: 'createdTopicVerses', foreignKey: 'created_by' })
+TopicVerse.belongsTo(User, { as: 'creator', foreignKey: 'created_by' })
 User.hasMany(Verse, { as: 'createdVerses', foreignKey: 'created_by' })
 Verse.belongsTo(User, { as: 'creator', foreignKey: 'created_by' })
 User.hasMany(DailyVerse, { as: 'createdDailyVerses', foreignKey: 'created_by' })

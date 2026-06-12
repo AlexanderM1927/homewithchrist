@@ -22,4 +22,9 @@ router.post('/verses', authMiddleware, adminMiddleware, (req, res) => trainingCo
 // GET /api/training/verses  — solo admin
 router.get('/verses', authMiddleware, adminMiddleware, (req, res) => trainingController.getVerses(req, res))
 
+router.post('/topic-verses', authMiddleware, adminMiddleware, (req, res) => trainingController.createTopicVerses(req, res))
+router.get('/topic-verses', authMiddleware, adminMiddleware, (req, res) => trainingController.getTopicVerses(req, res))
+router.put('/topic-verses/:id', authMiddleware, adminMiddleware, (req, res) => trainingController.updateTopicVerse(req, res))
+router.delete('/topic-verses/:id', authMiddleware, adminMiddleware, (req, res) => trainingController.deleteTopicVerse(req, res))
+
 module.exports = router
