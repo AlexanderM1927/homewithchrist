@@ -1,4 +1,6 @@
-export default async () => {
+import { defineBoot } from '#q-app/wrappers'
+
+async function runVersionCheck() {
   try {
     const currentVersion = localStorage.getItem('app_version')
 
@@ -44,3 +46,20 @@ export default async () => {
     console.error('Version check failed', error)
   }
 }
+
+function scheduleVersionCheck() {
+  const callback = () => {
+    void runVersionCheck()
+  }
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(callback, { timeout: 3000 })
+    return
+  }
+
+  window.setTimeout(callback, 0)
+}
+
+export default defineBoot(() => {
+  scheduleVersionCheck()
+})
