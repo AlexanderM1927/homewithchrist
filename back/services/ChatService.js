@@ -12,6 +12,7 @@ const FALLBACK_VERSE_LIMIT = 6
 const SEMANTIC_BIBLE_LIMIT = 8
 const BIBLE_CONTEXT_VERSION = process.env.BIBLE_CONTEXT_VERSION || 'CEE'
 const SEARCH_TERM_LIMIT = 8
+const CHAT_HISTORY_LIMIT = 20
 
 const SEARCH_STOP_WORDS = new Set([
   'como', 'para', 'pero', 'porque', 'cuando', 'donde', 'sobre', 'quiero',
@@ -67,13 +68,11 @@ class ChatService {
     }
   }
 
-  async sendMessage({ userId, requestChatId, userMessage, history, emit }) {
+  async sendMessage({ userId, requestChatId, userMessage, emit }) {
     const chat = await this._resolveChat(userId, requestChatId, userMessage)
     emit({ chatId: chat.chat_id, title: chat.title })
 
-    let nextOrder = await chatRepository.getNextMessageOrder(chat.chat_id)
-    await chatRepository.createMessage(chat.chat_id, 'user', userMessage, nextOrder)
-    await chatRepository.touch(chat.chat_id)
+    const history = await chatRepository.findRecentMessages(chat.chat_id, CHAT_HISTORY_LIMIT)
 
     emit({ phase: 'classifying' })
     const topics = await trainingRepository.findAllTopics()
@@ -115,14 +114,11 @@ class ChatService {
     const assistantContent = await aiProvider.streamChat(messages, emit, { userId })
 
     if (assistantContent) {
-      nextOrder += 1
-      await chatRepository.createMessage(
+      await chatRepository.createTurn(
         chat.chat_id,
-        'assistant',
-        assistantContent,
-        nextOrder
+        userMessage,
+        assistantContent
       )
-      await chatRepository.touch(chat.chat_id)
     }
   }
 

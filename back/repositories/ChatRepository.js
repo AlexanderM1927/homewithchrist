@@ -1,5 +1,5 @@
 'use strict'
-const { Chat, ChatMessage } = require('../models')
+const { sequelize, Chat, ChatMessage } = require('../models')
 
 class ChatRepository {
   async findRecentByUser(userId, limit) {
@@ -55,14 +55,62 @@ class ChatRepository {
     })
   }
 
-  async getNextMessageOrder(chatId) {
-    const latest = await ChatMessage.findOne({
+  async findRecentMessages(chatId, limit = 20) {
+    const messages = await ChatMessage.findAll({
       where: { chat_id: chatId },
+      attributes: ['role', 'content', 'message_order'],
       order: [['message_order', 'DESC']],
-      attributes: ['message_order']
+      limit: limit + 1
     })
 
-    return (latest?.message_order || 0) + 1
+    const chronological = messages.reverse()
+    const completeTurns = []
+
+    for (let index = 0; index < chronological.length - 1; index += 1) {
+      const userMessage = chronological[index]
+      const assistantMessage = chronological[index + 1]
+
+      if (userMessage.role === 'user' && assistantMessage.role === 'assistant') {
+        completeTurns.push(userMessage, assistantMessage)
+        index += 1
+      }
+    }
+
+    return completeTurns.slice(-limit)
+  }
+
+  async createTurn(chatId, userContent, assistantContent) {
+    return sequelize.transaction(async transaction => {
+      const chat = await Chat.findByPk(chatId, {
+        transaction,
+        lock: transaction.LOCK.UPDATE
+      })
+      if (!chat) {
+        const error = new Error('Chat no encontrado')
+        error.status = 404
+        throw error
+      }
+
+      const latestOrder = await ChatMessage.max('message_order', {
+        where: { chat_id: chatId },
+        transaction
+      })
+      const firstMessageOrder = Number(latestOrder || 0) + 1
+
+      await ChatMessage.bulkCreate([{
+        chat_id: chatId,
+        role: 'user',
+        content: userContent,
+        message_order: firstMessageOrder
+      }, {
+        chat_id: chatId,
+        role: 'assistant',
+        content: assistantContent,
+        message_order: firstMessageOrder + 1
+      }], { transaction })
+
+      await chat.update({ updatedAt: new Date() }, { transaction })
+    })
   }
 
   async touch(chatId) {

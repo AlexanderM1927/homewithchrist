@@ -39,7 +39,6 @@ class ChatController {
     const userId = req.user?.sub
     const userMessage = (req.body.prompt || '').trim()
     const requestChatId = Number(req.body.chatId)
-    const history = Array.isArray(req.body.history) ? req.body.history : []
 
     if (!userId) {
       return res.status(401).json({ message: 'Usuario no autenticado' })
@@ -64,7 +63,6 @@ class ChatController {
         userId,
         requestChatId,
         userMessage,
-        history,
         emit
       })
     } catch (err) {

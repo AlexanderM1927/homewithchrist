@@ -244,12 +244,6 @@ function onHistoryDialogHide () {
   forceScrollToBottom(15, 45)
 }
 
-function buildHistory () {
-  return messages.value
-    .filter(m => !m.loading && m.content)
-    .map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }))
-}
-
 function sendSuggestion (text) {
   inputText.value = text
   sendMessage()
@@ -306,9 +300,6 @@ async function sendMessage () {
   inputText.value = ''
   messages.value.push({ role: 'user', content: text })
 
-  // Build prior turns excluding current user message.
-  const history = buildHistory().slice(0, -1)
-
   // Placeholder loading bubble
   isLoading.value = true
   messages.value.push({ role: 'ai', content: '', loading: true, phase: 'classifying' })
@@ -318,7 +309,6 @@ async function sendMessage () {
 
     await chatService.chatStream(
       text,
-      history,
       (token, done, phase) => {
         if (phase) {
           lastMsg.phase = phase
