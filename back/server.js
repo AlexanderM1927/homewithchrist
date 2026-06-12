@@ -11,6 +11,7 @@ const trainingRoutes = require('./routes/training')
 const diaryRoutes = require('./routes/diary')
 const bibleRoutes = require('./routes/bible')
 const dailyVerseRoutes = require('./routes/dailyVerse')
+const trainingReflectionRoutes = require('./routes/trainingReflection')
 
 const app = express()
 const publicDir = path.join(process.cwd(), 'public')
@@ -38,6 +39,7 @@ app.use('/api/training', trainingRoutes)
 app.use('/api/diary', diaryRoutes)
 app.use('/api/bible', bibleRoutes)
 app.use('/api/daily-verses', dailyVerseRoutes)
+app.use('/api/training-reflections', trainingReflectionRoutes)
 
 app.use(express.static(publicDir))
 

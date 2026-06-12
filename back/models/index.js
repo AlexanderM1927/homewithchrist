@@ -30,6 +30,7 @@ const DailyVerse = require('./DailyVerse')(sequelize, DataTypes)
 const Chat = require('./Chat')(sequelize, DataTypes)
 const ChatMessage = require('./ChatMessage')(sequelize, DataTypes)
 const DiaryEntry = require('./DiaryEntry')(sequelize, DataTypes)
+const TrainingReflection = require('./TrainingReflection')(sequelize, DataTypes)
 
 // Associations
 Role.hasMany(User, { foreignKey: 'role_id' })
@@ -57,7 +58,11 @@ User.hasMany(Verse, { as: 'createdVerses', foreignKey: 'created_by' })
 Verse.belongsTo(User, { as: 'creator', foreignKey: 'created_by' })
 User.hasMany(DailyVerse, { as: 'createdDailyVerses', foreignKey: 'created_by' })
 DailyVerse.belongsTo(User, { as: 'creator', foreignKey: 'created_by' })
+Topic.hasMany(TrainingReflection, { as: 'trainingReflections', foreignKey: 'topic_id', onDelete: 'CASCADE' })
+TrainingReflection.belongsTo(Topic, { foreignKey: 'topic_id' })
+User.hasMany(TrainingReflection, { as: 'createdTrainingReflections', foreignKey: 'created_by' })
+TrainingReflection.belongsTo(User, { as: 'creator', foreignKey: 'created_by' })
 Verse.hasMany(VerseEmbedding, { as: 'embeddings', foreignKey: 'verse_id', onDelete: 'CASCADE' })
 VerseEmbedding.belongsTo(Verse, { foreignKey: 'verse_id' })
 
-module.exports = { sequelize, Role, User, Topic, Verse, TopicVerse, VerseEmbedding, AiUsageEvent, DailyVerse, Chat, ChatMessage, DiaryEntry }
+module.exports = { sequelize, Role, User, Topic, Verse, TopicVerse, VerseEmbedding, AiUsageEvent, DailyVerse, Chat, ChatMessage, DiaryEntry, TrainingReflection }

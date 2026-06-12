@@ -148,8 +148,12 @@ export default {
     title: 'Panel de Administración',
     options: {
       training: {
-        label: 'Entrenar IA',
-        desc: 'Agregar y gestionar versículos bíblicos de entrenamiento'
+        label: 'Entrenar IA - Por versículos y temas',
+        desc: 'Relacionar versículos bíblicos con temas de entrenamiento'
+      },
+      trainingReflections: {
+        label: 'Entrenar IA - Por reflexiones y temas',
+        desc: 'Crear reflexiones aprobadas y relacionarlas con temas'
       },
       users: {
         label: 'Gestionar Usuarios',
@@ -160,6 +164,36 @@ export default {
         desc: 'Agregar y eliminar versículos mostrados en el inicio'
       }
     }
+  },
+  trainingReflections: {
+    title: 'Entrenar IA - Por reflexiones y temas',
+    subtitle: 'Crea reflexiones aprobadas para orientar las respuestas de la IA según cada tema.',
+    topic: 'Tema',
+    message: 'Reflexión',
+    createdBy: 'Creado por',
+    allCreators: 'Todos los administradores',
+    actions: 'Acciones',
+    save: 'Guardar reflexión',
+    clear: 'Limpiar',
+    history: 'Reflexiones guardadas',
+    searchPlaceholder: 'Buscar por tema o contenido',
+    empty: 'Aún no hay reflexiones de entrenamiento.',
+    required: 'Campo requerido',
+    cancel: 'Cancelar',
+    update: 'Guardar cambios',
+    editTitle: 'Editar reflexión',
+    loadError: 'No se pudieron cargar las reflexiones',
+    loadTopicsError: 'No se pudieron cargar los temas',
+    loadUsersError: 'No se pudieron cargar los administradores',
+    saveSuccess: 'Reflexión guardada correctamente',
+    saveError: 'Error al guardar la reflexión',
+    updateSuccess: 'Reflexión actualizada correctamente',
+    updateError: 'Error al actualizar la reflexión',
+    deleteTitle: 'Eliminar reflexión',
+    deleteMessage: '¿Eliminar esta reflexión de entrenamiento?',
+    deleteConfirm: 'Eliminar',
+    deleteSuccess: 'Reflexión eliminada correctamente',
+    deleteError: 'Error al eliminar la reflexión'
   },
   dailyVerses: {
     title: 'Versículos del día',

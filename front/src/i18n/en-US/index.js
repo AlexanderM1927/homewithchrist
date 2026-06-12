@@ -170,8 +170,12 @@ export default {
     title: 'Administration Panel',
     options: {
       training: {
-        label: 'Train AI',
-        desc: 'Add and manage Bible training verses'
+        label: 'Train AI - By verses and topics',
+        desc: 'Link Bible verses to training topics'
+      },
+      trainingReflections: {
+        label: 'Train AI - By reflections and topics',
+        desc: 'Create approved reflections and link them to topics'
       },
       users: {
         label: 'Manage Users',
@@ -182,6 +186,36 @@ export default {
         desc: 'Add and delete verses shown on the home screen'
       }
     }
+  },
+  trainingReflections: {
+    title: 'Train AI - By reflections and topics',
+    subtitle: 'Create approved reflections to guide AI responses for each topic.',
+    topic: 'Topic',
+    message: 'Reflection',
+    createdBy: 'Created by',
+    allCreators: 'All administrators',
+    actions: 'Actions',
+    save: 'Save reflection',
+    clear: 'Clear',
+    history: 'Saved reflections',
+    searchPlaceholder: 'Search by topic or content',
+    empty: 'No training reflections yet.',
+    required: 'Required field',
+    cancel: 'Cancel',
+    update: 'Save changes',
+    editTitle: 'Edit reflection',
+    loadError: 'Could not load reflections',
+    loadTopicsError: 'Could not load topics',
+    loadUsersError: 'Could not load administrators',
+    saveSuccess: 'Reflection saved successfully',
+    saveError: 'Error saving reflection',
+    updateSuccess: 'Reflection updated successfully',
+    updateError: 'Error updating reflection',
+    deleteTitle: 'Delete reflection',
+    deleteMessage: 'Delete this training reflection?',
+    deleteConfirm: 'Delete',
+    deleteSuccess: 'Reflection deleted successfully',
+    deleteError: 'Error deleting reflection'
   },
   dailyVerses: {
     title: 'Daily verses',
