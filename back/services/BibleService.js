@@ -3,6 +3,7 @@ const crypto = require('crypto')
 const { Op } = require('sequelize')
 const { Verse, VerseEmbedding } = require('../models')
 const aiProvider = require('./ai')
+const { parseRvr1960Pdf } = require('./bible/Rvr1960PdfParser')
 
 const DEFAULT_SEMANTIC_LIMIT = 8
 const DEFAULT_EMBEDDING_BATCH_SIZE = 50
@@ -105,11 +106,24 @@ class BibleService {
   }
 
   async importVersesFromPdf({ pdfPath, version = 'CEE', createdBy = null, replace = false }) {
-    const pdfParse = require('pdf-parse')
     const fs = require('fs/promises')
     const buffer = await fs.readFile(pdfPath)
-    const parsed = await pdfParse(buffer)
-    const verses = this._parseVerses(parsed.text, version)
+    const normalizedVersion = String(version).toUpperCase().replace(/[^A-Z0-9]/g, '')
+    let verses
+
+    if (normalizedVersion === 'RVR1960') {
+      const result = await parseRvr1960Pdf(buffer, version)
+      if (result.issues.length > 0) {
+        const error = new Error(`La validacion del PDF RVR1960 fallo:\n- ${result.issues.join('\n- ')}`)
+        error.code = 'BIBLE_IMPORT_INVALID'
+        throw error
+      }
+      verses = result.verses
+    } else {
+      const pdfParse = require('pdf-parse')
+      const parsed = await pdfParse(buffer)
+      verses = this._parseVerses(parsed.text, version)
+    }
 
     if (verses.length === 0) {
       const error = new Error('No se encontraron versiculos en el PDF. Revisa el formato del texto extraido.')
