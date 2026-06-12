@@ -5,7 +5,22 @@ export default async () => {
     const response = await fetch('/version.json?nocache=' + Date.now())
     if (!response.ok) return
 
-    const data = await response.json()
+    const bodyText = await response.text()
+    if (!bodyText || !bodyText.trim()) return
+
+    const sanitizedText = bodyText
+      .replace(/^\uFEFF/, '')
+      .replace(/^\)\]\}',?\n/, '')
+      .trim()
+
+    let data
+    try {
+      data = JSON.parse(sanitizedText)
+    } catch {
+      console.warn('Version check skipped: invalid version payload')
+      return
+    }
+
     const nextVersion = typeof data.version === 'string' ? data.version.trim() : ''
     if (!nextVersion) return
 
