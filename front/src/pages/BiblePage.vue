@@ -166,7 +166,7 @@ async function initialize() {
   loadingVersions.value = true
   try {
     versions.value = await bibleService.getVersions()
-    selectedVersion.value = versions.value[0] || ''
+    selectedVersion.value = versions.value.includes('CEE') ? 'CEE' : versions.value[0] || ''
     await loadBooks()
     initialized.value = true
   } catch {

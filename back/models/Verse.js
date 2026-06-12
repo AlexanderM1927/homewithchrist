@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       version: {
         type: DataTypes.STRING(20),
         allowNull: false,
-        defaultValue: 'RVR1960'
+        defaultValue: 'CEE'
       },
       is_active: {
         type: DataTypes.BOOLEAN,
