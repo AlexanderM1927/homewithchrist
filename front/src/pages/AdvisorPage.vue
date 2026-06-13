@@ -180,7 +180,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, computed, onMounted } from 'vue'
+import { ref, nextTick, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
@@ -263,6 +263,7 @@ const currentChatId = ref(null)
 const currentChatTitle = ref('')
 const pendingScrollAfterHistoryClose = ref(false)
 const sharing = ref(false)
+let mobileScrollTimer = null
 
 const suggestions = computed(() => tm('advisor.suggestions'))
 
@@ -282,11 +283,19 @@ function forceScrollToBottom (retries = 12, delay = 40) {
     const container = messagesContainer.value
     if (!container) return
 
-    const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 2
-    if (!isAtBottom && retries > 0) {
+    const isContainerAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 2
+    const isPageAtBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2
+    if ((!isContainerAtBottom || !isPageAtBottom) && retries > 0) {
       setTimeout(() => forceScrollToBottom(retries - 1, delay), delay)
     }
   })
+}
+
+function keepWelcomeInputVisible () {
+  if (!guestMode.value || !$q.platform.is.mobile) return
+
+  clearTimeout(mobileScrollTimer)
+  mobileScrollTimer = setTimeout(() => forceScrollToBottom(15, 45), 0)
 }
 
 function onHistoryDialogHide () {
@@ -451,8 +460,17 @@ async function shareCurrentChat () {
   }
 }
 
+watch(messages, keepWelcomeInputVisible, { deep: true })
+
 onMounted(() => {
   if (!guestMode.value) loadRecentChats()
+  keepWelcomeInputVisible()
+  window.visualViewport?.addEventListener('resize', keepWelcomeInputVisible)
+})
+
+onUnmounted(() => {
+  clearTimeout(mobileScrollTimer)
+  window.visualViewport?.removeEventListener('resize', keepWelcomeInputVisible)
 })
 </script>
 
