@@ -38,6 +38,40 @@ class ChatController {
     }
   }
 
+  async shareChat(req, res) {
+    const userId = req.user?.sub
+    const chatId = Number(req.params.chatId)
+
+    if (!Number.isInteger(chatId) || chatId <= 0) {
+      return res.status(400).json({ message: 'chatId invalido' })
+    }
+
+    try {
+      const share = await chatService.shareChat(userId, chatId)
+      if (!share) return res.status(404).json({ message: 'Chat no encontrado' })
+      return res.status(200).json(share)
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  async getSharedChat(req, res) {
+    const token = String(req.params.token || '').toLowerCase()
+    res.setHeader('Cache-Control', 'private, no-store')
+
+    if (!/^[a-f0-9]{64}$/.test(token)) {
+      return res.status(404).json({ message: 'Chat compartido no encontrado' })
+    }
+
+    try {
+      const chat = await chatService.getSharedChat(token)
+      if (!chat) return res.status(404).json({ message: 'Chat compartido no encontrado' })
+      return res.status(200).json({ chat })
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
   async chat(req, res) {
     const userId = req.user?.sub
     const userMessage = (req.body.prompt || '').trim()

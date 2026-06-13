@@ -295,6 +295,9 @@ export default {
     welcomeTitle: 'Hello, I am Hope your counselor',
     welcomeDesc: 'I am here to listen to you and accompany you in faith. You can share whatever is on your heart.',
     inputPlaceholder: 'Type your message...',
+    share: 'Share chat',
+    shareCopied: 'Chat link copied',
+    shareError: 'The chat could not be shared',
     errorMessage: 'There was an error connecting to the counselor. Please try again later.',
     unavailableMessage: 'Hope is not available right now. Please try again in a moment 🙏',
     phases: {
@@ -308,6 +311,12 @@ export default {
       'I have a family conflict',
       'What does the Bible say about forgiveness?'
     ]
+  },
+  sharedChat: {
+    readOnly: 'Read only',
+    loading: 'Loading conversation...',
+    notFoundTitle: 'Chat unavailable',
+    notFoundMessage: 'This link does not exist or the chat is no longer available.'
   },
   welcome: {
     login: 'Sign in',

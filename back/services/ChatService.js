@@ -1,4 +1,5 @@
 'use strict'
+const crypto = require('crypto')
 const chatRepository = require('../repositories/ChatRepository')
 const trainingRepository = require('../repositories/TrainingRepository')
 const trainingReflectionRepository = require('../repositories/TrainingReflectionRepository')
@@ -58,6 +59,29 @@ class ChatService {
 
     return {
       chat_id: chat.chat_id,
+      title: chat.title,
+      updatedAt: chat.updatedAt,
+      messages: chat.messages.map(message => ({
+        role: message.role,
+        content: message.content,
+        message_order: message.message_order
+      }))
+    }
+  }
+
+  async shareChat(userId, chatId) {
+    const token = crypto.randomBytes(32).toString('hex')
+    const chat = await chatRepository.ensureShareToken(chatId, userId, token)
+
+    if (!chat) return null
+    return { token: chat.share_token }
+  }
+
+  async getSharedChat(token) {
+    const chat = await chatRepository.findByShareToken(token)
+    if (!chat) return null
+
+    return {
       title: chat.title,
       updatedAt: chat.updatedAt,
       messages: chat.messages.map(message => ({

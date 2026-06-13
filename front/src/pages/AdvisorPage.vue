@@ -27,7 +27,22 @@
         :label="$t('welcome.login')"
         @click="goToLogin"
       />
-      <q-btn v-else flat round icon="history" color="grey-7" size="sm" @click="openHistoryModal" />
+      <template v-else>
+        <q-btn
+          v-if="currentChatId"
+          flat
+          round
+          icon="share"
+          color="grey-7"
+          size="sm"
+          :loading="sharing"
+          :aria-label="$t('advisor.share')"
+          @click="shareCurrentChat"
+        >
+          <q-tooltip>{{ $t('advisor.share') }}</q-tooltip>
+        </q-btn>
+        <q-btn flat round icon="history" color="grey-7" size="sm" @click="openHistoryModal" />
+      </template>
     </div>
 
     <!-- Messages area -->
@@ -167,6 +182,7 @@
 import { ref, nextTick, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 import chatService from 'src/services/ChatService'
 
 const props = defineProps({
@@ -178,6 +194,7 @@ const props = defineProps({
 
 const { t, tm, locale } = useI18n()
 const router = useRouter()
+const $q = useQuasar()
 const guestMode = computed(() => props.guestMode)
 
 function formatMessage (text) {
@@ -244,6 +261,7 @@ const loginModalOpen = ref(false)
 const currentChatId = ref(null)
 const currentChatTitle = ref('')
 const pendingScrollAfterHistoryClose = ref(false)
+const sharing = ref(false)
 
 const suggestions = computed(() => tm('advisor.suggestions'))
 
@@ -393,6 +411,31 @@ async function sendMessage () {
       : t('advisor.errorMessage')
   } finally {
     isLoading.value = false
+  }
+}
+
+async function shareCurrentChat () {
+  if (!currentChatId.value || sharing.value) return
+
+  sharing.value = true
+  try {
+    const { token } = await chatService.shareChat(currentChatId.value)
+    const route = router.resolve({ name: 'shared-chat', params: { token } })
+    const url = new URL(route.href, window.location.href).href
+
+    if (navigator.share) {
+      await navigator.share({ title: currentChatTitle.value || t('advisor.title'), url })
+      return
+    }
+
+    await navigator.clipboard.writeText(url)
+    $q.notify({ type: 'positive', message: t('advisor.shareCopied') })
+  } catch (err) {
+    if (err?.name !== 'AbortError') {
+      $q.notify({ type: 'negative', message: t('advisor.shareError') })
+    }
+  } finally {
+    sharing.value = false
   }
 }
 

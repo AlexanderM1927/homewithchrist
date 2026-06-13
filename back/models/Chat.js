@@ -16,6 +16,15 @@ module.exports = (sequelize, DataTypes) => {
       title: {
         type: DataTypes.STRING(120),
         allowNull: false
+      },
+      share_token: {
+        type: DataTypes.STRING(64),
+        allowNull: true,
+        unique: true
+      },
+      shared_at: {
+        type: DataTypes.DATE,
+        allowNull: true
       }
     },
     {

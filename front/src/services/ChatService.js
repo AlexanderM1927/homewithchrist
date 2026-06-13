@@ -18,6 +18,14 @@ class ChatService extends ApiService {
     return this.get(`/chats/${chatId}`)
   }
 
+  async shareChat (chatId) {
+    return this.post(`/chats/${chatId}/share`)
+  }
+
+  async getSharedChat (token) {
+    return this.get(`/shared-chats/${encodeURIComponent(token)}`)
+  }
+
   /**
    * Envía un prompt y recibe la respuesta token a token via SSE.
    * @param {string} prompt - Mensaje actual del usuario

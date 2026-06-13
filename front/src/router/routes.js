@@ -20,6 +20,15 @@ const routes = [
     ]
   },
   {
+    path: '/shared-chat/:token',
+    name: 'shared-chat',
+    component: () => import('layouts/LoginLayout.vue'),
+    meta: { public: true },
+    children: [
+      { path: '', component: () => import('pages/SharedChatPage.vue') }
+    ]
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [

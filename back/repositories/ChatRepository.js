@@ -39,6 +39,31 @@ class ChatRepository {
     return Chat.findOne(query)
   }
 
+  async ensureShareToken(chatId, userId, token) {
+    const chat = await this.findByIdAndUser(chatId, userId)
+    if (!chat || chat.share_token) return chat
+
+    await Chat.update(
+      { share_token: token, shared_at: new Date() },
+      { where: { chat_id: chatId, user_id: userId, share_token: null } }
+    )
+
+    return this.findByIdAndUser(chatId, userId)
+  }
+
+  async findByShareToken(token) {
+    return Chat.findOne({
+      where: { share_token: token },
+      include: [{
+        model: ChatMessage,
+        as: 'messages',
+        attributes: ['role', 'content', 'message_order'],
+        order: [['message_order', 'ASC']],
+        separate: true
+      }]
+    })
+  }
+
   async create(userId, title) {
     return Chat.create({
       user_id: userId,

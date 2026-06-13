@@ -273,6 +273,9 @@ export default {
     welcomeTitle: 'Hola, soy Hope tu consejero',
     welcomeDesc: 'Estoy aquí para escucharte y acompañarte desde la fe. Puedes contarme lo que tengas en el corazón.',
     inputPlaceholder: 'Escribe tu mensaje...',
+    share: 'Compartir chat',
+    shareCopied: 'Enlace del chat copiado',
+    shareError: 'No se pudo compartir el chat',
     errorMessage: 'Hubo un error al conectar con el consejero. Intenta de nuevo más tarde.',
     unavailableMessage: 'Hope no está disponible ahora mismo. Intenta en un rato 🙏',
     phases: {
@@ -286,6 +289,12 @@ export default {
       'Tengo un conflicto personal y espiritual',
       'Necesito orientación y guía bíblica'
     ]
+  },
+  sharedChat: {
+    readOnly: 'Solo lectura',
+    loading: 'Cargando conversación...',
+    notFoundTitle: 'Chat no disponible',
+    notFoundMessage: 'Este enlace no existe o el chat ya no está disponible.'
   },
   welcome: {
     login: 'Iniciar sesión',
