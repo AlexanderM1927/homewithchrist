@@ -149,7 +149,10 @@ const normalizedSearch = computed(() => searchText.value?.trim() || '')
 const showingSearch = computed(() => normalizedSearch.value.length >= 2)
 const displayedVerses = computed(() => showingSearch.value ? searchResults.value : verses.value)
 
-const versionOptions = computed(() => versions.value.map(version => ({ label: version, value: version })))
+const versionOptions = computed(() => versions.value.map(version => ({
+  label: version === 'BJ' ? 'Biblia de Jerusalén' : version,
+  value: version
+})))
 const filteredBookOptions = computed(() => filteredBooks.value.map(book => ({ label: book, value: book })))
 const chapterOptions = computed(() => chapters.value.map(chapter => ({ label: String(chapter), value: chapter })))
 
