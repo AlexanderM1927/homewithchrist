@@ -7,12 +7,12 @@
       indicator-color="transparent"
       @update:model-value="onTabChange"
     >
-      <q-tab name="index" icon="home" :label="$t('nav.home')" />
+      <q-tab v-if="authStore.isAuthenticated" name="index" icon="home" :label="$t('nav.home')" />
       <q-tab name="advisor" icon="chat" :label="$t('nav.advisor')" />
       <q-tab name="bible" icon="menu_book" :label="$t('nav.bible')" />
-      <q-tab name="diary" icon="book" :label="$t('nav.diary')" />
+      <q-tab v-if="authStore.isAuthenticated" name="diary" icon="book" :label="$t('nav.diary')" />
       <q-tab v-if="authStore.isAdmin" name="admin" icon="admin_panel_settings" :label="$t('nav.admin')" />
-      <q-tab name="logout" icon="logout" :label="$t('nav.logout')" class="text-negative" @click="logout" />
+      <q-tab v-if="authStore.isAuthenticated" name="logout" icon="logout" :label="$t('nav.logout')" class="text-negative" @click="logout" />
     </q-tabs>
   </q-footer>
 </template>
@@ -28,6 +28,7 @@ const authStore = useAuthStore()
 
 const routeToTab = {
   '/': 'index',
+  '/welcome': 'advisor',
   '/advisor': 'advisor',
   '/bible': 'bible',
   '/diary': 'diary',
@@ -41,7 +42,7 @@ function tabForPath (path) {
   if (path.startsWith('/diary/')) return 'diary'
   if (path.startsWith('/shared-chat/')) return 'advisor'
   if (path.startsWith('/shared-diary/')) return 'diary'
-  return routeToTab[path] ?? 'index'
+  return routeToTab[path] ?? (authStore.isAuthenticated ? 'index' : 'advisor')
 }
 
 const activeTab = ref(tabForPath(route.path))
@@ -59,6 +60,10 @@ const tabRoutes = {
 }
 
 function onTabChange (tab) {
+  if (tab === 'advisor' && !authStore.isAuthenticated) {
+    router.push('/welcome')
+    return
+  }
   if (tabRoutes[tab]) router.push(tabRoutes[tab])
 }
 
