@@ -302,7 +302,11 @@ async function shareEntry() {
     const url = new URL(sharedRoute.href, window.location.origin).href
 
     if (navigator.share) {
-      await navigator.share({ title: entry.value.title || t('diary.title'), url })
+      await navigator.share({
+        title: entry.value.title || t('diary.title'),
+        text: t('diary.shareText'),
+        url
+      })
       return
     }
 

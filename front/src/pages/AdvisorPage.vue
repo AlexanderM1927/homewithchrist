@@ -424,7 +424,11 @@ async function shareCurrentChat () {
     const url = new URL(route.href, window.location.href).href
 
     if (navigator.share) {
-      await navigator.share({ title: currentChatTitle.value || t('advisor.title'), url })
+      await navigator.share({
+        title: currentChatTitle.value || t('advisor.title'),
+        text: t('advisor.shareText'),
+        url
+      })
       return
     }
 
