@@ -29,6 +29,15 @@ const routes = [
     ]
   },
   {
+    path: '/shared-diary/:token',
+    name: 'shared-diary',
+    component: () => import('layouts/LoginLayout.vue'),
+    meta: { public: true },
+    children: [
+      { path: '', component: () => import('pages/SharedDiaryPage.vue') }
+    ]
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [

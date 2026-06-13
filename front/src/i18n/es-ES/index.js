@@ -66,11 +66,20 @@ export default {
     saveChanges: 'Guardar cambios',
     updateSuccess: 'Entrada actualizada correctamente',
     updateError: 'No se pudo actualizar la entrada',
+    share: 'Compartir entrada',
+    shareCopied: 'Enlace de la entrada copiado',
+    shareError: 'No se pudo compartir la entrada',
     delete: 'Eliminar',
     deleteConfirmTitle: 'Eliminar entrada',
     deleteConfirmMessage: 'Esta accion no se puede deshacer. ¿Quieres eliminar esta entrada?',
     deleteSuccess: 'Entrada eliminada correctamente',
     deleteError: 'No se pudo eliminar la entrada'
+  },
+  sharedDiary: {
+    readOnly: 'Solo lectura',
+    loading: 'Cargando entrada...',
+    notFoundTitle: 'Entrada no disponible',
+    notFoundMessage: 'Este enlace no existe o la entrada ya no esta disponible.'
   },
   bible: {
     title: 'Biblia',

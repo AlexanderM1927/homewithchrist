@@ -49,6 +49,8 @@ function handleImageUpload(req, res, next) {
 }
 
 router.get('/', authMiddleware, (req, res) => diaryController.getAll(req, res))
+router.get('/shared/:token', (req, res) => diaryController.getShared(req, res))
+router.post('/:id/share', authMiddleware, (req, res) => diaryController.share(req, res))
 router.get('/:id', authMiddleware, (req, res) => diaryController.getOne(req, res))
 router.post('/', authMiddleware, handleImageUpload, (req, res) => diaryController.create(req, res))
 router.put('/:id', authMiddleware, handleImageUpload, (req, res) => diaryController.update(req, res))

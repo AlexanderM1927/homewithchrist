@@ -17,6 +17,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const showBottomNavigation = computed(() => (
-  route.path.startsWith('/shared-chat/') && authStore.isAuthenticated
+  (route.path.startsWith('/shared-chat/') || route.path.startsWith('/shared-diary/')) &&
+  authStore.isAuthenticated
 ))
 </script>

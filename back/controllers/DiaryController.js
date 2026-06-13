@@ -1,6 +1,7 @@
 'use strict'
 const fs = require('fs')
 const path = require('path')
+const crypto = require('crypto')
 const diaryRepository = require('../repositories/DiaryRepository')
 
 function deleteUploadedFile(file) {
@@ -88,6 +89,41 @@ class DiaryController {
         return res.status(404).json({ message: 'Entrada no encontrada' })
       }
 
+      return res.status(200).json({ entry })
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  async share(req, res) {
+    const entryId = Number(req.params.id)
+
+    if (!Number.isInteger(entryId) || entryId <= 0) {
+      return res.status(400).json({ message: 'Entrada invalida' })
+    }
+
+    try {
+      const token = crypto.randomBytes(32).toString('hex')
+      const entry = await diaryRepository.ensureShareToken(entryId, req.user.sub, token)
+
+      if (!entry) return res.status(404).json({ message: 'Entrada no encontrada' })
+      return res.status(200).json({ token: entry.share_token })
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  async getShared(req, res) {
+    const token = String(req.params.token || '').toLowerCase()
+    res.setHeader('Cache-Control', 'private, no-store')
+
+    if (!/^[a-f0-9]{64}$/.test(token)) {
+      return res.status(404).json({ message: 'Entrada compartida no encontrada' })
+    }
+
+    try {
+      const entry = await diaryRepository.findByShareToken(token)
+      if (!entry) return res.status(404).json({ message: 'Entrada compartida no encontrada' })
       return res.status(200).json({ entry })
     } catch (err) {
       return res.status(500).json({ message: err.message })

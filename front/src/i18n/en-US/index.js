@@ -88,11 +88,20 @@ export default {
     saveChanges: 'Save changes',
     updateSuccess: 'Entry updated successfully',
     updateError: 'Could not update entry',
+    share: 'Share entry',
+    shareCopied: 'Entry link copied',
+    shareError: 'The entry could not be shared',
     delete: 'Delete',
     deleteConfirmTitle: 'Delete entry',
     deleteConfirmMessage: 'This action cannot be undone. Do you want to delete this entry?',
     deleteSuccess: 'Entry deleted successfully',
     deleteError: 'Could not delete entry'
+  },
+  sharedDiary: {
+    readOnly: 'Read only',
+    loading: 'Loading entry...',
+    notFoundTitle: 'Entry unavailable',
+    notFoundMessage: 'This link does not exist or the entry is no longer available.'
   },
   bible: {
     title: 'Bible',

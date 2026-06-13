@@ -40,6 +40,7 @@ const routeToTab = {
 function tabForPath (path) {
   if (path.startsWith('/diary/')) return 'diary'
   if (path.startsWith('/shared-chat/')) return 'advisor'
+  if (path.startsWith('/shared-diary/')) return 'diary'
   return routeToTab[path] ?? 'index'
 }
 

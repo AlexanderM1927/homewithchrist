@@ -24,6 +24,15 @@ module.exports = (sequelize, DataTypes) => {
       image_path: {
         type: DataTypes.STRING(255),
         allowNull: true
+      },
+      share_token: {
+        type: DataTypes.STRING(64),
+        allowNull: true,
+        unique: true
+      },
+      shared_at: {
+        type: DataTypes.DATE,
+        allowNull: true
       }
     },
     {

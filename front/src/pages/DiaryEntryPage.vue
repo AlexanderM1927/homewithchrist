@@ -25,6 +25,18 @@
                 flat
                 round
                 color="primary"
+                icon="share"
+                :aria-label="$t('diary.share')"
+                :loading="sharing"
+                :disable="deleting"
+                @click="shareEntry"
+              >
+                <q-tooltip>{{ $t('diary.share') }}</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                color="primary"
                 icon="edit"
                 :aria-label="$t('diary.edit')"
                 :disable="deleting"
@@ -154,6 +166,7 @@ const entry = ref(null)
 const loading = ref(true)
 const saving = ref(false)
 const deleting = ref(false)
+const sharing = ref(false)
 const editing = ref(false)
 const editFormRef = ref(null)
 const form = reactive({
@@ -277,6 +290,31 @@ function confirmDelete() {
     },
     persistent: true
   }).onOk(deleteEntry)
+}
+
+async function shareEntry() {
+  if (!entry.value) return
+
+  sharing.value = true
+  try {
+    const { token } = await diaryService.shareEntry(entry.value.diary_entry_id)
+    const sharedRoute = router.resolve({ name: 'shared-diary', params: { token } })
+    const url = new URL(sharedRoute.href, window.location.origin).href
+
+    if (navigator.share) {
+      await navigator.share({ title: entry.value.title || t('diary.title'), url })
+      return
+    }
+
+    await navigator.clipboard.writeText(url)
+    $q.notify({ type: 'positive', message: t('diary.shareCopied') })
+  } catch (err) {
+    if (err?.name !== 'AbortError') {
+      $q.notify({ type: 'negative', message: t('diary.shareError') })
+    }
+  } finally {
+    sharing.value = false
+  }
 }
 
 async function deleteEntry() {

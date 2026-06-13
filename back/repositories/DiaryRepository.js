@@ -33,6 +33,25 @@ class DiaryRepository {
     })
   }
 
+  async ensureShareToken(entryId, userId, token) {
+    const entry = await this.findByIdAndUser(entryId, userId)
+    if (!entry || entry.share_token) return entry
+
+    await DiaryEntry.update(
+      { share_token: token, shared_at: new Date() },
+      { where: { diary_entry_id: entryId, user_id: userId, share_token: null } }
+    )
+
+    return this.findByIdAndUser(entryId, userId)
+  }
+
+  async findByShareToken(token) {
+    return DiaryEntry.findOne({
+      where: { share_token: token },
+      attributes: ['title', 'content', 'image_path', 'createdAt', 'updatedAt']
+    })
+  }
+
   async updateByIdAndUser(entryId, userId, { title, content, imagePath }) {
     const entry = await this.findByIdAndUser(entryId, userId)
 

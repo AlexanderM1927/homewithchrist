@@ -16,6 +16,14 @@ class DiaryService extends ApiService {
     return this.get(`/${entryId}`)
   }
 
+  shareEntry(entryId) {
+    return this.post(`/${entryId}/share`)
+  }
+
+  getSharedEntry(token) {
+    return this.get(`/shared/${encodeURIComponent(token)}`)
+  }
+
   createEntry(payload) {
     return this.post('/', this._buildPayload(payload))
   }
