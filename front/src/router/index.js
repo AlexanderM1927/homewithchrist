@@ -22,9 +22,9 @@ export default defineRouter(({ store }) => {
     await authStore.checkSession()
 
     if (!authStore.isAuthenticated && !to.meta.public) {
-      return '/login'
+      return '/welcome'
     }
-    if (authStore.isAuthenticated && to.path === '/login') {
+    if (authStore.isAuthenticated && (to.path === '/login' || to.path === '/welcome')) {
       return '/'
     }
     if (to.meta.requiresAdmin && !authStore.isAdmin) {
