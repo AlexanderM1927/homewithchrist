@@ -286,7 +286,7 @@ async function initializeBible() {
   loadingVersions.value = true
   try {
     versions.value = await bibleService.getVersions()
-    selectedVersion.value = versions.value.includes('CEE') ? 'CEE' : versions.value[0] || ''
+    selectedVersion.value = versions.value.includes('BJ') ? 'BJ' : versions.value[0] || ''
     await loadBooks()
   } catch {
     $q.notify({ type: 'negative', message: t('bible.loadError') })

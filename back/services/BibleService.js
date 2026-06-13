@@ -1,9 +1,10 @@
 'use strict'
 const crypto = require('crypto')
 const { Op } = require('sequelize')
-const { Verse, VerseEmbedding } = require('../models')
+const { sequelize, Verse, TopicVerse, VerseEmbedding, DailyVerse } = require('../models')
 const aiProvider = require('./ai')
 const { parseRvr1960Pdf } = require('./bible/Rvr1960PdfParser')
+const { parseJerusalemPdf } = require('./bible/JerusalemPdfParser')
 
 const DEFAULT_SEMANTIC_LIMIT = 8
 const DEFAULT_EMBEDDING_BATCH_SIZE = 50
@@ -105,11 +106,12 @@ class BibleService {
     this.embeddingCache = new Map()
   }
 
-  async importVersesFromPdf({ pdfPath, version = 'CEE', createdBy = null, replace = false }) {
+  async importVersesFromPdf({ pdfPath, version = 'BJ', createdBy = null, replace = false }) {
     const fs = require('fs/promises')
     const buffer = await fs.readFile(pdfPath)
     const normalizedVersion = String(version).toUpperCase().replace(/[^A-Z0-9]/g, '')
     let verses
+    let warnings = []
 
     if (normalizedVersion === 'RVR1960') {
       const result = await parseRvr1960Pdf(buffer, version)
@@ -119,6 +121,15 @@ class BibleService {
         throw error
       }
       verses = result.verses
+    } else if (normalizedVersion.startsWith('BJ')) {
+      const result = await parseJerusalemPdf(buffer, version)
+      if (result.issues.length > 0) {
+        const error = new Error(`La validacion del PDF Biblia de Jerusalen fallo:\n- ${result.issues.join('\n- ')}`)
+        error.code = 'BIBLE_IMPORT_INVALID'
+        throw error
+      }
+      verses = result.verses
+      warnings = result.warnings
     } else {
       const pdfParse = require('pdf-parse')
       const parsed = await pdfParse(buffer)
@@ -131,34 +142,137 @@ class BibleService {
       throw error
     }
 
-    if (replace) {
-      await Verse.destroy({ where: { version } })
-    }
+    const importResult = await sequelize.transaction(async transaction => {
+      const existingVerses = await Verse.findAll({
+        where: { version },
+        attributes: ['id', 'book', 'chapter', 'verse_start'],
+        raw: true,
+        transaction
+      })
+      const beforeCount = existingVerses.length
+      const now = new Date()
+      const rows = verses.map(verse => ({
+        ...verse,
+        created_by: createdBy,
+        updated_by: createdBy,
+        is_active: true,
+        createdAt: now,
+        updatedAt: now
+      }))
 
-    const beforeCount = replace ? 0 : await Verse.count({ where: { version } })
-    const now = new Date()
-    const rows = verses.map(verse => ({
-      ...verse,
-      created_by: createdBy,
-      updated_by: createdBy,
-      is_active: true,
-      createdAt: now,
-      updatedAt: now
-    }))
+      await Verse.bulkCreate(rows, {
+        updateOnDuplicate: ['verse_end', 'reference', 'text', 'is_active', 'updated_by', 'updatedAt'],
+        transaction
+      })
 
-    await Verse.bulkCreate(rows, {
-      updateOnDuplicate: ['verse_end', 'reference', 'text', 'is_active', 'updated_by', 'updatedAt']
+      if (replace && existingVerses.length > 0) {
+        const importedKeys = new Set(verses.map(verse => verseKey(verse)))
+        const obsoleteIds = existingVerses
+          .filter(verse => !importedKeys.has(verseKey(verse)))
+          .map(verse => verse.id)
+        if (obsoleteIds.length > 0) {
+          await Verse.destroy({ where: { id: obsoleteIds }, transaction })
+        }
+      }
+
+      const afterCount = await Verse.count({ where: { version }, transaction })
+      const created = Math.max(afterCount - beforeCount, 0)
+      return {
+        imported: afterCount,
+        created,
+        updated: Math.max(verses.length - created, 0)
+      }
     })
-
-    const afterCount = await Verse.count({ where: { version } })
 
     return {
       parsed: verses.length,
-      imported: afterCount,
-      created: Math.max(afterCount - beforeCount, 0),
-      updated: Math.max(verses.length - Math.max(afterCount - beforeCount, 0), 0),
-      version
+      ...importResult,
+      version,
+      warnings
     }
+  }
+
+  async replaceImportedVersion({ sourceVersion, targetVersion }) {
+    if (!sourceVersion || !targetVersion || sourceVersion === targetVersion) {
+      const error = new Error('Las versiones de origen y destino deben ser diferentes.')
+      error.code = 'BIBLE_REPLACE_INVALID'
+      throw error
+    }
+
+    return sequelize.transaction(async transaction => {
+      const targetCount = await Verse.count({
+        where: { version: targetVersion, is_active: true },
+        transaction
+      })
+      if (targetCount === 0) {
+        const error = new Error(`No hay versículos importados para la versión ${targetVersion}.`)
+        error.code = 'BIBLE_REPLACE_TARGET_EMPTY'
+        throw error
+      }
+
+      const topicLinks = await TopicVerse.findAll({
+        include: [{ model: Verse, where: { version: sourceVersion }, required: true }],
+        transaction
+      })
+      let migratedTopicLinks = 0
+
+      for (const link of topicLinks) {
+        const sourceVerse = link.Verse
+        const targetVerse = await Verse.findOne({
+          where: {
+            version: targetVersion,
+            book: sourceVerse.book,
+            chapter: sourceVerse.chapter,
+            verse_start: { [Op.lte]: sourceVerse.verse_start },
+            [Op.or]: [
+              { verse_end: null, verse_start: sourceVerse.verse_start },
+              { verse_end: { [Op.gte]: sourceVerse.verse_start } }
+            ]
+          },
+          transaction
+        })
+        if (!targetVerse) {
+          throw new Error(`No se encontró equivalencia en ${targetVersion} para ${sourceVerse.reference}.`)
+        }
+
+        const duplicate = await TopicVerse.findOne({
+          where: { topic_id: link.topic_id, verse_id: targetVerse.id },
+          transaction
+        })
+        if (duplicate) {
+          await link.destroy({ transaction })
+        } else {
+          await link.update({ verse_id: targetVerse.id }, { transaction })
+        }
+        migratedTopicLinks += 1
+      }
+
+      const dailyVerses = await DailyVerse.findAll({ transaction })
+      let updatedDailyVerses = 0
+      for (const dailyVerse of dailyVerses) {
+        const targetVerse = await Verse.findOne({
+          where: { version: targetVersion, reference: dailyVerse.reference },
+          transaction
+        })
+        if (!targetVerse) continue
+        await dailyVerse.update({ text: targetVerse.text }, { transaction })
+        updatedDailyVerses += 1
+      }
+
+      const deletedSourceVerses = await Verse.destroy({
+        where: { version: sourceVersion },
+        transaction
+      })
+
+      return {
+        sourceVersion,
+        targetVersion,
+        targetCount,
+        migratedTopicLinks,
+        updatedDailyVerses,
+        deletedSourceVerses
+      }
+    })
   }
 
   async generateMissingEmbeddings({
@@ -488,6 +602,10 @@ function cleanPdfLine(line) {
     .replace(/\s+/g, ' ')
     .replace(/\u00a0/g, ' ')
     .trim()
+}
+
+function verseKey(verse) {
+  return `${verse.book}\u0000${verse.chapter}\u0000${verse.verse_start}`
 }
 
 function cleanVerseText(text) {
