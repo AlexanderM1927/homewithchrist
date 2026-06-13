@@ -11,6 +11,14 @@
       <q-space />
       <q-chip color="grey-3" text-color="grey-8" icon="visibility" :label="$t('sharedChat.readOnly')" />
       <q-btn
+        v-if="authStore.isAuthenticated"
+        flat
+        color="primary"
+        icon="chat"
+        :label="$t('nav.advisor')"
+        @click="router.push('/advisor')"
+      />
+      <q-btn
         v-if="!authStore.isAuthenticated"
         flat
         color="primary"

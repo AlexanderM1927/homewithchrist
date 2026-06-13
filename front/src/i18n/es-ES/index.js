@@ -1,9 +1,9 @@
 export default {
   nav: {
     home: 'Inicio',
-    counselor: 'Consejero',
+    counselor: 'Hope IA',
     verse: 'Versículo',
-    advisor:  'Consejero',
+    advisor:  'Hope IA',
     bible: 'Biblia',
     diary: 'Diario',
     mood: 'Ánimo',
