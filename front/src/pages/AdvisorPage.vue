@@ -100,6 +100,7 @@
       <div class="row items-end no-wrap q-gutter-x-sm">
         <q-input
           v-model="inputText"
+          type="textarea"
           autogrow
           outlined
           dense
@@ -108,7 +109,6 @@
           class="col"
           bg-color="grey-2"
           :input-style="{ maxHeight: '120px' }"
-          @keydown.enter.exact.prevent="sendMessage"
         />
         <q-btn
           round
