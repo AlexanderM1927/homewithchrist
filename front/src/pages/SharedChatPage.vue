@@ -7,9 +7,10 @@
       <div>
         <div class="text-weight-bold text-dark" style="font-size:15px;">{{ $t('advisor.title') }}</div>
         <div class="text-caption text-grey-6">{{ chat?.title || $t('sharedChat.readOnly') }}</div>
+      <q-chip color="grey-3" text-color="grey-8" icon="visibility" :label="$t('sharedChat.readOnly')" />
+
       </div>
       <q-space />
-      <q-chip color="grey-3" text-color="grey-8" icon="visibility" :label="$t('sharedChat.readOnly')" />
       <q-btn
         v-if="authStore.isAuthenticated"
         flat
