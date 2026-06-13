@@ -148,6 +148,7 @@
               v-else
               :key="chat.chat_id"
               clickable
+              :disable="loadingChatId !== null"
               @click="selectChat(chat.chat_id)"
             >
               <q-item-section>
@@ -155,7 +156,8 @@
                 <q-item-label caption lines="1">{{ chat.preview || '-' }}</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-item-label caption>{{ formatDate(chat.updatedAt) }}</q-item-label>
+                <q-spinner v-if="loadingChatId === chat.chat_id" color="primary" size="24px" />
+                <q-item-label v-else caption>{{ formatDate(chat.updatedAt) }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -256,6 +258,7 @@ const messages = ref([])
 
 const historyModalOpen = ref(false)
 const historyLoading = ref(false)
+const loadingChatId = ref(null)
 const chatHistory = ref([])
 const loginModalOpen = ref(false)
 
@@ -350,6 +353,9 @@ async function openHistoryModal () {
 }
 
 async function selectChat (chatId) {
+  if (loadingChatId.value !== null) return
+
+  loadingChatId.value = chatId
   try {
     const data = await chatService.getChat(chatId)
     const selected = data.chat
@@ -365,6 +371,8 @@ async function selectChat (chatId) {
   } catch {
     pendingScrollAfterHistoryClose.value = false
     historyModalOpen.value = false
+  } finally {
+    loadingChatId.value = null
   }
 }
 

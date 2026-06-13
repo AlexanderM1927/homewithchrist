@@ -1,4 +1,5 @@
 import { defineRouter } from '#q-app/wrappers'
+import { Loading, QSpinnerGears } from 'quasar'
 import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
 import routes from './routes'
 
@@ -22,6 +23,13 @@ export default defineRouter(({ store }) => {
   })
 
   Router.beforeEach(async (to) => {
+    Loading.show({
+      delay: 150,
+      spinner: QSpinnerGears,
+      spinnerColor: 'primary',
+      backgroundColor: 'white'
+    })
+
     // Importación diferida para evitar que el store se acceda antes de que Pinia esté listo
     const { useAuthStore } = await import('src/stores/auth')
     const authStore = useAuthStore(store)
@@ -41,6 +49,8 @@ export default defineRouter(({ store }) => {
   })
 
   Router.onError((error) => {
+    Loading.hide()
+
     if (!isChunkLoadError(error)) return
 
     if (sessionStorage.getItem(CHUNK_RELOAD_KEY)) {
@@ -53,6 +63,7 @@ export default defineRouter(({ store }) => {
   })
 
   Router.afterEach(() => {
+    Loading.hide()
     sessionStorage.removeItem(CHUNK_RELOAD_KEY)
   })
 

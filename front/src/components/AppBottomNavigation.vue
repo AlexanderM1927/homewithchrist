@@ -5,6 +5,7 @@
       align="justify"
       active-color="primary"
       indicator-color="transparent"
+      :disable="logoutLoading"
       @update:model-value="onTabChange"
     >
       <q-tab v-if="authStore.isAuthenticated" name="index" icon="home" :label="$t('nav.home')" />
@@ -12,7 +13,16 @@
       <q-tab name="bible" icon="menu_book" :label="$t('nav.bible')" />
       <q-tab v-if="authStore.isAuthenticated" name="diary" icon="book" :label="$t('nav.diary')" />
       <q-tab v-if="authStore.isAdmin" name="admin" icon="admin_panel_settings" :label="$t('nav.admin')" />
-      <q-tab v-if="authStore.isAuthenticated" name="logout" icon="logout" :label="$t('nav.logout')" class="text-negative" @click="logout" />
+      <q-tab
+        v-if="authStore.isAuthenticated"
+        name="logout"
+        :icon="logoutLoading ? 'sync' : 'logout'"
+        :label="$t('nav.logout')"
+        class="text-negative"
+        :class="{ 'logout-loading': logoutLoading }"
+        :disable="logoutLoading"
+        @click="logout"
+      />
     </q-tabs>
   </q-footer>
 </template>
@@ -25,6 +35,7 @@ import { useAuthStore } from 'src/stores/auth'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const logoutLoading = ref(false)
 
 const routeToTab = {
   '/': 'index',
@@ -68,13 +79,28 @@ function onTabChange (tab) {
 }
 
 async function logout () {
-  await authStore.logout()
-  router.push('/login')
+  if (logoutLoading.value) return
+
+  logoutLoading.value = true
+  try {
+    await authStore.logout()
+    await router.push('/login')
+  } finally {
+    logoutLoading.value = false
+  }
 }
 </script>
 
 <style scoped>
 .q-footer {
   border-top: 1px solid #e0e0e0;
+}
+
+.logout-loading :deep(.q-icon) {
+  animation: logout-spin 0.9s linear infinite;
+}
+
+@keyframes logout-spin {
+  to { transform: rotate(360deg); }
 }
 </style>
