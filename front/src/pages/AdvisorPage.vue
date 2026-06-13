@@ -109,6 +109,7 @@
           class="col"
           bg-color="grey-2"
           :input-style="{ maxHeight: '120px' }"
+          @keydown="onMessageKeydown"
         />
         <q-btn
           round
@@ -296,6 +297,13 @@ function onHistoryDialogHide () {
 
 function sendSuggestion (text) {
   inputText.value = text
+  sendMessage()
+}
+
+function onMessageKeydown (event) {
+  if (event.key !== 'Enter' || event.shiftKey || event.isComposing || $q.platform.is.mobile) return
+
+  event.preventDefault()
   sendMessage()
 }
 
