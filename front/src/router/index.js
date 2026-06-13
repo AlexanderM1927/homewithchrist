@@ -2,6 +2,14 @@ import { defineRouter } from '#q-app/wrappers'
 import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
 import routes from './routes'
 
+const CHUNK_RELOAD_KEY = 'chunk_reload_attempted'
+
+function isChunkLoadError(error) {
+  const message = error instanceof Error ? error.message : String(error)
+
+  return /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk [\d]+ failed|Unable to preload CSS/i.test(message)
+}
+
 export default defineRouter(({ store }) => {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
@@ -30,6 +38,22 @@ export default defineRouter(({ store }) => {
     if (to.meta.requiresAdmin && !authStore.isAdmin) {
       return '/'
     }
+  })
+
+  Router.onError((error) => {
+    if (!isChunkLoadError(error)) return
+
+    if (sessionStorage.getItem(CHUNK_RELOAD_KEY)) {
+      sessionStorage.removeItem(CHUNK_RELOAD_KEY)
+      return
+    }
+
+    sessionStorage.setItem(CHUNK_RELOAD_KEY, '1')
+    window.location.reload()
+  })
+
+  Router.afterEach(() => {
+    sessionStorage.removeItem(CHUNK_RELOAD_KEY)
   })
 
   return Router

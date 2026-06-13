@@ -107,10 +107,28 @@ pipeline {
 
                     mkdir -p "$HWC_APP_DIR"
 
+                    # Keep the live public directory out of the destructive sync. New
+                    # hashed assets are copied first and entry files are published last.
                     rsync -az --delete \
                       --exclude node_modules \
-                      --exclude public/uploads/ \
+                      --exclude public/ \
                       ./ "$HWC_APP_DIR/"
+
+                    mkdir -p "$HWC_APP_DIR/public/uploads"
+
+                    rsync -az \
+                      --exclude uploads/ \
+                      --exclude index.html \
+                      --exclude version.json \
+                      --exclude sw.js \
+                      --exclude service-worker.js \
+                      ./public/ "$HWC_APP_DIR/public/"
+
+                    for entry_file in sw.js service-worker.js version.json index.html; do
+                      if [ -f "./public/$entry_file" ]; then
+                        cp "./public/$entry_file" "$HWC_APP_DIR/public/$entry_file"
+                      fi
+                    done
 
                     echo "[deploy] Syncing dependencies..."
                     rsync -az --delete ./node_modules "$HWC_APP_DIR/"
