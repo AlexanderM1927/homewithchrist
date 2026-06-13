@@ -74,6 +74,33 @@ class ChatService {
 
     const history = await chatRepository.findRecentMessages(chat.chat_id, CHAT_HISTORY_LIMIT)
 
+    const assistantContent = await this._generateResponse({
+      userMessage,
+      history,
+      emit,
+      metadata: { userId }
+    })
+
+    if (assistantContent) {
+      await chatRepository.createTurn(
+        chat.chat_id,
+        userMessage,
+        assistantContent
+      )
+    }
+  }
+
+  async sendGuestMessage({ userMessage, emit }) {
+    await this._generateResponse({
+      userMessage,
+      history: [],
+      emit,
+      metadata: { guest: true }
+    })
+  }
+
+  async _generateResponse({ userMessage, history, emit, metadata }) {
+
     emit({ phase: 'classifying' })
     const topics = await trainingRepository.findAllTopics()
     const matchedSlugs = await aiProvider.classifyTopics(userMessage, topics)
@@ -111,15 +138,7 @@ class ChatService {
 
     emit({ phase: 'generating' })
     const messages = this._buildMessages(userMessage, verses, reflections, history)
-    const assistantContent = await aiProvider.streamChat(messages, emit, { userId })
-
-    if (assistantContent) {
-      await chatRepository.createTurn(
-        chat.chat_id,
-        userMessage,
-        assistantContent
-      )
-    }
+    return aiProvider.streamChat(messages, emit, metadata)
   }
 
   async _resolveChat(userId, requestChatId, userMessage) {

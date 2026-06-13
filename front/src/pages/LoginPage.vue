@@ -178,15 +178,16 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from 'src/stores/auth'
 import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const { locale, t } = useI18n()
 
-const mode = ref('login')
+const mode = ref(route.query.mode === 'register' ? 'register' : 'login')
 const name = ref('')
 const phoneNumber = ref('')
 const loading = ref(false)

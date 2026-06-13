@@ -33,14 +33,31 @@ class ChatService extends ApiService {
       headers['Authorization'] = `Bearer ${authStore.accessToken}`
     }
 
-    const response = await fetch(`${BASE_URL}/bot/chat`, {
+    return this._stream(`${BASE_URL}/bot/chat`, { prompt, chatId }, headers, onToken, onMeta)
+  }
+
+  async guestChatStream (prompt, onToken) {
+    return this._stream(
+      `${BASE_URL}/bot/guest-chat`,
+      { prompt },
+      { 'Content-Type': 'application/json' },
+      onToken
+    )
+  }
+
+  async _stream (url, body, headers, onToken, onMeta = null) {
+    const response = await fetch(url, {
       method: 'POST',
       headers,
       credentials: 'include',
-      body: JSON.stringify({ prompt, chatId })
+      body: JSON.stringify(body)
     })
 
     if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      if (data.code === 'GUEST_TRIAL_USED') {
+        throw new Error('guest_trial_used')
+      }
       throw new Error('Error al conectar con el consejero')
     }
 

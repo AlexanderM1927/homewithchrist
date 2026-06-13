@@ -308,5 +308,11 @@ export default {
       'I have a family conflict',
       'What does the Bible say about forgiveness?'
     ]
+  },
+  welcome: {
+    login: 'Sign in',
+    createAccount: 'Create account',
+    limitTitle: 'Continue your conversation',
+    limitMessage: 'You have used your trial message. Sign in or create an account to keep talking with Hope and save your conversations.'
   }
 }

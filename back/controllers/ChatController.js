@@ -1,6 +1,9 @@
 'use strict'
 const chatService = require('../services/ChatService')
 
+const GUEST_TRIAL_COOKIE = 'hope_guest_trial_used'
+const GUEST_TRIAL_MAX_AGE = 365 * 24 * 60 * 60 * 1000
+
 class ChatController {
   async getRecentChats(req, res) {
     const userId = req.user?.sub
@@ -67,6 +70,57 @@ class ChatController {
       })
     } catch (err) {
       console.error('[ChatController] Error en pipeline:', err.message)
+      emit({
+        error: err.code === 'AI_UNAVAILABLE'
+          ? 'unavailable'
+          : err.code === 'AI_BUDGET_EXCEEDED'
+            ? 'budget_exceeded'
+            : 'Error interno del consejero'
+      })
+    } finally {
+      clearInterval(heartbeat)
+      res.end()
+    }
+  }
+
+  async guestChat(req, res) {
+    const userMessage = (req.body.prompt || '').trim()
+
+    if (req.cookies?.[GUEST_TRIAL_COOKIE] === '1') {
+      return res.status(403).json({
+        code: 'GUEST_TRIAL_USED',
+        message: 'Inicia sesion para continuar conversando con Hope'
+      })
+    }
+
+    if (!userMessage) {
+      return res.status(400).json({ error: 'El mensaje es requerido' })
+    }
+
+    if (userMessage.length > 2000) {
+      return res.status(400).json({ error: 'El mensaje no puede superar 2000 caracteres' })
+    }
+
+    res.cookie(GUEST_TRIAL_COOKIE, '1', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: GUEST_TRIAL_MAX_AGE
+    })
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders?.()
+
+    const emit = data => res.write(`data: ${JSON.stringify(data)}\n\n`)
+    const heartbeat = setInterval(() => {
+      res.write(': keep-alive\n\n')
+    }, 15000)
+
+    try {
+      await chatService.sendGuestMessage({ userMessage, emit })
+    } catch (err) {
+      console.error('[ChatController] Error en prueba publica:', err.message)
       emit({
         error: err.code === 'AI_UNAVAILABLE'
           ? 'unavailable'

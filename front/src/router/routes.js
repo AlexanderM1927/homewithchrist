@@ -2,8 +2,21 @@ const routes = [
   {
     path: '/login',
     component: () => import('layouts/LoginLayout.vue'),
+    meta: { public: true },
     children: [
       { path: '', component: () => import('pages/LoginPage.vue') }
+    ]
+  },
+  {
+    path: '/welcome',
+    component: () => import('layouts/LoginLayout.vue'),
+    meta: { public: true },
+    children: [
+      {
+        path: '',
+        component: () => import('pages/AdvisorPage.vue'),
+        props: { guestMode: true }
+      }
     ]
   },
   {

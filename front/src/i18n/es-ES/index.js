@@ -286,5 +286,11 @@ export default {
       'Tengo un conflicto personal y espiritual',
       'Necesito orientación y guía bíblica'
     ]
+  },
+  welcome: {
+    login: 'Iniciar sesión',
+    createAccount: 'Crear cuenta',
+    limitTitle: 'Continúa tu conversación',
+    limitMessage: 'Ya usaste tu mensaje de prueba. Inicia sesión o crea una cuenta para seguir hablando con Hope y guardar tus conversaciones.'
   }
 }

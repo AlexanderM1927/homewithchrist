@@ -21,7 +21,7 @@ export default defineRouter(({ store }) => {
     // Intenta renovar la sesión UNA sola vez por carga de página (evita bucle infinito)
     await authStore.checkSession()
 
-    if (!authStore.isAuthenticated && to.path !== '/login') {
+    if (!authStore.isAuthenticated && !to.meta.public) {
       return '/login'
     }
     if (authStore.isAuthenticated && to.path === '/login') {

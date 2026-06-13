@@ -20,7 +20,14 @@
         <div class="text-caption text-grey-6">{{ currentChatTitle || $t('advisor.subtitle') }}</div>
       </div>
       <q-space />
-      <q-btn flat round icon="history" color="grey-7" size="sm" @click="openHistoryModal" />
+      <q-btn
+        v-if="guestMode"
+        flat
+        color="primary"
+        :label="$t('welcome.login')"
+        @click="goToLogin"
+      />
+      <q-btn v-else flat round icon="history" color="grey-7" size="sm" @click="openHistoryModal" />
     </div>
 
     <!-- Messages area -->
@@ -139,15 +146,39 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="loginModalOpen">
+      <q-card class="login-modal-card q-pa-sm">
+        <q-card-section class="text-center">
+          <q-icon name="lock" color="primary" size="44px" class="q-mb-sm" />
+          <div class="text-h6 text-weight-bold">{{ $t('welcome.limitTitle') }}</div>
+          <div class="text-body2 text-grey-7 q-mt-sm">{{ $t('welcome.limitMessage') }}</div>
+        </q-card-section>
+        <q-card-actions vertical class="q-px-md q-pb-md q-gutter-y-sm">
+          <q-btn unelevated color="primary" :label="$t('welcome.createAccount')" @click="goToRegister" />
+          <q-btn flat color="primary" :label="$t('welcome.login')" @click="goToLogin" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script setup>
 import { ref, nextTick, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import chatService from 'src/services/ChatService'
 
+const props = defineProps({
+  guestMode: {
+    type: Boolean,
+    default: false
+  }
+})
+
 const { t, tm, locale } = useI18n()
+const router = useRouter()
+const guestMode = computed(() => props.guestMode)
 
 function formatMessage (text) {
   const escaped = text
@@ -208,6 +239,7 @@ const messages = ref([])
 const historyModalOpen = ref(false)
 const historyLoading = ref(false)
 const chatHistory = ref([])
+const loginModalOpen = ref(false)
 
 const currentChatId = ref(null)
 const currentChatTitle = ref('')
@@ -247,6 +279,14 @@ function onHistoryDialogHide () {
 function sendSuggestion (text) {
   inputText.value = text
   sendMessage()
+}
+
+function goToLogin () {
+  router.push('/login')
+}
+
+function goToRegister () {
+  router.push({ path: '/login', query: { mode: 'register' } })
 }
 
 function clearChat () {
@@ -297,6 +337,11 @@ async function sendMessage () {
   const text = inputText.value.trim()
   if (!text || isLoading.value) return
 
+  if (guestMode.value && localStorage.getItem('hope_guest_trial_used') === '1') {
+    loginModalOpen.value = true
+    return
+  }
+
   inputText.value = ''
   messages.value.push({ role: 'user', content: text })
 
@@ -306,34 +351,41 @@ async function sendMessage () {
 
   try {
     const lastMsg = messages.value[messages.value.length - 1]
-
-    await chatService.chatStream(
-      text,
-      (token, done, phase) => {
-        if (phase) {
-          lastMsg.phase = phase
-          return
-        }
-        if (lastMsg.loading) {
-          lastMsg.loading = false
-          lastMsg.phase = null
-        }
-        if (done && !token) return
-        lastMsg.content += token
-      },
-      currentChatId.value,
-      (meta) => {
-        if (meta.chatId) {
-          currentChatId.value = meta.chatId
-        }
-        if (meta.title) {
-          currentChatTitle.value = meta.title
-        }
+    const onToken = (token, done, phase) => {
+      if (phase) {
+        lastMsg.phase = phase
+        return
       }
-    )
+      if (lastMsg.loading) {
+        lastMsg.loading = false
+        lastMsg.phase = null
+      }
+      if (done && !token) return
+      lastMsg.content += token
+    }
 
-    await loadRecentChats()
+    if (guestMode.value) {
+      await chatService.guestChatStream(text, onToken)
+      localStorage.setItem('hope_guest_trial_used', '1')
+    } else {
+      await chatService.chatStream(
+        text,
+        onToken,
+        currentChatId.value,
+        (meta) => {
+          if (meta.chatId) currentChatId.value = meta.chatId
+          if (meta.title) currentChatTitle.value = meta.title
+        }
+      )
+      await loadRecentChats()
+    }
   } catch (err) {
+    if (err.message === 'guest_trial_used') {
+      localStorage.setItem('hope_guest_trial_used', '1')
+      messages.value.splice(-2, 2)
+      loginModalOpen.value = true
+      return
+    }
     const lastMsg = messages.value[messages.value.length - 1]
     lastMsg.loading = false
     lastMsg.content = err.message === 'unavailable'
@@ -345,7 +397,7 @@ async function sendMessage () {
 }
 
 onMounted(() => {
-  loadRecentChats()
+  if (!guestMode.value) loadRecentChats()
 })
 </script>
 
@@ -447,6 +499,11 @@ onMounted(() => {
   width: min(640px, 100vw);
   border-top-left-radius: 18px;
   border-top-right-radius: 18px;
+}
+
+.login-modal-card {
+  width: min(420px, calc(100vw - 32px));
+  border-radius: 18px;
 }
 
 /* Phase label */
