@@ -32,3 +32,8 @@ yarn-error.log*
 # local .env files
 .env.local*
 .env
+
+# Key for sign app android
+src-capacitor/android/keystore.properties
+src-capacitor/android/build/
+src-capacitor/android/.gradle/

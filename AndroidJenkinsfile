@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    environment {
+        ANDROID_HOME = "/opt/android-sdk"
+        ANDROID_SDK_ROOT = "/opt/android-sdk"
+        PATH = "/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:${env.PATH}"
+    }
+
+    stages {
+        stage('Build Android') {
+            tools {
+                nodejs 'node-22.22.3'
+            }
+
+            steps {
+                dir('./front') {
+                    sh '''
+                    set -e
+
+                    echo "[android] Installing dependencies..."
+                    npm ci
+
+                    echo "[android] Building Quasar + Capacitor..."
+                    quasar build -m capacitor -T android
+                    '''
+                }
+            }
+        }
+
+        stage('Generate Keystore Properties') {
+            steps {
+                dir('./front/src-capacitor/android') {
+                    withCredentials([
+                        string(credentialsId: 'ANDROID_STORE_PASSWORD', variable: 'STORE_PASSWORD'),
+                        string(credentialsId: 'ANDROID_KEY_PASSWORD', variable: 'KEY_PASSWORD')
+                    ]) {
+                        sh '''
+                        cat > keystore.properties <<EOF
+storeFile=/opt/android-keystore/hwc-upload-key.jks
+storePassword=$STORE_PASSWORD
+keyAlias=hwc
+keyPassword=$KEY_PASSWORD
+EOF
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Generate AAB') {
+            steps {
+                dir('./front/src-capacitor/android') {
+                    sh '''
+                    chmod +x gradlew
+
+                    echo "[android] Generating signed AAB..."
+                    ./gradlew bundleRelease
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts(
+                artifacts: 'front/src-capacitor/android/app/build/outputs/bundle/release/*.aab',
+                fingerprint: true
+            )
+        }
+    }
+}
