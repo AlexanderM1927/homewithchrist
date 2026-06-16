@@ -26,8 +26,39 @@ pipeline {
                     echo "[android] Installing dependencies..."
                     npm ci
 
-                    echo "[android] Building Quasar + Capacitor..."
-                    quasar build -m capacitor -T android --ide
+                    echo "[android] Building SPA..."
+                    quasar build
+                    '''
+                }
+            }
+        }
+
+        stage('Capacitor Sync') {
+            tools {
+                nodejs 'node-22.22.3'
+            }
+
+            steps {
+                dir('./front/src-capacitor') {
+                    sh '''
+                    set -e
+
+                    npm install
+
+                    npx cap sync android
+                    '''
+                }
+            }
+        }
+
+        stage('Generate AAB') {
+            steps {
+                dir('./front/src-capacitor/android') {
+                    sh '''
+                    chmod +x gradlew
+
+                    echo "[android] Generating signed AAB..."
+                    ./gradlew bundleRelease
                     '''
                 }
             }
