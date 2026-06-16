@@ -1,0 +1,13 @@
+{
+  "name": "HWC",
+  "version": "0.0.1",
+  "description": "HopeIA - Home With Christ",
+  "author": "AlexanderM1927 <jhon71937@gmail.com>",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0"
+  }
+}
