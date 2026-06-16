@@ -11,8 +11,8 @@ const sequelize = new Sequelize(
     dialect: process.env.DB_CONNECTION || 'mysql',
     logging: false,
     pool: {
-      max: 5,
-      min: 0,
+      max: 20,
+      min: 2,
       acquire: 30000,
       idle: 10000
     }
