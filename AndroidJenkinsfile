@@ -19,6 +19,10 @@ pipeline {
             }
 
             steps {
+                withCredentials([file(credentialsId: 'envhwc-front', variable: 'ENV_FILE')]) {
+                    sh 'rm -f ./front/.env'
+                    sh 'cp "$ENV_FILE" ./front/.env'
+                }
                 dir('./front') {
                     sh '''
                     set -e
