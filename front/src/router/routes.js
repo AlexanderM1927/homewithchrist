@@ -28,6 +28,22 @@ const routes = [
     ]
   },
   {
+    path: '/terms',
+    component: () => import('layouts/LoginLayout.vue'),
+    meta: { public: true },
+    children: [
+      { path: '', component: () => import('pages/TermsPage.vue') }
+    ]
+  },
+  {
+    path: '/contact',
+    component: () => import('layouts/LoginLayout.vue'),
+    meta: { public: true },
+    children: [
+      { path: '', component: () => import('pages/ContactPage.vue') }
+    ]
+  },
+  {
     path: '/shared-chat/:token',
     name: 'shared-chat',
     component: () => import('layouts/LoginLayout.vue'),

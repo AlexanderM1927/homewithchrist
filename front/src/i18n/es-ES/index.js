@@ -401,6 +401,97 @@ export default {
       }
     }
   },
+  terms: {
+    title: 'Terminos de uso',
+    back: 'Volver',
+    lastUpdated: 'Ultima actualizacion: 16 de junio de 2026',
+    sections: {
+      acceptance: {
+        title: 'Aceptacion de los terminos',
+        paragraphs: [
+          'Al usar Home With Christ aceptas estos terminos. Si no estas de acuerdo, no debes usar la aplicacion.'
+        ],
+        items: []
+      },
+      account: {
+        title: 'Cuenta y acceso',
+        paragraphs: [
+          'Eres responsable de mantener la confidencialidad de tus credenciales y de la actividad realizada desde tu cuenta.'
+        ],
+        items: [
+          'Debes proporcionar informacion correcta al registrarte.',
+          'No debes compartir tu acceso con personas no autorizadas.',
+          'Puedes solicitar soporte o eliminacion de datos desde la pagina de contacto.'
+        ]
+      },
+      use: {
+        title: 'Uso permitido',
+        paragraphs: [
+          'La aplicacion esta pensada para reflexion personal, lectura biblica, diario espiritual y acompanamiento conversacional.'
+        ],
+        items: [
+          'No debes usar la app para acosar, danar, vulnerar sistemas o infringir derechos de terceros.',
+          'No debes intentar extraer, copiar o abusar de los servicios internos de la aplicacion.',
+          'No debes publicar ni compartir contenido ilegal mediante enlaces de la app.'
+        ]
+      },
+      ai: {
+        title: 'Respuestas de inteligencia artificial',
+        paragraphs: [
+          'Las respuestas generadas por el asesor espiritual pueden contener errores o no ajustarse a tu situacion particular. No sustituyen consejo profesional, medico, legal, financiero, psicologico o pastoral presencial.'
+        ],
+        items: []
+      },
+      content: {
+        title: 'Tu contenido',
+        paragraphs: [
+          'Tu mantienes la responsabilidad sobre el contenido que escribes, guardas o compartes. Al usar funciones como diario, chats y enlaces compartidos, autorizas a la aplicacion a procesar ese contenido para prestar el servicio.'
+        ],
+        items: []
+      },
+      availability: {
+        title: 'Disponibilidad del servicio',
+        paragraphs: [
+          'Intentamos mantener la aplicacion disponible y funcionando correctamente, pero pueden existir interrupciones, errores, mantenimiento o cambios en las funciones.'
+        ],
+        items: []
+      },
+      changes: {
+        title: 'Cambios',
+        paragraphs: [
+          'Podemos actualizar estos terminos cuando cambie la aplicacion, la operacion del servicio o los requisitos legales. La version vigente estara publicada en esta pagina.'
+        ],
+        items: []
+      },
+      contact: {
+        title: 'Contacto',
+        paragraphs: [
+          'Para preguntas sobre estos terminos, soporte o solicitudes relacionadas con tu cuenta, visita la pagina de contacto.'
+        ],
+        items: []
+      }
+    }
+  },
+  contact: {
+    title: 'Contacto',
+    back: 'Volver',
+    subtitle: 'Estamos disponibles para preguntas sobre soporte, privacidad, cuenta o funcionamiento de Home With Christ.',
+    email: {
+      title: 'Correo de contacto',
+      description: 'Usa este correo para soporte, solicitudes de privacidad o consultas generales.',
+      value: 'admin@alexanderm.co'
+    },
+    support: {
+      title: 'Soporte',
+      description: 'Describe el problema, el telefono de tu cuenta si aplica y los pasos para reproducirlo.',
+      value: 'Respondemos tan pronto como sea posible.'
+    },
+    privacy: {
+      title: 'Privacidad',
+      description: 'Tambien puedes revisar como tratamos la informacion dentro de la aplicacion.',
+      value: 'Ver politica de privacidad'
+    }
+  },
   welcome: {
     login: 'Iniciar sesión',
     createAccount: 'Crear cuenta',

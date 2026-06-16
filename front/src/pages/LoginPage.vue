@@ -170,7 +170,7 @@
               />
             </div>
 
-            <div class="privacy-link text-center q-mt-sm">
+            <div class="legal-links text-center q-mt-sm">
               <q-btn
                 flat
                 dense
@@ -178,6 +178,22 @@
                 color="primary"
                 :label="$t('privacyPolicy.title')"
                 to="/privacy-policy"
+              />
+              <q-btn
+                flat
+                dense
+                no-caps
+                color="primary"
+                :label="$t('terms.title')"
+                to="/terms"
+              />
+              <q-btn
+                flat
+                dense
+                no-caps
+                color="primary"
+                :label="$t('contact.title')"
+                to="/contact"
               />
             </div>
           </div>
@@ -332,8 +348,12 @@ async function handleSubmit() {
   min-height: 32px;
 }
 
-.privacy-link {
+.legal-links {
   min-height: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
 }
 
 .country-select {
