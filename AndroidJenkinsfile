@@ -30,6 +30,9 @@ pipeline {
                     echo "[android] Installing dependencies..."
                     npm ci
 
+                    echo "[android] Generating icons..."
+                    npx icongenie generate -m capacitor -i ./public/logo.png
+
                     echo "[android] Building SPA..."
                     quasar build
                     '''
@@ -66,6 +69,10 @@ EOF
                 dir('./front/src-capacitor') {
                     sh '''
                     set -e
+
+                    rm -rf android/.gradle
+                    rm -rf android/build
+                    rm -rf android/capacitor-cordova-android-plugins/build
 
                     npm install
 
