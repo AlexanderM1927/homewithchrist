@@ -41,23 +41,9 @@ app.use('/api/bible', bibleRoutes)
 app.use('/api/daily-verses', dailyVerseRoutes)
 app.use('/api/training-reflections', trainingReflectionRoutes)
 
-app.use(express.static(publicDir, {
-  setHeaders: (res, filePath) => {
-    const fileName = path.basename(filePath)
-
-    if (['index.html', 'version.json', 'sw.js', 'service-worker.js'].includes(fileName)) {
-      res.setHeader('Cache-Control', 'no-store')
-      return
-    }
-
-    if (filePath.includes(`${path.sep}assets${path.sep}`)) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
-    }
-  }
-}))
+app.use(express.static(publicDir))
 
 app.get('/{*path}', (req, res) => {
-  res.setHeader('Cache-Control', 'no-store')
   res.sendFile(path.join(publicDir, 'index.html'))
 })
 
