@@ -27,7 +27,7 @@ pipeline {
                     npm ci
 
                     echo "[android] Building Quasar + Capacitor..."
-                    quasar build -m capacitor -T android
+                    quasar build -m capacitor -T android --ide
                     '''
                 }
             }
