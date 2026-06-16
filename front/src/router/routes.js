@@ -20,6 +20,14 @@ const routes = [
     ]
   },
   {
+    path: '/privacy-policy',
+    component: () => import('layouts/LoginLayout.vue'),
+    meta: { public: true },
+    children: [
+      { path: '', component: () => import('pages/PrivacyPolicyPage.vue') }
+    ]
+  },
+  {
     path: '/shared-chat/:token',
     name: 'shared-chat',
     component: () => import('layouts/LoginLayout.vue'),

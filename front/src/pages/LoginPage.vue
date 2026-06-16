@@ -169,6 +169,17 @@
                 @click="switchMode(isRegister ? 'login' : 'register')"
               />
             </div>
+
+            <div class="privacy-link text-center q-mt-sm">
+              <q-btn
+                flat
+                dense
+                no-caps
+                color="primary"
+                label="Politica de privacidad"
+                to="/privacy-policy"
+              />
+            </div>
           </div>
         </q-form>
       </q-card-section>
@@ -319,6 +330,10 @@ async function handleSubmit() {
 
 .mode-helper {
   min-height: 32px;
+}
+
+.privacy-link {
+  min-height: 28px;
 }
 
 .country-select {
