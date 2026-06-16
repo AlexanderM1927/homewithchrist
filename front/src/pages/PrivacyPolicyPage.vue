@@ -1,5 +1,21 @@
 <template>
   <q-page class="privacy-page">
+    <div class="language-switch" aria-label="Language selector">
+      <q-btn
+        v-for="option in languageOptions"
+        :key="option.value"
+        :label="option.flag"
+        :title="option.label"
+        :aria-label="option.label"
+        :color="locale === option.value ? 'primary' : 'white'"
+        :text-color="locale === option.value ? 'white' : 'primary'"
+        dense
+        unelevated
+        class="language-flag"
+        @click="locale = option.value"
+      />
+    </div>
+
     <main class="privacy-content">
       <section class="privacy-header">
         <q-btn
@@ -7,116 +23,66 @@
           round
           icon="arrow_back"
           color="primary"
-          aria-label="Volver"
+          :aria-label="$t('privacyPolicy.back')"
           class="q-mb-md"
           @click="goBack"
         />
         <div class="text-overline text-primary text-weight-bold">Home With Christ</div>
-        <h1>Politica de privacidad</h1>
-        <p class="last-updated">Ultima actualizacion: 16 de junio de 2026</p>
+        <h1>{{ $t('privacyPolicy.title') }}</h1>
+        <p class="last-updated">{{ $t('privacyPolicy.lastUpdated') }}</p>
       </section>
 
-      <section>
-        <h2>1. Responsable</h2>
-        <p>
-          Esta politica describe como Home With Christ trata la informacion de las personas que usan la aplicacion.
-          Para consultas sobre privacidad puedes escribir a
-          <a href="mailto:admin@alexanderm.co">admin@alexanderm.co</a>.
+      <section v-for="section in sections" :key="section.title">
+        <h2>{{ section.title }}</h2>
+        <p v-for="paragraph in section.paragraphs" :key="paragraph.text">
+          <template v-if="paragraph.withEmail">
+            {{ paragraph.text }}
+            <a :href="`mailto:${contactEmail}`">{{ contactEmail }}</a>.
+          </template>
+          <template v-else>
+            {{ paragraph.text }}
+          </template>
         </p>
-      </section>
-
-      <section>
-        <h2>2. Informacion que podemos recopilar</h2>
-        <p>Segun las funciones que uses, la aplicacion puede recopilar:</p>
-        <ul>
-          <li>Datos de cuenta, como nombre, telefono, correo electronico si lo agregas, y credenciales de acceso.</li>
-          <li>Contenido que escribes en la app, como entradas del diario, reflexiones, mensajes y conversaciones con el asesor espiritual.</li>
-          <li>Contenido compartido por ti mediante enlaces privados, como chats o entradas del diario que decidas compartir.</li>
-          <li>Datos tecnicos necesarios para operar la app, como tokens de sesion, registros de errores, fecha de uso, metadatos de solicitudes y diagnosticos de funcionamiento.</li>
-          <li>Imagenes o archivos que adjuntes voluntariamente en funciones que lo permitan.</li>
+        <ul v-if="section.items.length">
+          <li v-for="item in section.items" :key="item">{{ item }}</li>
         </ul>
-      </section>
-
-      <section>
-        <h2>3. Como usamos la informacion</h2>
-        <p>Usamos la informacion para:</p>
-        <ul>
-          <li>Crear y administrar tu cuenta.</li>
-          <li>Permitir el acceso seguro a la aplicacion.</li>
-          <li>Guardar y mostrar tus diarios, chats, reflexiones y configuraciones.</li>
-          <li>Responder a tus mensajes en el asesor espiritual y mejorar la calidad de la experiencia.</li>
-          <li>Prevenir abuso, proteger la seguridad del servicio y corregir errores tecnicos.</li>
-          <li>Cumplir obligaciones legales o solicitudes validas de autoridades competentes cuando aplique.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>4. Inteligencia artificial y proveedores externos</h2>
-        <p>
-          Algunas funciones pueden enviar el texto que escribes a proveedores de inteligencia artificial para generar respuestas.
-          Evita incluir informacion sensible que no quieras procesar en estas funciones. Tambien podemos usar proveedores de
-          infraestructura, base de datos, alojamiento, correo o analitica tecnica para operar la aplicacion.
-        </p>
-      </section>
-
-      <section>
-        <h2>5. Cuando compartimos informacion</h2>
-        <p>No vendemos tu informacion personal. Podemos compartir informacion solo en estos casos:</p>
-        <ul>
-          <li>Con proveedores que nos ayudan a operar la aplicacion y procesan datos bajo instrucciones nuestras.</li>
-          <li>Cuando tu decides compartir un chat o una entrada del diario mediante un enlace privado.</li>
-          <li>Cuando sea necesario por seguridad, prevencion de fraude, soporte tecnico o cumplimiento legal.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>6. Seguridad</h2>
-        <p>
-          Aplicamos medidas razonables para proteger la informacion, incluyendo autenticacion, tokens de sesion y controles de acceso.
-          Aun asi, ningun sistema conectado a internet puede garantizar seguridad absoluta.
-        </p>
-      </section>
-
-      <section>
-        <h2>7. Conservacion y eliminacion</h2>
-        <p>
-          Conservamos la informacion mientras tu cuenta este activa o mientras sea necesaria para prestar el servicio, resolver
-          incidencias, cumplir obligaciones legales o proteger la seguridad de la aplicacion. Puedes solicitar la eliminacion de
-          tus datos escribiendo a <a href="mailto:admin@alexanderm.co">admin@alexanderm.co</a>.
-        </p>
-      </section>
-
-      <section>
-        <h2>8. Privacidad de menores</h2>
-        <p>
-          Home With Christ no esta dirigida especificamente a menores de 13 anos. Si eres padre, madre o tutor y crees que un menor
-          nos proporciono informacion personal sin autorizacion, contactanos para revisar y eliminar la informacion cuando corresponda.
-        </p>
-      </section>
-
-      <section>
-        <h2>9. Tus derechos</h2>
-        <p>
-          Puedes solicitar acceso, correccion o eliminacion de tu informacion personal. Tambien puedes pedir aclaraciones sobre el
-          tratamiento de tus datos escribiendo al correo de contacto indicado en esta politica.
-        </p>
-      </section>
-
-      <section>
-        <h2>10. Cambios a esta politica</h2>
-        <p>
-          Podemos actualizar esta politica para reflejar cambios en la aplicacion, en proveedores o en requisitos legales.
-          Publicaremos la version vigente en esta pagina e indicaremos la fecha de ultima actualizacion.
-        </p>
       </section>
     </main>
   </q-page>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const { locale, t, tm } = useI18n()
+const contactEmail = 'admin@alexanderm.co'
+
+const languageOptions = [
+  { label: 'Espanol', value: 'es-ES', flag: '🇪🇸' },
+  { label: 'English', value: 'en-US', flag: '🇺🇸' }
+]
+
+const sectionKeys = [
+  'responsible',
+  'collectedInfo',
+  'usage',
+  'aiProviders',
+  'sharing',
+  'security',
+  'retention',
+  'children',
+  'rights',
+  'changes'
+]
+
+const sections = computed(() => sectionKeys.map((key, index) => ({
+  title: `${index + 1}. ${t(`privacyPolicy.sections.${key}.title`)}`,
+  paragraphs: tm(`privacyPolicy.sections.${key}.paragraphs`),
+  items: tm(`privacyPolicy.sections.${key}.items`) || []
+})))
 
 function goBack() {
   if (window.history.length > 1) {
@@ -143,6 +109,29 @@ function goBack() {
 
 .privacy-header {
   padding-bottom: 10px;
+}
+
+.language-switch {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 30px rgba(43, 24, 69, 0.14);
+}
+
+.language-flag {
+  width: 34px;
+  min-height: 28px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 h1 {

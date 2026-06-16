@@ -176,7 +176,7 @@
                 dense
                 no-caps
                 color="primary"
-                label="Politica de privacidad"
+                :label="$t('privacyPolicy.title')"
                 to="/privacy-policy"
               />
             </div>

@@ -307,6 +307,100 @@ export default {
     notFoundTitle: 'Chat no disponible',
     notFoundMessage: 'Este enlace no existe o el chat ya no está disponible.'
   },
+  privacyPolicy: {
+    title: 'Politica de privacidad',
+    back: 'Volver',
+    lastUpdated: 'Ultima actualizacion: 16 de junio de 2026',
+    sections: {
+      responsible: {
+        title: 'Responsable',
+        paragraphs: [
+          { text: 'Esta politica describe como Home With Christ trata la informacion de las personas que usan la aplicacion. Para consultas sobre privacidad puedes escribir a', withEmail: true }
+        ],
+        items: []
+      },
+      collectedInfo: {
+        title: 'Informacion que podemos recopilar',
+        paragraphs: [
+          { text: 'Segun las funciones que uses, la aplicacion puede recopilar:' }
+        ],
+        items: [
+          'Datos de cuenta, como nombre, telefono, correo electronico si lo agregas, y credenciales de acceso.',
+          'Contenido que escribes en la app, como entradas del diario, reflexiones, mensajes y conversaciones con el asesor espiritual.',
+          'Contenido compartido por ti mediante enlaces privados, como chats o entradas del diario que decidas compartir.',
+          'Datos tecnicos necesarios para operar la app, como tokens de sesion, registros de errores, fecha de uso, metadatos de solicitudes y diagnosticos de funcionamiento.',
+          'Imagenes o archivos que adjuntes voluntariamente en funciones que lo permitan.'
+        ]
+      },
+      usage: {
+        title: 'Como usamos la informacion',
+        paragraphs: [
+          { text: 'Usamos la informacion para:' }
+        ],
+        items: [
+          'Crear y administrar tu cuenta.',
+          'Permitir el acceso seguro a la aplicacion.',
+          'Guardar y mostrar tus diarios, chats, reflexiones y configuraciones.',
+          'Responder a tus mensajes en el asesor espiritual y mejorar la calidad de la experiencia.',
+          'Prevenir abuso, proteger la seguridad del servicio y corregir errores tecnicos.',
+          'Cumplir obligaciones legales o solicitudes validas de autoridades competentes cuando aplique.'
+        ]
+      },
+      aiProviders: {
+        title: 'Inteligencia artificial y proveedores externos',
+        paragraphs: [
+          { text: 'Algunas funciones pueden enviar el texto que escribes a proveedores de inteligencia artificial para generar respuestas. Evita incluir informacion sensible que no quieras procesar en estas funciones. Tambien podemos usar proveedores de infraestructura, base de datos, alojamiento, correo o analitica tecnica para operar la aplicacion.' }
+        ],
+        items: []
+      },
+      sharing: {
+        title: 'Cuando compartimos informacion',
+        paragraphs: [
+          { text: 'No vendemos tu informacion personal. Podemos compartir informacion solo en estos casos:' }
+        ],
+        items: [
+          'Con proveedores que nos ayudan a operar la aplicacion y procesan datos bajo instrucciones nuestras.',
+          'Cuando tu decides compartir un chat o una entrada del diario mediante un enlace privado.',
+          'Cuando sea necesario por seguridad, prevencion de fraude, soporte tecnico o cumplimiento legal.'
+        ]
+      },
+      security: {
+        title: 'Seguridad',
+        paragraphs: [
+          { text: 'Aplicamos medidas razonables para proteger la informacion, incluyendo autenticacion, tokens de sesion y controles de acceso. Aun asi, ningun sistema conectado a internet puede garantizar seguridad absoluta.' }
+        ],
+        items: []
+      },
+      retention: {
+        title: 'Conservacion y eliminacion',
+        paragraphs: [
+          { text: 'Conservamos la informacion mientras tu cuenta este activa o mientras sea necesaria para prestar el servicio, resolver incidencias, cumplir obligaciones legales o proteger la seguridad de la aplicacion. Puedes solicitar la eliminacion de tus datos escribiendo a', withEmail: true }
+        ],
+        items: []
+      },
+      children: {
+        title: 'Privacidad de menores',
+        paragraphs: [
+          { text: 'Home With Christ no esta dirigida especificamente a menores de 13 anos. Si eres padre, madre o tutor y crees que un menor nos proporciono informacion personal sin autorizacion, contactanos para revisar y eliminar la informacion cuando corresponda.' }
+        ],
+        items: []
+      },
+      rights: {
+        title: 'Tus derechos',
+        paragraphs: [
+          { text: 'Puedes solicitar acceso, correccion o eliminacion de tu informacion personal. Tambien puedes pedir aclaraciones sobre el tratamiento de tus datos escribiendo al correo de contacto indicado en esta politica.' }
+        ],
+        items: []
+      },
+      changes: {
+        title: 'Cambios a esta politica',
+        paragraphs: [
+          { text: 'Podemos actualizar esta politica para reflejar cambios en la aplicacion, en proveedores o en requisitos legales. Publicaremos la version vigente en esta pagina e indicaremos la fecha de ultima actualizacion.' }
+        ],
+        items: []
+      }
+    }
+  },
   welcome: {
     login: 'Iniciar sesión',
     createAccount: 'Crear cuenta',

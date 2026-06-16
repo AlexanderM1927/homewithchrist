@@ -329,6 +329,100 @@ export default {
     notFoundTitle: 'Chat unavailable',
     notFoundMessage: 'This link does not exist or the chat is no longer available.'
   },
+  privacyPolicy: {
+    title: 'Privacy Policy',
+    back: 'Back',
+    lastUpdated: 'Last updated: June 16, 2026',
+    sections: {
+      responsible: {
+        title: 'Controller',
+        paragraphs: [
+          { text: 'This policy describes how Home With Christ handles information from people who use the application. For privacy questions, you can write to', withEmail: true }
+        ],
+        items: []
+      },
+      collectedInfo: {
+        title: 'Information we may collect',
+        paragraphs: [
+          { text: 'Depending on the features you use, the application may collect:' }
+        ],
+        items: [
+          'Account data, such as your name, phone number, email address if you add it, and access credentials.',
+          'Content you write in the app, such as diary entries, reflections, messages, and conversations with the spiritual counselor.',
+          'Content you choose to share through private links, such as chats or diary entries.',
+          'Technical data needed to operate the app, such as session tokens, error logs, usage dates, request metadata, and performance diagnostics.',
+          'Images or files you voluntarily attach in features that allow them.'
+        ]
+      },
+      usage: {
+        title: 'How we use information',
+        paragraphs: [
+          { text: 'We use information to:' }
+        ],
+        items: [
+          'Create and manage your account.',
+          'Provide secure access to the application.',
+          'Save and display your diaries, chats, reflections, and settings.',
+          'Respond to your messages in the spiritual counselor and improve the quality of the experience.',
+          'Prevent abuse, protect service security, and fix technical errors.',
+          'Comply with legal obligations or valid requests from competent authorities when applicable.'
+        ]
+      },
+      aiProviders: {
+        title: 'Artificial intelligence and external providers',
+        paragraphs: [
+          { text: 'Some features may send the text you write to artificial intelligence providers to generate responses. Avoid including sensitive information that you do not want processed in these features. We may also use infrastructure, database, hosting, email, or technical analytics providers to operate the application.' }
+        ],
+        items: []
+      },
+      sharing: {
+        title: 'When we share information',
+        paragraphs: [
+          { text: 'We do not sell your personal information. We may share information only in these cases:' }
+        ],
+        items: [
+          'With providers that help us operate the application and process data under our instructions.',
+          'When you choose to share a chat or diary entry through a private link.',
+          'When necessary for security, fraud prevention, technical support, or legal compliance.'
+        ]
+      },
+      security: {
+        title: 'Security',
+        paragraphs: [
+          { text: 'We apply reasonable measures to protect information, including authentication, session tokens, and access controls. Even so, no system connected to the internet can guarantee absolute security.' }
+        ],
+        items: []
+      },
+      retention: {
+        title: 'Retention and deletion',
+        paragraphs: [
+          { text: 'We retain information while your account is active or while it is necessary to provide the service, resolve incidents, comply with legal obligations, or protect application security. You can request deletion of your data by writing to', withEmail: true }
+        ],
+        items: []
+      },
+      children: {
+        title: 'Children privacy',
+        paragraphs: [
+          { text: 'Home With Christ is not specifically directed to children under 13. If you are a parent or guardian and believe that a child provided us personal information without authorization, contact us so we can review and delete the information when appropriate.' }
+        ],
+        items: []
+      },
+      rights: {
+        title: 'Your rights',
+        paragraphs: [
+          { text: 'You can request access, correction, or deletion of your personal information. You can also ask questions about how your data is handled by writing to the contact email listed in this policy.' }
+        ],
+        items: []
+      },
+      changes: {
+        title: 'Changes to this policy',
+        paragraphs: [
+          { text: 'We may update this policy to reflect changes in the application, providers, or legal requirements. We will publish the current version on this page and indicate the last updated date.' }
+        ],
+        items: []
+      }
+    }
+  },
   welcome: {
     login: 'Sign in',
     createAccount: 'Create account',
