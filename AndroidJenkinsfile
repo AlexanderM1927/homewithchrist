@@ -35,6 +35,12 @@ pipeline {
 
                     echo "[android] Building SPA..."
                     quasar build
+
+                    echo "[frontend] Creating version.json..."
+                    echo "{\"version\":\"${BUILD_NUMBER}-$(date +%s)\"}" > ./dist/spa/version.json
+
+                    echo "[frontend] Version file:"
+                    cat ./dist/spa/version.json
                     '''
                 }
             }
@@ -73,6 +79,7 @@ EOF
                     rm -rf android/.gradle
                     rm -rf android/build
                     rm -rf android/capacitor-cordova-android-plugins/build
+                    rm -rf android/app/src/main/assets/public
 
                     npm install
 
@@ -87,7 +94,10 @@ EOF
                 dir('./front/src-capacitor/android') {
                     sh '''
                     chmod +x gradlew
+                    
 
+                    sed -i "s/versionCode .*/versionCode ${BUILD_NUMBER}/" app/build.gradle
+                    sed -i "s/versionName \".*\"/versionName \"1.0.${BUILD_NUMBER}\"/" app/build.gradle
                     echo "[android] Generating signed AAB..."
                     ./gradlew bundleRelease
                     echo "[android] Generating apk to test..."
