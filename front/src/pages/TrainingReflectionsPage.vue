@@ -8,7 +8,7 @@
       </div>
     </div>
 
-    <q-form ref="formRef" class="q-gutter-md" @submit.prevent="onSubmit">
+    <q-form ref="formRef" class="q-gutter-y-md" @submit.prevent="onSubmit">
       <q-select
         v-model="form.topicId"
         :options="topicOptions"

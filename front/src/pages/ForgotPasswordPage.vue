@@ -10,7 +10,7 @@
       </q-card-section>
 
       <q-card-section>
-        <q-form @submit.prevent="onSubmit" class="q-gutter-md">
+        <q-form @submit.prevent="onSubmit" class="q-gutter-y-md">
           <q-input
             v-model="email"
             :label="$t('forgotPassword.email')"

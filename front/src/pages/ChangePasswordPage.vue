@@ -12,7 +12,7 @@
       <div class="text-body2 text-grey-6 text-center">{{ $t('changePassword.subtitle') }}</div>
     </div>
 
-    <q-form @submit.prevent="onSave" class="q-gutter-lg">
+    <q-form @submit.prevent="onSave" class="q-gutter-y-lg">
       <div class="pin-field">
         <div class="pin-label-row">
           <div class="text-caption text-grey-7">{{ $t('changePassword.currentPin') }}</div>

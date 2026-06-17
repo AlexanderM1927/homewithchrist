@@ -5,7 +5,7 @@
       <div class="text-h6">{{ $t('dailyVerses.title') }}</div>
     </div>
 
-    <q-form ref="formRef" @submit.prevent="onSubmit" class="q-gutter-md">
+    <q-form ref="formRef" @submit.prevent="onSubmit" class="q-gutter-y-md">
       <q-input
         v-model="form.reference"
         :label="$t('dailyVerses.reference')"

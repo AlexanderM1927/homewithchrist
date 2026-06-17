@@ -10,7 +10,7 @@
       </q-card-section>
 
       <q-card-section>
-        <q-form v-if="token" @submit.prevent="onSave" class="q-gutter-lg">
+        <q-form v-if="token" @submit.prevent="onSave" class="q-gutter-y-lg">
           <div class="pin-field">
             <div class="pin-label-row">
               <div class="text-caption text-grey-7">{{ $t('resetPassword.newPin') }}</div>

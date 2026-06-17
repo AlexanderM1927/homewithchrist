@@ -46,7 +46,7 @@
           />
         </div>
 
-        <q-form @submit.prevent="handleSubmit" class="q-gutter-md">
+        <q-form @submit.prevent="handleSubmit" class="q-gutter-y-md">
           <div class="name-field" v-if="isRegister">
             <div class="text-caption text-grey-7 q-mb-xs">{{ $t('login.name') }}</div>
             <div class="">
