@@ -37,6 +37,9 @@ pipeline {
                     echo "[backend] Copying config into dist..."
                     rm -rf ./dist/config
                     cp -r ./config ./dist/config
+
+                    echo "[backend] Verifying production artifact..."
+                    test -f ./dist/utils/locale.js
                     '''
                 }
             }
