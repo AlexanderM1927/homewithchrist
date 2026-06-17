@@ -3,11 +3,17 @@ const authService = require('../services/AuthService')
 const userRepository = require('../repositories/UserRepository')
 
 const REFRESH_COOKIE_NAME = 'refresh_token'
+const isProduction = process.env.NODE_ENV === 'production'
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días en ms
+}
+const CLEAR_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: COOKIE_OPTIONS.secure,
+  sameSite: COOKIE_OPTIONS.sameSite
 }
 
 class AuthController {
@@ -86,7 +92,7 @@ class AuthController {
 
       return res.status(200).json({ accessToken, user })
     } catch (err) {
-      res.clearCookie(REFRESH_COOKIE_NAME)
+      res.clearCookie(REFRESH_COOKIE_NAME, CLEAR_COOKIE_OPTIONS)
       return res.status(err.status || 500).json({ message: err.message })
     }
   }
@@ -102,7 +108,7 @@ class AuthController {
       await authService.logout(refreshToken)
     }
 
-    res.clearCookie(REFRESH_COOKIE_NAME)
+    res.clearCookie(REFRESH_COOKIE_NAME, CLEAR_COOKIE_OPTIONS)
     return res.status(200).json({ message: 'Sesión cerrada' })
   }
 
