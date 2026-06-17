@@ -15,7 +15,7 @@
       <q-avatar size="38px" class="q-mr-sm">
         <q-icon name="auto_awesome" color="primary" size="26px" />
       </q-avatar>
-      <div>
+      <div class="advisor-header-title">
         <div class="text-weight-bold text-dark" style="font-size:15px;">{{ $t('advisor.title') }}</div>
         <div class="text-caption text-grey-6">{{ currentChatTitle || $t('advisor.subtitle') }}</div>
       </div>
@@ -25,6 +25,7 @@
         flat
         color="primary"
         :label="$t('welcome.login')"
+        class="guest-login-btn"
         @click="goToLogin"
       />
       <template v-else>
@@ -492,6 +493,26 @@ onUnmounted(() => {
   position: sticky;
   top: 0;
   z-index: 20;
+}
+
+.advisor-header-title {
+  min-width: 0;
+}
+
+.advisor-header-title .text-caption {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.guest-login-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.guest-login-btn :deep(.q-btn__content) {
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .messages-area {
