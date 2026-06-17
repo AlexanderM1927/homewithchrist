@@ -14,7 +14,7 @@
       <div class="text-body2 text-grey-6">{{ $t('profile.subtitle') }}</div>
     </div>
 
-    <q-form ref="formRef" @submit.prevent="onSave" class="q-gutter-md">
+    <q-form ref="formRef" @submit.prevent="onSave" class="profile-form">
 
       <q-input
         v-model="form.name"
@@ -64,26 +64,28 @@
         </template>
       </q-select>
 
-      <q-btn
-        type="submit"
-        :label="$t('profile.save')"
-        color="primary"
-        unelevated
-        rounded
-        class="full-width q-mt-md"
-        :loading="saving"
-      />
+      <div class="profile-actions">
+        <q-btn
+          type="submit"
+          :label="$t('profile.save')"
+          color="primary"
+          unelevated
+          rounded
+          class="full-width"
+          :loading="saving"
+        />
 
-      <q-btn
-        :label="$t('profile.changePassword')"
-        icon="lock_reset"
-        color="primary"
-        outline
-        rounded
-        no-caps
-        class="full-width"
-        to="/change-password"
-      />
+        <q-btn
+          :label="$t('profile.changePassword')"
+          icon="lock_reset"
+          color="primary"
+          outline
+          rounded
+          no-caps
+          class="full-width"
+          to="/change-password"
+        />
+      </div>
 
     </q-form>
   </q-page>
@@ -141,5 +143,20 @@ async function onSave () {
 .profile-page {
   background-color: #F4F0FA;
   min-height: 100vh;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-actions {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 </style>
