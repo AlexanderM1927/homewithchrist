@@ -5,6 +5,7 @@ const trainingRepository = require('../repositories/TrainingRepository')
 const trainingReflectionRepository = require('../repositories/TrainingReflectionRepository')
 const bibleService = require('./BibleService')
 const aiProvider = require('./ai')
+const { localeInstruction } = require('../utils/locale')
 
 const REFLECTION_CONTEXT_LIMIT = 6
 const REFLECTION_CONTENT_LIMIT = 1500
@@ -92,7 +93,7 @@ class ChatService {
     }
   }
 
-  async sendMessage({ userId, requestChatId, userMessage, emit }) {
+  async sendMessage({ userId, requestChatId, userMessage, locale, emit }) {
     const chat = await this._resolveChat(userId, requestChatId, userMessage)
     emit({ chatId: chat.chat_id, title: chat.title })
 
@@ -100,6 +101,7 @@ class ChatService {
 
     const assistantContent = await this._generateResponse({
       userMessage,
+      locale,
       history,
       emit,
       metadata: { userId }
@@ -114,16 +116,17 @@ class ChatService {
     }
   }
 
-  async sendGuestMessage({ userMessage, emit }) {
+  async sendGuestMessage({ userMessage, locale, emit }) {
     await this._generateResponse({
       userMessage,
+      locale,
       history: [],
       emit,
       metadata: { guest: true }
     })
   }
 
-  async _generateResponse({ userMessage, history, emit, metadata }) {
+  async _generateResponse({ userMessage, locale, history, emit, metadata }) {
 
     emit({ phase: 'classifying' })
     const topics = await trainingRepository.findAllTopics()
@@ -161,7 +164,7 @@ class ChatService {
     }
 
     emit({ phase: 'generating' })
-    const messages = this._buildMessages(userMessage, verses, reflections, history)
+    const messages = this._buildMessages(userMessage, verses, reflections, history, locale)
     return aiProvider.streamChat(messages, emit, metadata)
   }
 
@@ -192,8 +195,11 @@ class ChatService {
     return trainingRepository.findVersesBySearchTerms(searchTerms, limit)
   }
 
-  _buildMessages(userMessage, verses, reflections, history) {
-    const messages = [{ role: 'system', content: SYSTEM_PROMPT }]
+  _buildMessages(userMessage, verses, reflections, history, locale) {
+    const messages = [{
+      role: 'system',
+      content: `${SYSTEM_PROMPT}\n${localeInstruction(locale)}`
+    }]
 
     for (const turn of history) {
       if ((turn.role === 'user' || turn.role === 'assistant') && turn.content) {

@@ -290,6 +290,7 @@ export default {
     name: 'Name',
     email: 'Email',
     phone: 'Phone / Mobile',
+    language: 'Language',
     save: 'Save changes',
     required: 'Required field',
     invalidEmail: 'Invalid email',

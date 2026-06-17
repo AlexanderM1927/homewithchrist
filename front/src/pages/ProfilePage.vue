@@ -51,6 +51,19 @@
         </template>
       </q-input>
 
+      <q-select
+        v-model="form.preferred_locale"
+        :options="localeOptions"
+        :label="$t('profile.language')"
+        emit-value
+        map-options
+        outlined
+      >
+        <template #prepend>
+          <q-icon name="language" color="primary" />
+        </template>
+      </q-select>
+
       <q-btn
         type="submit"
         :label="$t('profile.save')"
@@ -70,6 +83,7 @@ import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/auth'
+import { getLocaleOptions, getPreferredLocale } from 'src/utils/locale'
 
 const { t } = useI18n()
 const $q = useQuasar()
@@ -81,8 +95,10 @@ const saving = ref(false)
 const form = ref({
   name:  authStore.user?.name  || '',
   email: authStore.user?.email || '',
-  phone: authStore.user?.phone || ''
+  phone: authStore.user?.phone || '',
+  preferred_locale: authStore.user?.preferred_locale || getPreferredLocale()
 })
+const localeOptions = getLocaleOptions()
 
 const initials = computed(() => {
   const name = form.value.name || authStore.user?.name || '?'
@@ -98,7 +114,8 @@ async function onSave () {
     await authStore.updateProfile({
       name:  form.value.name.trim(),
       email: form.value.email.trim() || null,
-      phone: form.value.phone.trim()
+      phone: form.value.phone.trim(),
+      preferred_locale: form.value.preferred_locale
     })
     $q.notify({ type: 'positive', message: t('profile.saveSuccess') })
   } catch (err) {

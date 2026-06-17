@@ -2,6 +2,7 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const userRepository = require('../repositories/UserRepository')
+const { resolveSupportedLocale } = require('../utils/locale')
 
 const ACCESS_TOKEN_EXPIRY = '15m'
 const REFRESH_TOKEN_EXPIRY = '7d'
@@ -21,7 +22,8 @@ class AuthService {
       sub: user.user_id,
       name: user.name,
       phone: user.phone,
-      role: user.Role?.role_name || 'user'
+      role: user.Role?.role_name || 'user',
+      preferred_locale: user.preferred_locale || 'es-ES'
     }
 
     const accessToken = generateAccessToken(tokenPayload)
@@ -37,7 +39,8 @@ class AuthService {
         id: user.user_id,
         name: user.name,
         phone: user.phone,
-        role: user.Role?.role_name || 'user'
+        role: user.Role?.role_name || 'user',
+        preferred_locale: user.preferred_locale || 'es-ES'
       }
     }
   }
@@ -47,7 +50,7 @@ class AuthService {
    * @param {{ name: string, phone: string, pin: string }} data
    * @returns {Promise<{ accessToken: string, refreshToken: string, user: object }>}
    */
-  async register({ name, phone, pin }) {
+  async register({ name, phone, pin, preferred_locale }) {
     const existingUser = await userRepository.findByPhone(phone)
 
     if (existingUser) {
@@ -57,7 +60,12 @@ class AuthService {
     }
 
     const hashedPin = await bcrypt.hash(pin, SALT_ROUNDS)
-    await userRepository.create({ name, phone, password: hashedPin })
+    await userRepository.create({
+      name,
+      phone,
+      password: hashedPin,
+      preferred_locale: resolveSupportedLocale(preferred_locale)
+    })
     const user = await userRepository.findByPhone(phone)
 
     return this.issueSession(user)
@@ -68,8 +76,8 @@ class AuthService {
    * @param {{ phone: string, pin: string }} data
    * @returns {Promise<{ accessToken: string, refreshToken: string, user: object }>}
    */
-  async login({ phone, pin }) {
-    const user = await userRepository.findByPhone(phone)
+  async login({ phone, pin, preferred_locale }) {
+    let user = await userRepository.findByPhone(phone)
 
     if (!user) {
       const err = new Error('No encontramos una cuenta con ese telefono. Registrate para continuar.')
@@ -82,6 +90,12 @@ class AuthService {
       const err = new Error('Credenciales invalidas')
       err.status = 401
       throw err
+    }
+
+    if (!user.preferred_locale && preferred_locale) {
+      user = await userRepository.updateProfile(user.user_id, {
+        preferred_locale: resolveSupportedLocale(preferred_locale)
+      })
     }
 
     return this.issueSession(user)

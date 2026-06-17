@@ -1,4 +1,5 @@
 import ApiService from 'src/boot/api'
+import { getPreferredLocale } from 'src/utils/locale'
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8004/api'
 
@@ -41,13 +42,19 @@ class ChatService extends ApiService {
       headers['Authorization'] = `Bearer ${authStore.accessToken}`
     }
 
-    return this._stream(`${BASE_URL}/bot/chat`, { prompt, chatId }, headers, onToken, onMeta)
+    return this._stream(
+      `${BASE_URL}/bot/chat`,
+      { prompt, chatId, locale: getPreferredLocale() },
+      headers,
+      onToken,
+      onMeta
+    )
   }
 
   async guestChatStream (prompt, onToken) {
     return this._stream(
       `${BASE_URL}/bot/guest-chat`,
-      { prompt },
+      { prompt, locale: getPreferredLocale() },
       { 'Content-Type': 'application/json' },
       onToken
     )

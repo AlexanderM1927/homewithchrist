@@ -268,6 +268,7 @@ export default {
     name: 'Nombre',
     email: 'Correo electrónico',
     phone: 'Teléfono / Celular',
+    language: 'Idioma',
     save: 'Guardar cambios',
     required: 'Campo requerido',
     invalidEmail: 'Correo inválido',

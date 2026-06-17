@@ -24,7 +24,8 @@ class UserRepository {
       name: data.name,
       phone: data.phone,
       password: data.password,
-      role_id: data.role_id || 1
+      role_id: data.role_id || 1,
+      preferred_locale: data.preferred_locale || 'es-ES'
     })
   }
 
@@ -73,14 +74,15 @@ class UserRepository {
   /**
    * Actualiza nombre, email y teléfono de un usuario.
    * @param {number} userId
-   * @param {{ name?: string, email?: string, phone?: string }} data
+   * @param {{ name?: string, email?: string, phone?: string, preferred_locale?: string }} data
    * @returns {Promise<User>}
    */
-  async updateProfile(userId, { name, email, phone }) {
+  async updateProfile(userId, { name, email, phone, preferred_locale }) {
     const fields = {}
     if (name  !== undefined) fields.name  = name
     if (email !== undefined) fields.email = email || null
     if (phone !== undefined) fields.phone = phone
+    if (preferred_locale !== undefined) fields.preferred_locale = preferred_locale
     await User.update(fields, { where: { user_id: userId } })
     return this.findById(userId)
   }

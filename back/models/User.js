@@ -34,6 +34,10 @@ module.exports = (sequelize, DataTypes) => {
       refresh_token: {
         type: DataTypes.TEXT,
         allowNull: true
+      },
+      preferred_locale: {
+        type: DataTypes.STRING(10),
+        allowNull: true
       }
     },
     {

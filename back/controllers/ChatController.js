@@ -1,5 +1,6 @@
 'use strict'
 const chatService = require('../services/ChatService')
+const { resolveSupportedLocale } = require('../utils/locale')
 
 const GUEST_TRIAL_COOKIE = 'hope_guest_trial_used'
 const GUEST_TRIAL_MAX_AGE = 365 * 24 * 60 * 60 * 1000
@@ -76,6 +77,7 @@ class ChatController {
     const userId = req.user?.sub
     const userMessage = (req.body.prompt || '').trim()
     const requestChatId = Number(req.body.chatId)
+    const locale = resolveSupportedLocale(req.body.locale || req.user?.preferred_locale)
 
     if (!userId) {
       return res.status(401).json({ message: 'Usuario no autenticado' })
@@ -100,6 +102,7 @@ class ChatController {
         userId,
         requestChatId,
         userMessage,
+        locale,
         emit
       })
     } catch (err) {
@@ -119,6 +122,7 @@ class ChatController {
 
   async guestChat(req, res) {
     const userMessage = (req.body.prompt || '').trim()
+    const locale = resolveSupportedLocale(req.body.locale)
 
     if (req.cookies?.[GUEST_TRIAL_COOKIE] === '1') {
       return res.status(403).json({
@@ -152,7 +156,7 @@ class ChatController {
     }, 15000)
 
     try {
-      await chatService.sendGuestMessage({ userMessage, emit })
+      await chatService.sendGuestMessage({ userMessage, locale, emit })
     } catch (err) {
       console.error('[ChatController] Error en prueba publica:', err.message)
       emit({

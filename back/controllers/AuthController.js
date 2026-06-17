@@ -1,6 +1,7 @@
 'use strict'
 const authService = require('../services/AuthService')
 const userRepository = require('../repositories/UserRepository')
+const { resolveSupportedLocale } = require('../utils/locale')
 
 const REFRESH_COOKIE_NAME = 'refresh_token'
 const isProduction = process.env.NODE_ENV === 'production'
@@ -22,7 +23,7 @@ class AuthController {
    * Body: { phone, pin }
    */
   async login(req, res) {
-    const { phone, pin } = req.body
+    const { phone, pin, preferred_locale } = req.body
 
     if (!phone || !pin) {
       return res.status(400).json({ message: 'Teléfono y PIN son requeridos' })
@@ -32,7 +33,7 @@ class AuthController {
     }
 
     try {
-      const { accessToken, refreshToken, user } = await authService.login({ phone, pin })
+      const { accessToken, refreshToken, user } = await authService.login({ phone, pin, preferred_locale })
 
       res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS)
 
@@ -47,7 +48,7 @@ class AuthController {
    * Body: { name, phone, pin }
    */
   async register(req, res) {
-    const { name, phone, pin } = req.body
+    const { name, phone, pin, preferred_locale } = req.body
 
     if (!name || !phone || !pin) {
       return res.status(400).json({ message: 'Nombre, teléfono y PIN son requeridos' })
@@ -63,7 +64,8 @@ class AuthController {
       const { accessToken, refreshToken, user } = await authService.register({
         name: name.trim(),
         phone,
-        pin
+        pin,
+        preferred_locale
       })
 
       res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS)
@@ -125,6 +127,7 @@ class AuthController {
           name: u.name,
           phone: u.phone,
           email: u.email,
+          preferred_locale: u.preferred_locale,
           role: u.Role?.role_name,
           role_id: u.Role?.role_id
         }))
@@ -190,6 +193,7 @@ class AuthController {
           id: updatedUser.user_id,
           email: updatedUser.email,
           phone: updatedUser.phone,
+          preferred_locale: updatedUser.preferred_locale,
           role: updatedUser.Role?.role_name,
           role_id: updatedUser.Role?.role_id
         }
@@ -209,9 +213,9 @@ class AuthController {
    */
   async updateProfile(req, res) {
     const userId = req.user.sub
-    const { name, email, phone } = req.body
+    const { name, email, phone, preferred_locale } = req.body
 
-    if (!name && !email && phone === undefined) {
+    if (!name && !email && phone === undefined && preferred_locale === undefined) {
       return res.status(400).json({ message: 'No se enviaron campos para actualizar' })
     }
 
@@ -221,13 +225,21 @@ class AuthController {
     }
 
     try {
-      const updatedUser = await userRepository.updateProfile(userId, { name, email, phone })
+      const updatedUser = await userRepository.updateProfile(userId, {
+        name,
+        email,
+        phone,
+        preferred_locale: preferred_locale !== undefined
+          ? resolveSupportedLocale(preferred_locale)
+          : undefined
+      })
       return res.status(200).json({
         user: {
           id: updatedUser.user_id,
           name: updatedUser.name,
           email: updatedUser.email,
           phone: updatedUser.phone,
+          preferred_locale: updatedUser.preferred_locale,
           role: updatedUser.Role?.role_name
         }
       })

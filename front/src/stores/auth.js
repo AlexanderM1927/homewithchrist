@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import authService from 'src/services/AuthService'
+import { i18n } from 'src/boot/i18n'
+import { getPreferredLocale, setPreferredLocale } from 'src/utils/locale'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -22,9 +24,11 @@ export const useAuthStore = defineStore('auth', {
      * @param {{ phone: string, pin: string }} credentials
      */
     async login({ phone, pin }) {
-      const data = await authService.login({ phone, pin })
+      const preferred_locale = getPreferredLocale()
+      const data = await authService.login({ phone, pin, preferred_locale })
       this.accessToken = data.accessToken
       this.user = data.user
+      this.applyPreferredLocale(data.user?.preferred_locale || preferred_locale)
     },
 
     /**
@@ -32,9 +36,11 @@ export const useAuthStore = defineStore('auth', {
      * @param {{ name: string, phone: string, pin: string }} credentials
      */
     async register({ name, phone, pin }) {
-      const data = await authService.register({ name, phone, pin })
+      const preferred_locale = getPreferredLocale()
+      const data = await authService.register({ name, phone, pin, preferred_locale })
       this.accessToken = data.accessToken
       this.user = data.user
+      this.applyPreferredLocale(data.user?.preferred_locale || preferred_locale)
     },
 
     /**
@@ -46,6 +52,7 @@ export const useAuthStore = defineStore('auth', {
       const data = await authService.refresh()
       this.accessToken = data.accessToken
       if (data.user) this.user = data.user
+      if (data.user?.preferred_locale) this.applyPreferredLocale(data.user.preferred_locale)
       this.sessionChecked = true
       return data.accessToken
     },
@@ -60,7 +67,10 @@ export const useAuthStore = defineStore('auth', {
       try {
         const data = await authService.refresh()
         this.accessToken = data.accessToken
-        if (data.user) this.user = data.user
+        if (data.user) {
+          this.user = data.user
+          if (data.user.preferred_locale) this.applyPreferredLocale(data.user.preferred_locale)
+        }
       } catch {
         // No hay sesión activa — normal si el usuario no ha iniciado sesión
       }
@@ -87,7 +97,19 @@ export const useAuthStore = defineStore('auth', {
     async updateProfile(data) {
       const result = await authService.updateProfile(data)
       if (result.user) this.user = result.user
+      if (result.user?.preferred_locale) this.applyPreferredLocale(result.user.preferred_locale)
       return result
+    },
+
+    applyPreferredLocale(locale) {
+      const preferredLocale = setPreferredLocale(locale)
+      if (typeof i18n.global.locale === 'object') {
+        i18n.global.locale.value = preferredLocale
+      } else {
+        i18n.global.locale = preferredLocale
+      }
+      if (this.user) this.user.preferred_locale = preferredLocale
+      return preferredLocale
     }
   }
 })
