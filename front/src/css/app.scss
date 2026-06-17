@@ -14,6 +14,15 @@ body.platform-android.capacitor .q-page-container {
 	padding-top: var(--app-safe-area-top);
 }
 
+body.platform-android.capacitor .advisor-header,
+body.platform-android.capacitor .shared-header {
+	top: var(--app-safe-area-top);
+}
+
+body.platform-android.capacitor .language-switch {
+	top: calc(18px + var(--app-safe-area-top));
+}
+
 html,
 body,
 #q-app {
