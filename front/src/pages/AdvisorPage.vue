@@ -12,17 +12,18 @@
         class="q-mr-xs"
         @click="clearChat"
       />
-      <q-avatar size="38px" class="q-mr-sm">
+      <q-avatar size="38px">
         <q-icon name="auto_awesome" color="primary" size="26px" />
       </q-avatar>
-      <div class="advisor-header-title">
+      <div class="advisor-header-title col">
         <div class="text-weight-bold text-dark" style="font-size:15px;">{{ $t('advisor.title') }}</div>
         <div class="text-caption text-grey-6">{{ currentChatTitle || $t('advisor.subtitle') }}</div>
       </div>
-      <q-space />
       <q-btn
         v-if="guestMode"
         flat
+        dense
+        no-caps
         color="primary"
         :label="$t('welcome.login')"
         class="guest-login-btn"
@@ -81,7 +82,7 @@
         </div>
 
         <!-- AI message -->
-        <div v-else class="row justify-start items-end q-gutter-x-xs">
+        <div v-else class="message-row row justify-start items-end">
           <q-avatar size="28px" class="ai-avatar">
             <q-icon name="auto_awesome" color="white" size="16px" />
           </q-avatar>
@@ -98,7 +99,7 @@
 
     <!-- Input area -->
     <div class="input-area bg-white q-px-md q-py-sm" style="border-top: 1px solid #e0e0e0;">
-      <div class="row items-end no-wrap q-gutter-x-sm">
+      <div class="input-row row items-end no-wrap">
         <q-input
           v-model="inputText"
           type="textarea"
@@ -117,6 +118,7 @@
           unelevated
           color="primary"
           icon="send"
+          class="send-btn"
           :disable="!inputText.trim() || isLoading"
           @click="sendMessage"
         />
@@ -487,12 +489,16 @@ onUnmounted(() => {
 .advisor-page {
   background: #f8f5ff;
   height: 100%;
+  overflow-x: hidden;
 }
 
 .advisor-header {
   position: sticky;
   top: 0;
   z-index: 20;
+  gap: 8px;
+  overflow: hidden;
+  width: 100%;
 }
 
 .advisor-header-title {
@@ -507,6 +513,9 @@ onUnmounted(() => {
 
 .guest-login-btn {
   flex: 0 0 auto;
+  min-width: 0;
+  padding-left: 8px;
+  padding-right: 8px;
   white-space: nowrap;
 }
 
@@ -517,8 +526,33 @@ onUnmounted(() => {
 
 .messages-area {
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.message-row {
+  gap: 4px;
+}
+
+.input-area {
+  flex-shrink: 0;
+  overflow-x: hidden;
+}
+
+.input-row {
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+}
+
+.input-row :deep(.q-field) {
+  min-width: 0;
+}
+
+.send-btn {
+  flex: 0 0 auto;
 }
 
 .messages-area .full-height {
