@@ -13,6 +13,17 @@ pipeline {
     }
 
     stages {
+        stage('Debug Git') {
+            steps {
+                sh '''
+                echo "===== GIT ====="
+                pwd
+                git branch
+                git rev-parse HEAD
+                git log -1 --oneline
+                '''
+            }
+        }
         stage('Build Android') {
             tools {
                 nodejs 'node-22.22.3'
