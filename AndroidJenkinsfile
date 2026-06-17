@@ -95,6 +95,13 @@ EOF
                     sh '''
                     chmod +x gradlew
 
+                    echo "===== Updating Android Version ====="
+
+                    sed -i "s/versionCode .*/versionCode ${BUILD_NUMBER}/" app/build.gradle
+                    sed -i 's/versionName ".*"/versionName "1.0.'${BUILD_NUMBER}'"/' app/build.gradle
+
+                    grep -n "versionCode\|versionName" app/build.gradle
+
                     echo "[android] Generating signed AAB..."
                     ./gradlew bundleRelease
                     echo "[android] Generating apk to test..."
