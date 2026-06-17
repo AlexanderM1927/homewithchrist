@@ -44,25 +44,11 @@ class ApiService {
     }
 
     const url = `${BASE_URL}${this.prefix}${path}`
-    let response
-
-    try {
-      response = await fetch(url, {
-        ...fetchOptions,
-        headers,
-        credentials: 'include'
-      })
-    } catch (error) {
-      const appOrigin = window.location?.origin || 'origen desconocido'
-      const err = new Error(
-        `No se pudo conectar con la API (${BASE_URL}). ` +
-        `Origen de la app: ${appOrigin}. ` +
-        'Revisa tu conexion, la URL de la API, HTTPS y los origenes CORS permitidos.'
-      )
-      err.cause = error
-      err.isNetworkError = true
-      throw err
-    }
+    const response = await fetch(url, {
+      ...fetchOptions,
+      headers,
+      credentials: 'include'
+    })
 
     // Si el access token expiró, intentamos refrescarlo una sola vez.
     // _skipRetry lo usan las llamadas internas (ej: /auth/refresh) para evitar bucle infinito.
