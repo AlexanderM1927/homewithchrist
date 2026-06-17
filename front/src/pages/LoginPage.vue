@@ -318,6 +318,7 @@ const countries = [
   { name: 'Republica Dominicana', dial: '+1', code: 'DO' },
   { name: 'Cuba', dial: '+53', code: 'CU' },
   { name: 'Espana', dial: '+34', code: 'ES' },
+  { name: 'Canada', dial: '+1', code: 'CA' },
   { name: 'Estados Unidos', dial: '+1', code: 'US' }
 ]
 
