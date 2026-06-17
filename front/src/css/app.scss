@@ -10,6 +10,10 @@ body.platform-android.capacitor {
 	--app-safe-area-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
 }
 
+body.platform-android.capacitor .q-page-container {
+	padding-top: var(--app-safe-area-top);
+}
+
 html,
 body,
 #q-app {

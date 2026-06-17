@@ -213,7 +213,6 @@ onActivated(() => {
 
 .dashboard-header {
   border-bottom: 1px solid #eeeeee;
-  padding-top: calc(24px + var(--app-safe-area-top)) !important;
 }
 
 .verse-card {
