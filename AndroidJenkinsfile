@@ -100,7 +100,7 @@ EOF
                     sed -i "s/versionCode .*/versionCode ${BUILD_NUMBER}/" app/build.gradle
                     sed -i 's/versionName ".*"/versionName "1.0.'${BUILD_NUMBER}'"/' app/build.gradle
 
-                    grep -n "versionCode\|versionName" app/build.gradle
+                    grep -E "versionCode|versionName" app/build.gradle
 
                     echo "[android] Generating signed AAB..."
                     ./gradlew bundleRelease
