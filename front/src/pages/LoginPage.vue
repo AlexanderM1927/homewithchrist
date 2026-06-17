@@ -71,7 +71,7 @@
 
           <div class="phone-field">
             <div class="text-caption text-grey-7 q-mb-xs">{{ $t('login.phone') }}</div>
-            <div class="row no-wrap items-start q-gutter-x-sm">
+            <div class="phone-row row no-wrap items-start">
               <q-select
                 v-model="selectedCountry"
                 :options="countries"
@@ -101,7 +101,7 @@
                 v-model="phoneNumber"
                 outlined
                 dense
-                class="col"
+                class="col phone-input"
                 :placeholder="$t('login.phone')"
                 type="tel"
                 :rules="[
@@ -359,6 +359,15 @@ async function handleSubmit() {
 .country-select {
   width: 130px;
   flex-shrink: 0;
+}
+
+.phone-row {
+  gap: 8px;
+  min-width: 0;
+}
+
+.phone-input {
+  min-width: 0;
 }
 
 .country-code {
