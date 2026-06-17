@@ -34,7 +34,7 @@ pipeline {
                     npx icongenie generate -m capacitor -i ./public/logo.png
 
                     echo "[android] Building SPA..."
-                    quasar build
+                    quasar build -m capacitor
 
                     echo "[frontend] Updating Capacitor version..."
 
