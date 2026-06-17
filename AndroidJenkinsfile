@@ -40,8 +40,6 @@ pipeline {
 
                     echo "{\"version\":\"${BUILD_NUMBER}-$(date +%s)\"}" > ./src-capacitor/www/version.json
 
-                    cat .env
-
                     cat ./src-capacitor/www/version.json
                     '''
                 }
