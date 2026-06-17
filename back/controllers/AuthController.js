@@ -9,12 +9,20 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? 'none' : 'lax',
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días en ms
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias en ms
 }
 const CLEAR_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: COOKIE_OPTIONS.secure,
   sameSite: COOKIE_OPTIONS.sameSite
+}
+
+function getSessionMetadata(req, platform = 'web') {
+  return {
+    platform,
+    deviceName: req.body?.device_name || req.get('x-device-name') || null,
+    userAgent: req.get('user-agent') || null
+  }
 }
 
 class AuthController {
@@ -26,18 +34,47 @@ class AuthController {
     const { phone, pin, preferred_locale } = req.body
 
     if (!phone || !pin) {
-      return res.status(400).json({ message: 'Teléfono y PIN son requeridos' })
+      return res.status(400).json({ message: 'Telefono y PIN son requeridos' })
     }
     if (!/^\d{4}$/.test(pin)) {
-      return res.status(400).json({ message: 'El PIN debe ser de 4 dígitos' })
+      return res.status(400).json({ message: 'El PIN debe ser de 4 digitos' })
     }
 
     try {
-      const { accessToken, refreshToken, user } = await authService.login({ phone, pin, preferred_locale })
+      const { accessToken, refreshToken, user } = await authService.login({
+        phone,
+        pin,
+        preferred_locale,
+        sessionOptions: getSessionMetadata(req, 'web')
+      })
 
       res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS)
 
       return res.status(200).json({ accessToken, user })
+    } catch (err) {
+      return res.status(err.status || 500).json({ message: err.message })
+    }
+  }
+
+  async mobileLogin(req, res) {
+    const { phone, pin, preferred_locale } = req.body
+
+    if (!phone || !pin) {
+      return res.status(400).json({ message: 'Telefono y PIN son requeridos' })
+    }
+    if (!/^\d{4}$/.test(pin)) {
+      return res.status(400).json({ message: 'El PIN debe ser de 4 digitos' })
+    }
+
+    try {
+      const { accessToken, refreshToken, user } = await authService.login({
+        phone,
+        pin,
+        preferred_locale,
+        sessionOptions: getSessionMetadata(req, 'android')
+      })
+
+      return res.status(200).json({ accessToken, refreshToken, user })
     } catch (err) {
       return res.status(err.status || 500).json({ message: err.message })
     }
@@ -51,13 +88,13 @@ class AuthController {
     const { name, email, phone, pin, preferred_locale } = req.body
 
     if (!name || !phone || !pin) {
-      return res.status(400).json({ message: 'Nombre, teléfono y PIN son requeridos' })
+      return res.status(400).json({ message: 'Nombre, telefono y PIN son requeridos' })
     }
     if (name.trim().length < 2) {
       return res.status(400).json({ message: 'El nombre debe tener al menos 2 caracteres' })
     }
     if (!/^\d{4}$/.test(pin)) {
-      return res.status(400).json({ message: 'El PIN debe ser de 4 dígitos' })
+      return res.status(400).json({ message: 'El PIN debe ser de 4 digitos' })
     }
 
     if (email && !/.+@.+\..+/.test(email)) {
@@ -70,7 +107,8 @@ class AuthController {
         email: email?.trim() || null,
         phone,
         pin,
-        preferred_locale
+        preferred_locale,
+        sessionOptions: getSessionMetadata(req, 'web')
       })
 
       res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS)
@@ -78,7 +116,43 @@ class AuthController {
       return res.status(201).json({ accessToken, user })
     } catch (err) {
       if (err.name === 'SequelizeUniqueConstraintError') {
-        return res.status(409).json({ message: 'El correo o teléfono ya está en uso' })
+        return res.status(409).json({ message: 'El correo o telefono ya esta en uso' })
+      }
+      return res.status(err.status || 500).json({ message: err.message })
+    }
+  }
+
+  async mobileRegister(req, res) {
+    const { name, email, phone, pin, preferred_locale } = req.body
+
+    if (!name || !phone || !pin) {
+      return res.status(400).json({ message: 'Nombre, telefono y PIN son requeridos' })
+    }
+    if (name.trim().length < 2) {
+      return res.status(400).json({ message: 'El nombre debe tener al menos 2 caracteres' })
+    }
+    if (!/^\d{4}$/.test(pin)) {
+      return res.status(400).json({ message: 'El PIN debe ser de 4 digitos' })
+    }
+
+    if (email && !/.+@.+\..+/.test(email)) {
+      return res.status(400).json({ message: 'Correo invalido' })
+    }
+
+    try {
+      const { accessToken, refreshToken, user } = await authService.register({
+        name: name.trim(),
+        email: email?.trim() || null,
+        phone,
+        pin,
+        preferred_locale,
+        sessionOptions: getSessionMetadata(req, 'android')
+      })
+
+      return res.status(201).json({ accessToken, refreshToken, user })
+    } catch (err) {
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({ message: 'El correo o telefono ya esta en uso' })
       }
       return res.status(err.status || 500).json({ message: err.message })
     }
@@ -92,7 +166,7 @@ class AuthController {
     const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME]
 
     if (!refreshToken) {
-      return res.status(401).json({ message: 'No hay sesión activa' })
+      return res.status(401).json({ message: 'No hay sesion activa' })
     }
 
     try {
@@ -103,6 +177,21 @@ class AuthController {
       return res.status(200).json({ accessToken, user })
     } catch (err) {
       res.clearCookie(REFRESH_COOKIE_NAME, CLEAR_COOKIE_OPTIONS)
+      return res.status(err.status || 500).json({ message: err.message })
+    }
+  }
+
+  async mobileRefresh(req, res) {
+    const refreshToken = req.body?.refreshToken
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: 'No hay sesion activa' })
+    }
+
+    try {
+      const { accessToken, refreshToken: newRefreshToken, user } = await authService.refresh(refreshToken)
+      return res.status(200).json({ accessToken, refreshToken: newRefreshToken, user })
+    } catch (err) {
       return res.status(err.status || 500).json({ message: err.message })
     }
   }
@@ -119,7 +208,17 @@ class AuthController {
     }
 
     res.clearCookie(REFRESH_COOKIE_NAME, CLEAR_COOKIE_OPTIONS)
-    return res.status(200).json({ message: 'Sesión cerrada' })
+    return res.status(200).json({ message: 'Sesion cerrada' })
+  }
+
+  async mobileLogout(req, res) {
+    const refreshToken = req.body?.refreshToken
+
+    if (refreshToken) {
+      await authService.logout(refreshToken)
+    }
+
+    return res.status(200).json({ message: 'Sesion cerrada' })
   }
 
   /**
@@ -174,7 +273,7 @@ class AuthController {
    * GET /api/auth/users  (solo admin)
    * Devuelve la lista de todos los usuarios con su rol.
    */
-  async getUsers (req, res) {
+  async getUsers(req, res) {
     try {
       const users = await userRepository.findAll()
       return res.status(200).json({
@@ -197,7 +296,7 @@ class AuthController {
    * PUT /api/auth/users/:id/role  (solo admin)
    * Body: { role_id: number }
    */
-  async updateUserRole (req, res) {
+  async updateUserRole(req, res) {
     const userId = req.params.id
     const { role_id } = req.body
 
@@ -223,10 +322,10 @@ class AuthController {
 
   /**
    * PUT /api/auth/users/:id/contact  (solo admin)
-   * Actualiza correo y/o teléfono de un usuario.
+   * Actualiza correo y/o telefono de un usuario.
    * Body: { email?, phone? }
    */
-  async updateUserContact (req, res) {
+  async updateUserContact(req, res) {
     const userId = req.params.id
     const { email, phone } = req.body
 
@@ -235,7 +334,7 @@ class AuthController {
     }
 
     if (phone !== undefined && !/^\+?[\d\s\-()]{7,20}$/.test(phone)) {
-      return res.status(400).json({ message: 'Número de teléfono inválido' })
+      return res.status(400).json({ message: 'Numero de telefono invalido' })
     }
 
     try {
@@ -256,7 +355,7 @@ class AuthController {
       })
     } catch (err) {
       if (err.name === 'SequelizeUniqueConstraintError') {
-        return res.status(409).json({ message: 'El correo o teléfono ya está en uso' })
+        return res.status(409).json({ message: 'El correo o telefono ya esta en uso' })
       }
       return res.status(500).json({ message: err.message })
     }
@@ -264,7 +363,7 @@ class AuthController {
 
   /**
    * PUT /api/auth/profile
-   * Actualiza nombre, email y teléfono del usuario autenticado.
+   * Actualiza nombre, email y telefono del usuario autenticado.
    * Body: { name?, email?, phone? }
    */
   async updateProfile(req, res) {
@@ -275,9 +374,8 @@ class AuthController {
       return res.status(400).json({ message: 'No se enviaron campos para actualizar' })
     }
 
-    // Validar teléfono si se envía
     if (phone !== undefined && !/^\+?[\d\s\-()]{7,20}$/.test(phone)) {
-      return res.status(400).json({ message: 'Número de teléfono inválido' })
+      return res.status(400).json({ message: 'Numero de telefono invalido' })
     }
 
     try {
@@ -300,9 +398,8 @@ class AuthController {
         }
       })
     } catch (err) {
-      // Violación de unique en email o phone
       if (err.name === 'SequelizeUniqueConstraintError') {
-        return res.status(409).json({ message: 'El correo o teléfono ya está en uso' })
+        return res.status(409).json({ message: 'El correo o telefono ya esta en uso' })
       }
       return res.status(500).json({ message: err.message })
     }

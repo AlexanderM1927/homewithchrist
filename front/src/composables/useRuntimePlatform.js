@@ -22,7 +22,7 @@ export function getRuntimePlatform() {
     isAndroid,
     isIos,
     isNativeMobile,
-    canUseNativeBiometrics: isNativeMobile,
+    canUseNativeBiometrics: isCapacitor && isAndroid,
     canUseNativePush: isNativeMobile,
     canUseWebPush: !isCapacitor && hasWindowFeature('Notification') && hasNavigatorFeature('serviceWorker')
   }

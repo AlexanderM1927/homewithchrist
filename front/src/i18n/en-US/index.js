@@ -286,7 +286,14 @@ export default {
     hasAccount: 'Already have an account?',
     error: 'Error signing in',
     language: 'Language',
-    forgotPassword: 'Forgot my PIN'
+    forgotPassword: 'Forgot my PIN',
+    biometricCta: 'Sign in with fingerprint',
+    biometricTitle: 'Enable biometric sign-in',
+    biometricPrompt: 'You can use your fingerprint to sign in again on this Android device.',
+    biometricEnable: 'Enable',
+    biometricSkip: 'Not now',
+    biometricEnabled: 'Biometric sign-in enabled',
+    biometricError: 'Biometric sign-in could not be completed'
   },
   forgotPassword: {
     title: 'Recover PIN',

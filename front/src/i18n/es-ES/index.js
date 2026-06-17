@@ -264,7 +264,14 @@ export default {
     hasAccount: '¿Ya tienes cuenta?',
     error: 'Error al iniciar sesion',
     language: 'Idioma',
-    forgotPassword: 'Olvide mi clave'
+    forgotPassword: 'Olvide mi clave',
+    biometricCta: 'Ingresar con huella',
+    biometricTitle: 'Activar ingreso biometrico',
+    biometricPrompt: 'Puedes usar tu huella para volver a entrar en este dispositivo Android.',
+    biometricEnable: 'Activar',
+    biometricSkip: 'Ahora no',
+    biometricEnabled: 'Ingreso biometrico activado',
+    biometricError: 'No se pudo completar el ingreso biometrico'
   },
   forgotPassword: {
     title: 'Recuperar clave',

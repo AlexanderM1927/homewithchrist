@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const userRepository = require('../repositories/UserRepository')
+const userSessionRepository = require('../repositories/UserSessionRepository')
 const emailService = require('./EmailService')
 const passwordResetEmail = require('./emailTemplates/passwordResetEmail')
 const { resolveSupportedLocale } = require('../utils/locale')
@@ -12,6 +13,7 @@ const REFRESH_TOKEN_EXPIRY = '7d'
 const PASSWORD_RESET_TOKEN_EXPIRY = '20m'
 const SALT_ROUNDS = 12
 const SUPPORT_EMAIL = 'hwc@alexanderm.co'
+const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY })
@@ -49,9 +51,11 @@ function buildResetUrl(token, requestOrigin) {
 }
 
 class AuthService {
-  async issueSession(user) {
+  async issueSession(user, sessionOptions = {}) {
+    const sessionId = sessionOptions.sessionId || crypto.randomUUID()
     const tokenPayload = {
       sub: user.user_id,
+      sid: sessionId,
       name: user.name,
       phone: user.phone,
       role: user.Role?.role_name || 'user',
@@ -59,10 +63,25 @@ class AuthService {
     }
 
     const accessToken = generateAccessToken(tokenPayload)
-    const refreshToken = generateRefreshToken({ sub: user.user_id })
+    const refreshToken = generateRefreshToken({ sub: user.user_id, sid: sessionId })
 
     const hashedRefresh = await bcrypt.hash(refreshToken, 10)
-    await userRepository.saveRefreshToken(user.user_id, hashedRefresh)
+    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_MS)
+
+    if (sessionOptions.sessionId) {
+      await userSessionRepository.replaceRefreshToken(sessionId, hashedRefresh, expiresAt)
+    } else {
+      await userSessionRepository.create({
+        session_id: sessionId,
+        user_id: user.user_id,
+        refresh_token_hash: hashedRefresh,
+        platform: sessionOptions.platform || 'web',
+        device_name: sessionOptions.deviceName || null,
+        user_agent: sessionOptions.userAgent || null,
+        last_used_at: new Date(),
+        expires_at: expiresAt
+      })
+    }
 
     return {
       accessToken,
@@ -74,7 +93,8 @@ class AuthService {
         phone: user.phone,
         role: user.Role?.role_name || 'user',
         preferred_locale: user.preferred_locale || 'es-ES'
-      }
+      },
+      sessionId
     }
   }
 
@@ -83,7 +103,7 @@ class AuthService {
    * @param {{ name: string, email?: string|null, phone: string, pin: string }} data
    * @returns {Promise<{ accessToken: string, refreshToken: string, user: object }>}
    */
-  async register({ name, email, phone, pin, preferred_locale }) {
+  async register({ name, email, phone, pin, preferred_locale, sessionOptions }) {
     const existingUser = await userRepository.findByPhone(phone)
 
     if (existingUser) {
@@ -111,7 +131,7 @@ class AuthService {
     })
     const user = await userRepository.findByPhone(phone)
 
-    return this.issueSession(user)
+    return this.issueSession(user, sessionOptions)
   }
 
   /**
@@ -119,7 +139,7 @@ class AuthService {
    * @param {{ phone: string, pin: string }} data
    * @returns {Promise<{ accessToken: string, refreshToken: string, user: object }>}
    */
-  async login({ phone, pin, preferred_locale }) {
+  async login({ phone, pin, preferred_locale, sessionOptions }) {
     let user = await userRepository.findByPhone(phone)
 
     if (!user) {
@@ -141,7 +161,7 @@ class AuthService {
       })
     }
 
-    return this.issueSession(user)
+    return this.issueSession(user, sessionOptions)
   }
 
   /**
@@ -159,21 +179,52 @@ class AuthService {
       throw err
     }
 
-    const user = await userRepository.findById(payload.sub)
-    if (!user || !user.refresh_token) {
+    if (!payload.sid) {
+      const err = new Error('Sesion no compatible. Inicia sesion de nuevo')
+      err.status = 401
+      throw err
+    }
+
+    const session = await userSessionRepository.findActiveBySessionId(payload.sid)
+    if (!session) {
       const err = new Error('Sesion no encontrada')
       err.status = 401
       throw err
     }
 
-    const valid = await bcrypt.compare(refreshToken, user.refresh_token)
+    if (session.user_id !== payload.sub) {
+      const err = new Error('Sesion no valida')
+      err.status = 401
+      throw err
+    }
+
+    if (session.expires_at && new Date(session.expires_at).getTime() < Date.now()) {
+      await userSessionRepository.revokeSession(session.session_id)
+      const err = new Error('Sesion expirada')
+      err.status = 401
+      throw err
+    }
+
+    const valid = await bcrypt.compare(refreshToken, session.refresh_token_hash)
     if (!valid) {
       const err = new Error('Refresh token no valido')
       err.status = 401
       throw err
     }
 
-    return this.issueSession(user)
+    const user = await userRepository.findById(payload.sub)
+    if (!user) {
+      const err = new Error('Usuario no encontrado')
+      err.status = 401
+      throw err
+    }
+
+    return this.issueSession(user, {
+      sessionId: session.session_id,
+      platform: session.platform,
+      deviceName: session.device_name,
+      userAgent: session.user_agent
+    })
   }
 
   /**
@@ -183,7 +234,11 @@ class AuthService {
   async logout(refreshToken) {
     try {
       const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
-      await userRepository.saveRefreshToken(payload.sub, null)
+      if (payload.sid) {
+        await userSessionRepository.revokeSession(payload.sid)
+      } else if (payload.sub) {
+        await userSessionRepository.revokeAllForUser(payload.sub)
+      }
     } catch {
       // Si el token ya expiro, no hay nada que invalidar
     }
@@ -275,6 +330,7 @@ class AuthService {
     const hashedPin = await bcrypt.hash(newPin, SALT_ROUNDS)
     await userRepository.updatePassword(user.user_id, hashedPin)
     await userRepository.saveRefreshToken(user.user_id, null)
+    await userSessionRepository.revokeAllForUser(user.user_id)
   }
 }
 

@@ -1,15 +1,15 @@
 import { defineStore } from 'pinia'
 import authService from 'src/services/AuthService'
+import biometricAuthService from 'src/services/BiometricAuthService'
 import { i18n } from 'src/boot/i18n'
 import { getPreferredLocale, setPreferredLocale } from 'src/utils/locale'
+import { getRuntimePlatform } from 'src/composables/useRuntimePlatform'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    /** Access token en memoria (NO en localStorage) */
     accessToken: null,
-    /** Datos básicos del usuario */
+    refreshToken: null,
     user: null,
-    /** True una vez que se intentó renovar la sesión al arrancar (evita bucle infinito) */
     sessionChecked: false
   }),
 
@@ -19,81 +19,176 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    /**
-     * Llama al backend para iniciar sesión.
-     * @param {{ phone: string, pin: string }} credentials
-     */
     async login({ phone, pin }) {
       const preferred_locale = getPreferredLocale()
-      const data = await authService.login({ phone, pin, preferred_locale })
+      const runtimePlatform = getRuntimePlatform()
+      const data = runtimePlatform.canUseNativeBiometrics
+        ? await authService.mobileLogin({
+          phone,
+          pin,
+          preferred_locale,
+          device_name: 'Android Capacitor'
+        })
+        : await authService.login({ phone, pin, preferred_locale })
+
       this.accessToken = data.accessToken
+      this.refreshToken = data.refreshToken || null
       this.user = data.user
       this.applyPreferredLocale(data.user?.preferred_locale || preferred_locale)
+
+      if (runtimePlatform.canUseNativeBiometrics && data.refreshToken) {
+        await this.persistMobileSession(data.refreshToken)
+      }
     },
 
-    /**
-     * Llama al backend para registrar una cuenta nueva.
-     * @param {{ name: string, email?: string|null, phone: string, pin: string }} credentials
-     */
     async register({ name, email, phone, pin }) {
       const preferred_locale = getPreferredLocale()
-      const data = await authService.register({ name, email, phone, pin, preferred_locale })
+      const runtimePlatform = getRuntimePlatform()
+      const data = runtimePlatform.canUseNativeBiometrics
+        ? await authService.mobileRegister({
+          name,
+          email,
+          phone,
+          pin,
+          preferred_locale,
+          device_name: 'Android Capacitor'
+        })
+        : await authService.register({ name, email, phone, pin, preferred_locale })
+
       this.accessToken = data.accessToken
+      this.refreshToken = data.refreshToken || null
       this.user = data.user
       this.applyPreferredLocale(data.user?.preferred_locale || preferred_locale)
+
+      if (runtimePlatform.canUseNativeBiometrics && data.refreshToken) {
+        await this.persistMobileSession(data.refreshToken)
+      }
     },
 
-    /**
-     * Pide un nuevo access token usando el refresh token de la cookie HttpOnly.
-     * Lo llama el interceptor de api.js automáticamente.
-     * @returns {Promise<string>} El nuevo access token
-     */
     async refresh() {
-      const data = await authService.refresh()
+      const runtimePlatform = getRuntimePlatform()
+      const data = runtimePlatform.canUseNativeBiometrics
+        ? await this.refreshMobileSession({ allowStoredSession: true })
+        : await authService.refresh()
+
       this.accessToken = data.accessToken
+      if (data.refreshToken) this.refreshToken = data.refreshToken
       if (data.user) this.user = data.user
       if (data.user?.preferred_locale) this.applyPreferredLocale(data.user.preferred_locale)
       this.sessionChecked = true
       return data.accessToken
     },
 
-    /**
-     * Intenta renovar la sesión una única vez al arrancar la app.
-     * Llamado desde el guard del router.
-     */
     async checkSession() {
       if (this.sessionChecked) return
       this.sessionChecked = true
+
+      const runtimePlatform = getRuntimePlatform()
       try {
-        const data = await authService.refresh()
+        if (runtimePlatform.canUseNativeBiometrics && await biometricAuthService.isEnabled()) {
+          return
+        }
+
+        const data = runtimePlatform.canUseNativeBiometrics
+          ? await this.refreshMobileSession({ allowStoredSession: true })
+          : await authService.refresh()
+
         this.accessToken = data.accessToken
+        if (data.refreshToken) this.refreshToken = data.refreshToken
         if (data.user) {
           this.user = data.user
           if (data.user.preferred_locale) this.applyPreferredLocale(data.user.preferred_locale)
         }
       } catch {
-        // No hay sesión activa — normal si el usuario no ha iniciado sesión
+        // Sin sesion activa al arrancar
       }
     },
 
-    /**
-     * Cierra sesión: invalida el refresh token en el servidor y limpia el estado.
-     */
     async logout() {
+      const runtimePlatform = getRuntimePlatform()
       try {
-        await authService.logout()
+        if (runtimePlatform.canUseNativeBiometrics) {
+          await authService.mobileLogout(this.refreshToken)
+        } else {
+          await authService.logout()
+        }
       } catch {
         // Continuar aunque falle el servidor
       } finally {
-        this.accessToken = null
-        this.user = null
+        await this.clearSessionState()
+        await biometricAuthService.clearSession()
       }
     },
 
-    /**
-     * Actualiza el perfil del usuario (nombre, email, teléfono).
-     * @param {{ name?: string, email?: string, phone?: string }} data
-     */
+    async refreshMobileSession({ allowStoredSession = false } = {}) {
+      let refreshToken = this.refreshToken
+      let storedSession = null
+
+      if (!refreshToken && allowStoredSession) {
+        storedSession = await biometricAuthService.loadSession()
+        refreshToken = storedSession?.refreshToken || null
+      }
+
+      if (!refreshToken) {
+        const err = new Error('No hay sesion activa')
+        err.status = 401
+        throw err
+      }
+
+      const data = await authService.mobileRefresh(refreshToken)
+      this.refreshToken = data.refreshToken
+      await this.persistMobileSession(data.refreshToken, storedSession?.biometricEnabled === true)
+      return data
+    },
+
+    async persistMobileSession(refreshToken, biometricEnabled = null) {
+      const currentSession = await biometricAuthService.loadSession()
+      await biometricAuthService.saveSession({
+        refreshToken,
+        biometricEnabled: biometricEnabled ?? currentSession?.biometricEnabled === true,
+        enabledAt: currentSession?.enabledAt || null,
+        updatedAt: new Date().toISOString()
+      })
+    },
+
+    async enableBiometricLogin() {
+      if (!this.refreshToken) return
+      await biometricAuthService.saveSession({
+        refreshToken: this.refreshToken,
+        biometricEnabled: true,
+        enabledAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+    },
+
+    async loginWithBiometrics() {
+      await biometricAuthService.authenticate()
+      const data = await this.refreshMobileSession({ allowStoredSession: true })
+      this.accessToken = data.accessToken
+      this.refreshToken = data.refreshToken
+      if (data.user) {
+        this.user = data.user
+        if (data.user.preferred_locale) this.applyPreferredLocale(data.user.preferred_locale)
+      }
+      this.sessionChecked = true
+      return data
+    },
+
+    async hasBiometricLoginEnabled() {
+      return biometricAuthService.isEnabled()
+    },
+
+    async getBiometricAvailability() {
+      return biometricAuthService.getAvailability()
+    },
+
+    async clearSessionState() {
+      this.accessToken = null
+      this.refreshToken = null
+      this.user = null
+      this.sessionChecked = true
+    },
+
     async updateProfile(data) {
       const result = await authService.updateProfile(data)
       if (result.user) this.user = result.user
@@ -101,10 +196,6 @@ export const useAuthStore = defineStore('auth', {
       return result
     },
 
-    /**
-     * Cambia el PIN del usuario autenticado.
-     * @param {{ currentPin: string, newPin: string }} data
-     */
     async changePassword(data) {
       return authService.changePassword(data)
     },

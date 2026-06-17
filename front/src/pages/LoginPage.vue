@@ -188,6 +188,17 @@
             />
 
             <q-btn
+              v-if="showBiometricButton"
+              :label="$t('login.biometricCta')"
+              color="primary"
+              outline
+              class="full-width q-mt-sm"
+              icon="fingerprint"
+              :loading="biometricLoading"
+              @click="handleBiometricLogin"
+            />
+
+            <q-btn
               v-if="isLogin"
               flat
               dense
@@ -245,14 +256,17 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/auth'
 import { useI18n } from 'vue-i18n'
+import biometricAuthService from 'src/services/BiometricAuthService'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const $q = useQuasar()
 const { locale, t } = useI18n()
 
 const mode = ref(route.query.mode === 'register' ? 'register' : 'login')
@@ -265,6 +279,9 @@ const pinRefs = ref([])
 const showPin = ref(false)
 const errorMsg = ref('')
 const showRegisterInvite = ref(false)
+const biometricLoading = ref(false)
+const biometricAvailable = ref(false)
+const biometricEnabled = ref(false)
 
 const isLogin = computed(() => mode.value === 'login')
 const isRegister = computed(() => mode.value === 'register')
@@ -272,6 +289,7 @@ const modeSubtitle = computed(() => isRegister.value ? t('login.registerSubtitle
 const submitLabel = computed(() => isRegister.value ? t('login.registerSubmit') : t('login.submit'))
 const helperText = computed(() => isRegister.value ? t('login.hasAccount') : t('login.noAccount'))
 const helperActionLabel = computed(() => isRegister.value ? t('login.goToLogin') : t('login.goToRegister'))
+const showBiometricButton = computed(() => isLogin.value && biometricAvailable.value && biometricEnabled.value)
 
 const languageOptions = [
   { label: 'Espanol', value: 'es-ES', flag: '🇪🇸' },
@@ -335,6 +353,40 @@ const countries = [
 
 const selectedCountry = ref(countries[0])
 
+onMounted(async () => {
+  if (!biometricAuthService.isSupported()) return
+
+  const availability = await authStore.getBiometricAvailability()
+  biometricAvailable.value = availability.strongBiometryIsAvailable === true
+  biometricEnabled.value = await authStore.hasBiometricLoginEnabled()
+})
+
+async function maybeEnableBiometrics() {
+  if (!biometricAuthService.isSupported() || !biometricAvailable.value || biometricEnabled.value) return
+
+  try {
+    const confirmed = await new Promise((resolve) => {
+      $q.dialog({
+        title: t('login.biometricTitle'),
+        message: t('login.biometricPrompt'),
+        ok: { label: t('login.biometricEnable'), color: 'primary', unelevated: true },
+        cancel: { label: t('login.biometricSkip'), flat: true }
+      }).onOk(() => resolve(true)).onCancel(() => resolve(false))
+    })
+
+    if (!confirmed) return
+
+    await biometricAuthService.authenticate()
+    await authStore.enableBiometricLogin()
+    biometricEnabled.value = true
+    $q.notify({ type: 'positive', message: t('login.biometricEnabled') })
+  } catch (err) {
+    if (!biometricAuthService.isUserCancel(err)) {
+      $q.notify({ type: 'negative', message: err.message || t('login.biometricError') })
+    }
+  }
+}
+
 async function handleSubmit() {
   const pin = pinDigits.value.join('')
   if (pin.length < 4) {
@@ -354,8 +406,10 @@ async function handleSubmit() {
         phone: fullPhone,
         pin
       })
+      await maybeEnableBiometrics()
     } else {
       await authStore.login({ phone: fullPhone, pin })
+      await maybeEnableBiometrics()
     }
     await router.push('/')
   } catch (err) {
@@ -363,6 +417,23 @@ async function handleSubmit() {
     showRegisterInvite.value = !isRegister.value && err.status === 404
   } finally {
     loading.value = false
+  }
+}
+
+async function handleBiometricLogin() {
+  errorMsg.value = ''
+  showRegisterInvite.value = false
+  biometricLoading.value = true
+
+  try {
+    await authStore.loginWithBiometrics()
+    await router.push('/')
+  } catch (err) {
+    if (!biometricAuthService.isUserCancel(err)) {
+      errorMsg.value = err.message || t('login.biometricError')
+    }
+  } finally {
+    biometricLoading.value = false
   }
 }
 </script>
