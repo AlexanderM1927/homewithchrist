@@ -74,6 +74,17 @@
         :loading="saving"
       />
 
+      <q-btn
+        :label="$t('profile.changePassword')"
+        icon="lock_reset"
+        color="primary"
+        outline
+        rounded
+        no-caps
+        class="full-width"
+        to="/change-password"
+      />
+
     </q-form>
   </q-page>
 </template>

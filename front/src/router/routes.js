@@ -75,7 +75,8 @@ const routes = [
       { path: 'training-reflections', component: () => import('pages/TrainingReflectionsPage.vue'), meta: { requiresAdmin: true } },
       { path: 'users', component: () => import('pages/UsersPage.vue'), meta: { requiresAdmin: true } },
       { path: 'daily-verses', component: () => import('pages/DailyVersesPage.vue'), meta: { requiresAdmin: true } },
-      { path: 'profile', component: () => import('pages/ProfilePage.vue') }
+      { path: 'profile', component: () => import('pages/ProfilePage.vue') },
+      { path: 'change-password', component: () => import('pages/ChangePasswordPage.vue') }
     ]
   },
 

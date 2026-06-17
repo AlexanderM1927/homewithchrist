@@ -270,10 +270,24 @@ export default {
     phone: 'Teléfono / Celular',
     language: 'Idioma',
     save: 'Guardar cambios',
+    changePassword: 'Cambiar clave',
     required: 'Campo requerido',
     invalidEmail: 'Correo inválido',
     saveSuccess: 'Perfil actualizado correctamente',
     saveError: 'Error al actualizar el perfil'
+  },
+  changePassword: {
+    title: 'Cambiar clave',
+    subtitle: 'Actualiza tu clave de 4 dígitos para proteger tu cuenta',
+    currentPin: 'Clave actual',
+    newPin: 'Nueva clave',
+    confirmPin: 'Confirmar nueva clave',
+    save: 'Guardar nueva clave',
+    pinInvalid: 'La clave debe tener 4 dígitos',
+    samePin: 'La nueva clave debe ser diferente',
+    pinMismatch: 'Las claves no coinciden',
+    saveSuccess: 'Clave actualizada correctamente',
+    saveError: 'No se pudo actualizar la clave'
   },
   advisor: {
     title: 'Hope IA',

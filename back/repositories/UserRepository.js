@@ -39,6 +39,16 @@ class UserRepository {
   }
 
   /**
+   * Actualiza la clave/PIN hasheado de un usuario.
+   * @param {number} userId
+   * @param {string} password
+   */
+  async updatePassword(userId, password) {
+    await User.update({ password }, { where: { user_id: userId } })
+    return this.findById(userId)
+  }
+
+  /**
    * Busca un usuario por su ID.
    * @param {number} userId
    * @returns {Promise<User|null>}

@@ -145,6 +145,32 @@ class AuthService {
       // Si el token ya expiro, no hay nada que invalidar
     }
   }
+
+  /**
+   * Cambia el PIN del usuario.
+   * La opcion requireCurrentPin permite reutilizar este flujo en recuperacion de cuenta.
+   * @param {{ userId: number, currentPin?: string, newPin: string, requireCurrentPin?: boolean }} data
+   */
+  async changePassword({ userId, currentPin, newPin, requireCurrentPin = true }) {
+    const user = await userRepository.findById(userId)
+    if (!user) {
+      const err = new Error('Usuario no encontrado')
+      err.status = 404
+      throw err
+    }
+
+    if (requireCurrentPin) {
+      const valid = await bcrypt.compare(currentPin, user.password)
+      if (!valid) {
+        const err = new Error('La clave actual no es correcta')
+        err.status = 401
+        throw err
+      }
+    }
+
+    const hashedPin = await bcrypt.hash(newPin, SALT_ROUNDS)
+    await userRepository.updatePassword(userId, hashedPin)
+  }
 }
 
 module.exports = new AuthService()

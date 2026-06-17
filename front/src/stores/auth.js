@@ -101,6 +101,14 @@ export const useAuthStore = defineStore('auth', {
       return result
     },
 
+    /**
+     * Cambia el PIN del usuario autenticado.
+     * @param {{ currentPin: string, newPin: string }} data
+     */
+    async changePassword(data) {
+      return authService.changePassword(data)
+    },
+
     applyPreferredLocale(locale) {
       const preferredLocale = setPreferredLocale(locale)
       if (typeof i18n.global.locale === 'object') {

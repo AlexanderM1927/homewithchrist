@@ -292,10 +292,24 @@ export default {
     phone: 'Phone / Mobile',
     language: 'Language',
     save: 'Save changes',
+    changePassword: 'Change password',
     required: 'Required field',
     invalidEmail: 'Invalid email',
     saveSuccess: 'Profile updated successfully',
     saveError: 'Error updating profile'
+  },
+  changePassword: {
+    title: 'Change password',
+    subtitle: 'Update your 4-digit PIN to protect your account',
+    currentPin: 'Current PIN',
+    newPin: 'New PIN',
+    confirmPin: 'Confirm new PIN',
+    save: 'Save new PIN',
+    pinInvalid: 'PIN must be 4 digits',
+    samePin: 'The new PIN must be different',
+    pinMismatch: 'PINs do not match',
+    saveSuccess: 'PIN updated successfully',
+    saveError: 'Could not update PIN'
   },
   advisor: {
     title: 'Hope AI',

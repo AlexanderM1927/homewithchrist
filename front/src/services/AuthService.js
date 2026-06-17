@@ -54,6 +54,15 @@ class AuthService extends ApiService {
   }
 
   /**
+   * Cambia el PIN del usuario autenticado.
+   * @param {{ currentPin: string, newPin: string }} data
+   * @returns {Promise<{ message: string }>}
+   */
+  changePassword(data) {
+    return this.put('/password', data)
+  }
+
+  /**
    * Obtiene la lista de todos los usuarios (solo admin).
    * @returns {Promise<{ users: object[] }>}
    */

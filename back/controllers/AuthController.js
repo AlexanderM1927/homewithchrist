@@ -251,6 +251,33 @@ class AuthController {
       return res.status(500).json({ message: err.message })
     }
   }
+
+  /**
+   * PUT /api/auth/password
+   * Cambia el PIN del usuario autenticado.
+   * Body: { currentPin, newPin }
+   */
+  async changePassword(req, res) {
+    const userId = req.user.sub
+    const { currentPin, newPin } = req.body
+
+    if (!currentPin || !newPin) {
+      return res.status(400).json({ message: 'La clave actual y la nueva clave son requeridas' })
+    }
+    if (!/^\d{4}$/.test(currentPin) || !/^\d{4}$/.test(newPin)) {
+      return res.status(400).json({ message: 'La clave debe ser de 4 digitos' })
+    }
+    if (currentPin === newPin) {
+      return res.status(400).json({ message: 'La nueva clave debe ser diferente a la actual' })
+    }
+
+    try {
+      await authService.changePassword({ userId, currentPin, newPin })
+      return res.status(200).json({ message: 'Clave actualizada correctamente' })
+    } catch (err) {
+      return res.status(err.status || 500).json({ message: err.message })
+    }
+  }
 }
 
 module.exports = new AuthController()

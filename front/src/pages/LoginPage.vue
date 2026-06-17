@@ -114,14 +114,24 @@
           </div>
 
           <div class="pin-field">
-            <div class="text-caption text-grey-7 q-mb-xs">{{ $t('login.pin') }}</div>
+            <div class="pin-label-row">
+              <div class="text-caption text-grey-7">{{ $t('login.pin') }}</div>
+              <q-btn
+                flat
+                round
+                dense
+                size="sm"
+                :icon="showPin ? 'visibility_off' : 'visibility'"
+                @click="showPin = !showPin"
+              />
+            </div>
             <div class="row justify-center q-gutter-sm">
               <input
                 v-for="(_, i) in 4"
                 :key="i"
                 :ref="el => { if (el) pinRefs[i] = el }"
                 v-model="pinDigits[i]"
-                type="tel"
+                :type="showPin ? 'tel' : 'password'"
                 inputmode="numeric"
                 maxlength="1"
                 class="pin-box"
@@ -220,6 +230,7 @@ const phoneNumber = ref('')
 const loading = ref(false)
 const pinDigits = ref(['', '', '', ''])
 const pinRefs = ref([])
+const showPin = ref(false)
 const errorMsg = ref('')
 const showRegisterInvite = ref(false)
 
@@ -404,6 +415,15 @@ async function handleSubmit() {
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0;
+}
+
+.pin-label-row {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 248px;
+  margin: 0 auto 4px;
 }
 
 .pin-box {
