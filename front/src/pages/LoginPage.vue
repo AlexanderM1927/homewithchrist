@@ -69,6 +69,26 @@
             </div>
           </div>
 
+          <div class="email-field" v-if="isRegister">
+            <div class="text-caption text-grey-7 q-mb-xs">{{ $t('login.email') }}</div>
+            <q-input
+              v-model="email"
+              :label="$t('login.email')"
+              outlined
+              type="email"
+              maxlength="120"
+              :rules="[
+                val => !val || /.+@.+\..+/.test(val) || $t('login.invalidEmail')
+              ]"
+              lazy-rules
+            >
+              <template #prepend>
+                <q-icon name="email" />
+              </template>
+            </q-input>
+            <div class="text-caption text-grey-6 q-mt-xs">{{ $t('login.emailHint') }}</div>
+          </div>
+
           <div class="phone-field">
             <div class="text-caption text-grey-7 q-mb-xs">{{ $t('login.phone') }}</div>
             <div class="phone-row row no-wrap items-start">
@@ -226,6 +246,7 @@ const { locale, t } = useI18n()
 
 const mode = ref(route.query.mode === 'register' ? 'register' : 'login')
 const name = ref('')
+const email = ref('')
 const phoneNumber = ref('')
 const loading = ref(false)
 const pinDigits = ref(['', '', '', ''])
@@ -315,7 +336,12 @@ async function handleSubmit() {
   try {
     const fullPhone = `${selectedCountry.value.dial}${phoneNumber.value}`
     if (isRegister.value) {
-      await authStore.register({ name: name.value.trim(), phone: fullPhone, pin })
+      await authStore.register({
+        name: name.value.trim(),
+        email: email.value.trim() || null,
+        phone: fullPhone,
+        pin
+      })
     } else {
       await authStore.login({ phone: fullPhone, pin })
     }

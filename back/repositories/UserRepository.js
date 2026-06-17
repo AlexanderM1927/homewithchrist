@@ -15,13 +15,26 @@ class UserRepository {
   }
 
   /**
+   * Busca un usuario por correo.
+   * @param {string} email
+   * @returns {Promise<User|null>}
+   */
+  async findByEmail(email) {
+    return User.findOne({
+      where: { email },
+      include: [{ model: Role, attributes: ['role_name'] }]
+    })
+  }
+
+  /**
    * Crea un nuevo usuario.
-   * @param {{ name: string, phone: string, password: string, role_id?: number }} data
+   * @param {{ name: string, email?: string|null, phone: string, password: string, role_id?: number }} data
    * @returns {Promise<User>}
    */
   async create(data) {
     return User.create({
       name: data.name,
+      email: data.email || null,
       phone: data.phone,
       password: data.password,
       role_id: data.role_id || 1,

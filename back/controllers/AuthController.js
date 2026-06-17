@@ -45,10 +45,10 @@ class AuthController {
 
   /**
    * POST /api/auth/register
-   * Body: { name, phone, pin }
+   * Body: { name, email?, phone, pin }
    */
   async register(req, res) {
-    const { name, phone, pin, preferred_locale } = req.body
+    const { name, email, phone, pin, preferred_locale } = req.body
 
     if (!name || !phone || !pin) {
       return res.status(400).json({ message: 'Nombre, teléfono y PIN son requeridos' })
@@ -60,9 +60,14 @@ class AuthController {
       return res.status(400).json({ message: 'El PIN debe ser de 4 dígitos' })
     }
 
+    if (email && !/.+@.+\..+/.test(email)) {
+      return res.status(400).json({ message: 'Correo invalido' })
+    }
+
     try {
       const { accessToken, refreshToken, user } = await authService.register({
         name: name.trim(),
+        email: email?.trim() || null,
         phone,
         pin,
         preferred_locale
@@ -72,6 +77,9 @@ class AuthController {
 
       return res.status(201).json({ accessToken, user })
     } catch (err) {
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({ message: 'El correo o teléfono ya está en uso' })
+      }
       return res.status(err.status || 500).json({ message: err.message })
     }
   }

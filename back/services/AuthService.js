@@ -38,6 +38,7 @@ class AuthService {
       user: {
         id: user.user_id,
         name: user.name,
+        email: user.email,
         phone: user.phone,
         role: user.Role?.role_name || 'user',
         preferred_locale: user.preferred_locale || 'es-ES'
@@ -47,10 +48,10 @@ class AuthService {
 
   /**
    * Registra un usuario nuevo.
-   * @param {{ name: string, phone: string, pin: string }} data
+   * @param {{ name: string, email?: string|null, phone: string, pin: string }} data
    * @returns {Promise<{ accessToken: string, refreshToken: string, user: object }>}
    */
-  async register({ name, phone, pin, preferred_locale }) {
+  async register({ name, email, phone, pin, preferred_locale }) {
     const existingUser = await userRepository.findByPhone(phone)
 
     if (existingUser) {
@@ -59,9 +60,19 @@ class AuthService {
       throw err
     }
 
+    if (email) {
+      const existingEmail = await userRepository.findByEmail(email)
+      if (existingEmail) {
+        const err = new Error('Este correo ya esta registrado.')
+        err.status = 409
+        throw err
+      }
+    }
+
     const hashedPin = await bcrypt.hash(pin, SALT_ROUNDS)
     await userRepository.create({
       name,
+      email,
       phone,
       password: hashedPin,
       preferred_locale: resolveSupportedLocale(preferred_locale)

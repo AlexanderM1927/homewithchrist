@@ -33,11 +33,11 @@ export const useAuthStore = defineStore('auth', {
 
     /**
      * Llama al backend para registrar una cuenta nueva.
-     * @param {{ name: string, phone: string, pin: string }} credentials
+     * @param {{ name: string, email?: string|null, phone: string, pin: string }} credentials
      */
-    async register({ name, phone, pin }) {
+    async register({ name, email, phone, pin }) {
       const preferred_locale = getPreferredLocale()
-      const data = await authService.register({ name, phone, pin, preferred_locale })
+      const data = await authService.register({ name, email, phone, pin, preferred_locale })
       this.accessToken = data.accessToken
       this.user = data.user
       this.applyPreferredLocale(data.user?.preferred_locale || preferred_locale)
