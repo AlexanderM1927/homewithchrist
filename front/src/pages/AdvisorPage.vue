@@ -271,6 +271,22 @@ const pendingScrollAfterHistoryClose = ref(false)
 const sharing = ref(false)
 let mobileScrollTimer = null
 
+function getGuestTrialUsed () {
+  try {
+    return localStorage.getItem('hope_guest_trial_used') === '1'
+  } catch {
+    return false
+  }
+}
+
+function setGuestTrialUsed () {
+  try {
+    localStorage.setItem('hope_guest_trial_used', '1')
+  } catch {
+    // Storage can be unavailable in private/restricted browser contexts.
+  }
+}
+
 const suggestions = computed(() => tm('advisor.suggestions'))
 
 async function scrollToBottom () {
@@ -380,7 +396,7 @@ async function sendMessage () {
   const text = inputText.value.trim()
   if (!text || isLoading.value) return
 
-  if (guestMode.value && localStorage.getItem('hope_guest_trial_used') === '1') {
+  if (guestMode.value && getGuestTrialUsed()) {
     loginModalOpen.value = true
     return
   }
@@ -409,7 +425,7 @@ async function sendMessage () {
 
     if (guestMode.value) {
       await chatService.guestChatStream(text, onToken)
-      localStorage.setItem('hope_guest_trial_used', '1')
+      setGuestTrialUsed()
     } else {
       await chatService.chatStream(
         text,
@@ -424,7 +440,7 @@ async function sendMessage () {
     }
   } catch (err) {
     if (err.message === 'guest_trial_used') {
-      localStorage.setItem('hope_guest_trial_used', '1')
+      setGuestTrialUsed()
       messages.value.splice(-2, 2)
       loginModalOpen.value = true
       return

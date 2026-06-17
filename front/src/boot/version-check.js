@@ -1,8 +1,24 @@
 import { defineBoot } from '#q-app/wrappers'
 
+function getStoredVersion() {
+  try {
+    return localStorage.getItem('app_version')
+  } catch {
+    return null
+  }
+}
+
+function setStoredVersion(version) {
+  try {
+    localStorage.setItem('app_version', version)
+  } catch {
+    // Storage can be unavailable in private/restricted browser contexts.
+  }
+}
+
 async function runVersionCheck() {
   try {
-    const currentVersion = localStorage.getItem('app_version')
+    const currentVersion = getStoredVersion()
 
     const response = await fetch('/version.json?nocache=' + Date.now())
     if (!response.ok) return
@@ -27,7 +43,7 @@ async function runVersionCheck() {
     if (!nextVersion) return
 
     if (currentVersion && currentVersion !== nextVersion) {
-      localStorage.setItem('app_version', nextVersion)
+      setStoredVersion(nextVersion)
 
       // limpia caches del navegador
       if ('caches' in window) {
@@ -40,7 +56,7 @@ async function runVersionCheck() {
 
       window.location.reload()
     } else {
-      localStorage.setItem('app_version', nextVersion)
+      setStoredVersion(nextVersion)
     }
   } catch (error) {
     console.error('Version check failed', error)
