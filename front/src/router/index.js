@@ -4,6 +4,7 @@ import { createRouter, createMemoryHistory, createWebHistory, createWebHashHisto
 import routes from './routes'
 
 const CHUNK_RELOAD_KEY = 'chunk_reload_attempted'
+const GUEST_AUTH_PATHS = ['/login', '/welcome', '/forgot-password', '/reset-password']
 
 function isChunkLoadError(error) {
   const message = error instanceof Error ? error.message : String(error)
@@ -40,7 +41,7 @@ export default defineRouter(({ store }) => {
     if (!authStore.isAuthenticated && !to.meta.public) {
       return '/welcome'
     }
-    if (authStore.isAuthenticated && (to.path === '/login' || to.path === '/welcome')) {
+    if (authStore.isAuthenticated && GUEST_AUTH_PATHS.includes(to.path)) {
       return '/'
     }
     if (to.meta.requiresAdmin && !authStore.isAdmin) {

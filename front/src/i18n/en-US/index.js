@@ -285,7 +285,32 @@ export default {
     noAccount: 'Do not have an account?',
     hasAccount: 'Already have an account?',
     error: 'Error signing in',
-    language: 'Language'
+    language: 'Language',
+    forgotPassword: 'Forgot my PIN'
+  },
+  forgotPassword: {
+    title: 'Recover PIN',
+    subtitle: 'Enter the email linked to your account and we will send you a link to create a new PIN.',
+    email: 'Email',
+    emailRequired: 'Email is required',
+    invalidEmail: 'Invalid email',
+    submit: 'Send recovery email',
+    success: 'We sent you an email to recover your PIN',
+    error: 'Could not send the recovery email',
+    backToLogin: 'Back to sign in'
+  },
+  resetPassword: {
+    title: 'New PIN',
+    subtitle: 'Create a new 4-digit PIN to access your account.',
+    newPin: 'New PIN',
+    confirmPin: 'Confirm new PIN',
+    save: 'Save new PIN',
+    pinInvalid: 'PIN must be 4 digits',
+    pinMismatch: 'PINs do not match',
+    missingToken: 'The recovery link is not valid.',
+    saveSuccess: 'PIN updated successfully',
+    saveError: 'Could not update PIN',
+    backToLogin: 'Back to sign in'
   },
   profile: {
     title: 'My Profile',

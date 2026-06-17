@@ -28,6 +28,24 @@ class AuthService extends ApiService {
   }
 
   /**
+   * Solicita un enlace para recuperar la clave.
+   * @param {{ email: string }} data
+   * @returns {Promise<{ message: string }>}
+   */
+  forgotPassword(data) {
+    return this.post('/forgot-password', data, { _skipRetry: true })
+  }
+
+  /**
+   * Restablece la clave usando el token enviado por correo.
+   * @param {{ token: string, newPin: string }} data
+   * @returns {Promise<{ message: string }>}
+   */
+  resetPassword(data) {
+    return this.post('/reset-password', data, { _skipRetry: true })
+  }
+
+  /**
    * Solicita un nuevo access token usando el refresh token de la cookie HttpOnly.
    * Usa _skipRetry para no entrar en el interceptor de auto-refresh (evita bucle infinito).
    * @returns {Promise<{ accessToken: string }>}

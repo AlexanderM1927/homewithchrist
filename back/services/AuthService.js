@@ -1,12 +1,17 @@
 'use strict'
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
 const userRepository = require('../repositories/UserRepository')
+const emailService = require('./EmailService')
+const passwordResetEmail = require('./emailTemplates/passwordResetEmail')
 const { resolveSupportedLocale } = require('../utils/locale')
 
 const ACCESS_TOKEN_EXPIRY = '15m'
 const REFRESH_TOKEN_EXPIRY = '7d'
+const PASSWORD_RESET_TOKEN_EXPIRY = '20m'
 const SALT_ROUNDS = 12
+const SUPPORT_EMAIL = 'admin@alexanderm.co'
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY })
@@ -14,6 +19,33 @@ function generateAccessToken(payload) {
 
 function generateRefreshToken(payload) {
   return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY })
+}
+
+function getPasswordResetSecret() {
+  return process.env.JWT_RESET_SECRET || process.env.JWT_ACCESS_SECRET
+}
+
+function passwordFingerprint(password) {
+  return crypto.createHash('sha256').update(password).digest('hex')
+}
+
+function getFrontendBaseUrl(requestOrigin) {
+  if (process.env.FRONTEND_URL) return process.env.FRONTEND_URL
+  if (process.env.APP_URL) return process.env.APP_URL
+
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean)
+
+  if (requestOrigin && allowedOrigins.includes(requestOrigin)) return requestOrigin
+  return allowedOrigins[0] || 'http://localhost:9000'
+}
+
+function buildResetUrl(token, requestOrigin) {
+  const url = new URL('/reset-password', getFrontendBaseUrl(requestOrigin))
+  url.searchParams.set('token', token)
+  return url.toString()
 }
 
 class AuthService {
@@ -181,6 +213,68 @@ class AuthService {
 
     const hashedPin = await bcrypt.hash(newPin, SALT_ROUNDS)
     await userRepository.updatePassword(userId, hashedPin)
+  }
+
+  /**
+   * Envia un enlace temporal para recuperar la clave de una cuenta.
+   * @param {{ email: string, requestOrigin?: string }} data
+   */
+  async requestPasswordReset({ email, requestOrigin }) {
+    const user = await userRepository.findByEmail(email)
+
+    if (!user) {
+      const err = new Error(`El correo no esta vinculado a ninguna cuenta. Si necesitas recuperar una cuenta en especifico, envia un correo a ${SUPPORT_EMAIL}.`)
+      err.status = 404
+      throw err
+    }
+
+    const token = jwt.sign(
+      {
+        sub: user.user_id,
+        purpose: 'password_reset',
+        password_fingerprint: passwordFingerprint(user.password)
+      },
+      getPasswordResetSecret(),
+      { expiresIn: PASSWORD_RESET_TOKEN_EXPIRY }
+    )
+
+    const resetUrl = buildResetUrl(token, requestOrigin)
+    await emailService.sendMail({
+      to: user.email,
+      ...passwordResetEmail({ user, resetUrl })
+    })
+  }
+
+  /**
+   * Restablece la clave usando el token enviado por correo.
+   * @param {{ token: string, newPin: string }} data
+   */
+  async resetPassword({ token, newPin }) {
+    let payload
+    try {
+      payload = jwt.verify(token, getPasswordResetSecret())
+    } catch {
+      const err = new Error('El enlace de recuperacion es invalido o expiro')
+      err.status = 401
+      throw err
+    }
+
+    if (payload.purpose !== 'password_reset') {
+      const err = new Error('El enlace de recuperacion es invalido')
+      err.status = 401
+      throw err
+    }
+
+    const user = await userRepository.findById(payload.sub)
+    if (!user || passwordFingerprint(user.password) !== payload.password_fingerprint) {
+      const err = new Error('El enlace de recuperacion ya no es valido')
+      err.status = 401
+      throw err
+    }
+
+    const hashedPin = await bcrypt.hash(newPin, SALT_ROUNDS)
+    await userRepository.updatePassword(user.user_id, hashedPin)
+    await userRepository.saveRefreshToken(user.user_id, null)
   }
 }
 

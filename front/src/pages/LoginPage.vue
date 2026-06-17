@@ -187,6 +187,17 @@
               :loading="loading"
             />
 
+            <q-btn
+              v-if="isLogin"
+              flat
+              dense
+              no-caps
+              color="primary"
+              :label="$t('login.forgotPassword')"
+              class="full-width q-mt-sm"
+              to="/forgot-password"
+            />
+
             <div class="mode-helper text-center q-mt-md">
               <span class="text-grey-7">{{ helperText }}</span>
               <q-btn

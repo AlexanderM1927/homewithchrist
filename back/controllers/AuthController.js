@@ -123,6 +123,54 @@ class AuthController {
   }
 
   /**
+   * POST /api/auth/forgot-password
+   * Body: { email }
+   */
+  async forgotPassword(req, res) {
+    const { email } = req.body
+    const cleanEmail = email?.trim()
+
+    if (!cleanEmail) {
+      return res.status(400).json({ message: 'El correo es requerido' })
+    }
+    if (!/.+@.+\..+/.test(cleanEmail)) {
+      return res.status(400).json({ message: 'Correo invalido' })
+    }
+
+    try {
+      await authService.requestPasswordReset({
+        email: cleanEmail,
+        requestOrigin: req.get('origin')
+      })
+      return res.status(200).json({ message: 'Te enviamos un correo para recuperar tu clave' })
+    } catch (err) {
+      return res.status(err.status || 500).json({ message: err.message })
+    }
+  }
+
+  /**
+   * POST /api/auth/reset-password
+   * Body: { token, newPin }
+   */
+  async resetPassword(req, res) {
+    const { token, newPin } = req.body
+
+    if (!token || !newPin) {
+      return res.status(400).json({ message: 'El token y la nueva clave son requeridos' })
+    }
+    if (!/^\d{4}$/.test(newPin)) {
+      return res.status(400).json({ message: 'La clave debe ser de 4 digitos' })
+    }
+
+    try {
+      await authService.resetPassword({ token, newPin })
+      return res.status(200).json({ message: 'Clave actualizada correctamente' })
+    } catch (err) {
+      return res.status(err.status || 500).json({ message: err.message })
+    }
+  }
+
+  /**
    * GET /api/auth/users  (solo admin)
    * Devuelve la lista de todos los usuarios con su rol.
    */

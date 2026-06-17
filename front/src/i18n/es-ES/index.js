@@ -263,7 +263,32 @@ export default {
     noAccount: '¿No tienes cuenta?',
     hasAccount: '¿Ya tienes cuenta?',
     error: 'Error al iniciar sesion',
-    language: 'Idioma'
+    language: 'Idioma',
+    forgotPassword: 'Olvide mi clave'
+  },
+  forgotPassword: {
+    title: 'Recuperar clave',
+    subtitle: 'Escribe el correo vinculado a tu cuenta y te enviaremos un enlace para crear una nueva clave.',
+    email: 'Correo electronico',
+    emailRequired: 'El correo es requerido',
+    invalidEmail: 'Correo invalido',
+    submit: 'Enviar correo de recuperacion',
+    success: 'Te enviamos un correo para recuperar tu clave',
+    error: 'No se pudo enviar el correo de recuperacion',
+    backToLogin: 'Volver al ingreso'
+  },
+  resetPassword: {
+    title: 'Nueva clave',
+    subtitle: 'Crea una nueva clave de 4 digitos para ingresar a tu cuenta.',
+    newPin: 'Nueva clave',
+    confirmPin: 'Confirmar nueva clave',
+    save: 'Guardar nueva clave',
+    pinInvalid: 'La clave debe tener 4 digitos',
+    pinMismatch: 'Las claves no coinciden',
+    missingToken: 'El enlace de recuperacion no es valido.',
+    saveSuccess: 'Clave actualizada correctamente',
+    saveError: 'No se pudo actualizar la clave',
+    backToLogin: 'Volver al ingreso'
   },
   profile: {
     title: 'Mi perfil',

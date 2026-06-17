@@ -20,6 +20,22 @@ const routes = [
     ]
   },
   {
+    path: '/forgot-password',
+    component: () => import('layouts/LoginLayout.vue'),
+    meta: { public: true },
+    children: [
+      { path: '', component: () => import('pages/ForgotPasswordPage.vue') }
+    ]
+  },
+  {
+    path: '/reset-password',
+    component: () => import('layouts/LoginLayout.vue'),
+    meta: { public: true },
+    children: [
+      { path: '', component: () => import('pages/ResetPasswordPage.vue') }
+    ]
+  },
+  {
     path: '/privacy-policy',
     component: () => import('layouts/LoginLayout.vue'),
     meta: { public: true },
