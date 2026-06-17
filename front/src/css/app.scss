@@ -5,6 +5,11 @@
 	--app-safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+body.platform-android.capacitor {
+	--app-safe-area-top: max(env(safe-area-inset-top, 0px), 24px);
+	--app-safe-area-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
 html,
 body,
 #q-app {
