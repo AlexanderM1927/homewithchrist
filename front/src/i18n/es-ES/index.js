@@ -522,7 +522,7 @@ export default {
     email: {
       title: 'Correo de contacto',
       description: 'Usa este correo para soporte, solicitudes de privacidad o consultas generales.',
-      value: 'admin@alexanderm.co'
+      value: 'hwc@alexanderm.co'
     },
     support: {
       title: 'Soporte',

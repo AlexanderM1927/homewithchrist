@@ -58,7 +58,7 @@ import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const { locale, t, tm } = useI18n()
-const contactEmail = 'admin@alexanderm.co'
+const contactEmail = 'hwc@alexanderm.co'
 
 const languageOptions = [
   { label: 'Espanol', value: 'es-ES', flag: '🇪🇸' },

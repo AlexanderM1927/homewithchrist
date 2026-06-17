@@ -11,7 +11,7 @@ const ACCESS_TOKEN_EXPIRY = '15m'
 const REFRESH_TOKEN_EXPIRY = '7d'
 const PASSWORD_RESET_TOKEN_EXPIRY = '20m'
 const SALT_ROUNDS = 12
-const SUPPORT_EMAIL = 'admin@alexanderm.co'
+const SUPPORT_EMAIL = 'hwc@alexanderm.co'
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY })

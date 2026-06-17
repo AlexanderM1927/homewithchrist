@@ -544,7 +544,7 @@ export default {
     email: {
       title: 'Contact email',
       description: 'Use this email for support, privacy requests, or general questions.',
-      value: 'admin@alexanderm.co'
+      value: 'hwc@alexanderm.co'
     },
     support: {
       title: 'Support',
