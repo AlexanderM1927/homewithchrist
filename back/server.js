@@ -41,6 +41,10 @@ app.use('/api/bible', bibleRoutes)
 app.use('/api/daily-verses', dailyVerseRoutes)
 app.use('/api/training-reflections', trainingReflectionRoutes)
 
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' })
+})
+
 app.use(express.static(publicDir))
 
 app.get('/{*path}', (req, res) => {
