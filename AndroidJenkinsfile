@@ -94,10 +94,7 @@ EOF
                 dir('./front/src-capacitor/android') {
                     sh '''
                     chmod +x gradlew
-                    
 
-                    sed -i "s/versionCode .*/versionCode ${BUILD_NUMBER}/" app/build.gradle
-                    sed -i "s/versionName \".*\"/versionName \"1.0.${BUILD_NUMBER}\"/" app/build.gradle
                     echo "[android] Generating signed AAB..."
                     ./gradlew bundleRelease
                     echo "[android] Generating apk to test..."
