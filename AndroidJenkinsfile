@@ -13,17 +13,6 @@ pipeline {
     }
 
     stages {
-        stage('Debug Git') {
-            steps {
-                sh '''
-                echo "===== GIT ====="
-                pwd
-                git branch
-                git rev-parse HEAD
-                git log -1 --oneline
-                '''
-            }
-        }
         stage('Build Android') {
             tools {
                 nodejs 'node-22.22.3'
@@ -50,7 +39,10 @@ pipeline {
                     echo "[frontend] Creating version.json..."
                     echo "{\"version\":\"${BUILD_NUMBER}-$(date +%s)\"}" > ./dist/spa/version.json
 
-                    echo "[frontend] Version file:"
+                    echo "===== DIST ====="
+                    find dist -type f | head -20
+
+                    echo "===== VERSION FILE ====="
                     cat ./dist/spa/version.json
                     '''
                 }
@@ -95,6 +87,9 @@ EOF
                     npm install
 
                     npx cap sync android
+
+                    echo "===== CAPACITOR VERSION FILE ====="
+                    cat android/app/src/main/assets/public/version.json || true
                     '''
                 }
             }
