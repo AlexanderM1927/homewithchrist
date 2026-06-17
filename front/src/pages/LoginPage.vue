@@ -1,5 +1,19 @@
 <template>
   <q-page class="login-page flex flex-center">
+    <div
+      style="
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: black;
+        color: white;
+        padding: 10px;
+        z-index: 99999;
+      "
+    >
+      API: {{ apiUrl }}
+    </div>
     <div class="language-switch" aria-label="Language selector">
       <q-btn
         v-for="option in languageOptions"
@@ -204,6 +218,7 @@
 </template>
 
 <script setup>
+const apiUrl = import.meta.env.VITE_API_URL
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from 'src/stores/auth'
