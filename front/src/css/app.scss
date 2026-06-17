@@ -1,5 +1,16 @@
 // app global css
 
+:root {
+	--app-safe-area-top: env(safe-area-inset-top, 0px);
+	--app-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html,
+body,
+#q-app {
+	min-height: 100%;
+}
+
 body {
 	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }

@@ -94,6 +94,11 @@ async function logout () {
 <style scoped>
 .q-footer {
   border-top: 1px solid #e0e0e0;
+  padding-bottom: var(--app-safe-area-bottom);
+}
+
+.q-tabs {
+  min-height: 56px;
 }
 
 .logout-loading :deep(.q-icon) {
