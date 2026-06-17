@@ -206,7 +206,7 @@
                 no-caps
                 color="primary"
                 :label="helperActionLabel"
-                class="q-ml-xs"
+                class="mode-helper-action"
                 @click="switchMode(isRegister ? 'login' : 'register')"
               />
             </div>
@@ -394,6 +394,15 @@ async function handleSubmit() {
 }
 
 .mode-helper {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mode-helper-action {
   min-height: 32px;
 }
 
