@@ -1,29 +1,32 @@
 <template>
   <q-page class="shared-chat-page column">
     <header class="shared-header bg-white q-px-md q-py-sm row items-center no-wrap">
-      <q-avatar size="38px" class="q-mr-sm">
+      <q-avatar size="38px">
         <q-icon name="auto_awesome" color="primary" size="26px" />
       </q-avatar>
-      <div>
+      <div class="shared-header-title col">
         <div class="text-weight-bold text-dark" style="font-size:15px;">{{ $t('advisor.title') }}</div>
         <div class="text-caption text-grey-6">{{ chat?.title || $t('sharedChat.readOnly') }}</div>
-      <q-chip color="grey-3" text-color="grey-8" icon="visibility" :label="$t('sharedChat.readOnly')" />
-
       </div>
-      <q-space />
       <q-btn
         v-if="authStore.isAuthenticated"
         flat
+        dense
+        no-caps
         color="primary"
         icon="chat"
         :label="$t('nav.advisor')"
+        class="shared-header-action"
         @click="router.push('/advisor')"
       />
       <q-btn
         v-if="!authStore.isAuthenticated"
         flat
+        dense
+        no-caps
         color="primary"
         :label="$t('welcome.login')"
+        class="shared-header-action"
         @click="router.push('/login')"
       />
     </header>
@@ -45,7 +48,7 @@
           <div v-if="msg.role === 'user'" class="row justify-end">
             <div class="user-bubble q-px-md q-py-sm">{{ msg.content }}</div>
           </div>
-          <div v-else class="row justify-start items-end q-gutter-x-xs">
+          <div v-else class="message-row row justify-start items-end">
             <q-avatar size="28px" class="ai-avatar">
               <q-icon name="auto_awesome" color="white" size="16px" />
             </q-avatar>
@@ -120,19 +123,52 @@ onMounted(async () => {
 <style scoped>
 .shared-chat-page {
   background: #f8f5ff;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 .shared-header {
-  position: sticky;
-  top: 0;
+  flex: 0 0 auto;
   z-index: 20;
+  gap: 8px;
+  overflow: hidden;
+  width: 100%;
   border-bottom: 1px solid #e0e0e0;
+}
+
+.shared-header-title {
+  min-width: 0;
+}
+
+.shared-header-title .text-caption {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shared-header-action {
+  flex: 0 0 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.shared-header-action :deep(.q-btn__content) {
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .messages-area {
   width: 100%;
   max-width: 760px;
   margin: 0 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+.message-row {
+  gap: 4px;
 }
 
 .user-bubble,

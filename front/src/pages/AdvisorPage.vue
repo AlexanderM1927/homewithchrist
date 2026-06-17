@@ -279,9 +279,6 @@ async function scrollToBottom () {
   if (container) {
     container.scrollTop = container.scrollHeight
   }
-
-  // Fallback for layouts where page scroll is handled by the document instead of the inner container.
-  window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' })
 }
 
 function forceScrollToBottom (retries = 12, delay = 40) {
@@ -490,11 +487,11 @@ onUnmounted(() => {
   background: #f8f5ff;
   height: 100%;
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 .advisor-header {
-  position: sticky;
-  top: 0;
+  flex: 0 0 auto;
   z-index: 20;
   gap: 8px;
   overflow: hidden;
