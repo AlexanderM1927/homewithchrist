@@ -5,12 +5,12 @@ class TrainingReflectionService extends ApiService {
     super('/training-reflections')
   }
 
-  getReflections({ page = 1, limit = 20, search = '', createdBy = null } = {}) {
+  getReflections({ page = 1, limit = 20, search = '', createdBy = null } = {}, options) {
     const params = new URLSearchParams({ page, limit })
     const trimmedSearch = search.trim()
     if (trimmedSearch) params.set('search', trimmedSearch)
     if (createdBy) params.set('createdBy', createdBy)
-    return this.get(`/?${params.toString()}`)
+    return this.get(`/?${params.toString()}`, options)
   }
 
   createReflection(payload) {

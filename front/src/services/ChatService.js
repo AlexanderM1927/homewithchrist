@@ -11,12 +11,12 @@ class ChatService extends ApiService {
     super('/bot')
   }
 
-  async getRecentChats (limit = 10) {
-    return this.get(`/chats?limit=${limit}`)
+  async getRecentChats (limit = 10, options) {
+    return this.get(`/chats?limit=${limit}`, options)
   }
 
-  async getChat (chatId) {
-    return this.get(`/chats/${chatId}`)
+  async getChat (chatId, options) {
+    return this.get(`/chats/${chatId}`, options)
   }
 
   async shareChat (chatId) {

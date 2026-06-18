@@ -191,6 +191,7 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import chatService from 'src/services/ChatService'
 import { buildPublicAppUrl } from 'src/utils/publicAppUrl'
+import createLatestRequest from 'src/utils/createLatestRequest'
 
 const props = defineProps({
   guestMode: {
@@ -203,6 +204,7 @@ const { t, tm, locale } = useI18n()
 const router = useRouter()
 const $q = useQuasar()
 const guestMode = computed(() => props.guestMode)
+const recentChatsRequest = createLatestRequest()
 
 function formatMessage (text) {
   const escaped = text
@@ -355,12 +357,16 @@ function clearChat () {
 async function loadRecentChats () {
   historyLoading.value = true
   try {
-    const data = await chatService.getRecentChats(10)
+    const result = await recentChatsRequest.run(signal => chatService.getRecentChats(10, { signal }))
+    if (result.status !== 'success') return
+    const data = result.value
     chatHistory.value = data.chats || []
   } catch {
     chatHistory.value = []
   } finally {
-    historyLoading.value = false
+    if (!recentChatsRequest.isRunning()) {
+      historyLoading.value = false
+    }
   }
 }
 

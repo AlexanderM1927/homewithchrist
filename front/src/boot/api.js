@@ -1,5 +1,38 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8004/api'
 
+const DEFAULT_RETRY_DELAYS_MS = [400, 1200]
+const RETRYABLE_GET_STATUS = new Set([408, 429, 502, 503, 504, 520, 522, 524])
+
+function sleep(ms, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException('The operation was aborted.', 'AbortError'))
+      return
+    }
+
+    const timeoutId = setTimeout(() => {
+      cleanup()
+      resolve()
+    }, ms)
+
+    function onAbort() {
+      cleanup()
+      reject(new DOMException('The operation was aborted.', 'AbortError'))
+    }
+
+    function cleanup() {
+      clearTimeout(timeoutId)
+      signal?.removeEventListener('abort', onAbort)
+    }
+
+    signal?.addEventListener('abort', onAbort, { once: true })
+  })
+}
+
+function isAbortError(err, signal) {
+  return signal?.aborted || err?.name === 'AbortError'
+}
+
 class ApiService {
   constructor(prefix = '') {
     this.prefix = prefix
@@ -8,9 +41,17 @@ class ApiService {
   async _request(path, options = {}) {
     const { useAuthStore } = await import('src/stores/auth')
     const authStore = useAuthStore()
-    const { _skipRetry, ...fetchOptions } = options
+    const {
+      _skipRetry,
+      _skipAuthRetry,
+      retryDelaysMs = DEFAULT_RETRY_DELAYS_MS,
+      retryStatuses = RETRYABLE_GET_STATUS,
+      retryNetworkErrors = true,
+      ...fetchOptions
+    } = options
 
     const isFormData = fetchOptions.body instanceof FormData
+    const method = (fetchOptions.method || 'GET').toUpperCase()
     const headers = {
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(fetchOptions.headers || {})
@@ -21,44 +62,78 @@ class ApiService {
     }
 
     const url = `${API_BASE_URL}${this.prefix}${path}`
-    const response = await fetch(url, {
-      ...fetchOptions,
-      headers,
-      credentials: 'include'
-    })
+    const maxRetries = method === 'GET' ? retryDelaysMs.length : 0
 
-    if (response.status === 401 && !_skipRetry) {
+    let attempt = 0
+
+    while (true) {
+      let response
+
       try {
-        await authStore.refresh()
-        return this._request(path, { ...options, _skipRetry: true })
-      } catch {
-        await authStore.clearSessionState()
-        throw new Error('Sesion expirada')
+        response = await fetch(url, {
+          ...fetchOptions,
+          headers,
+          credentials: 'include'
+        })
+      } catch (err) {
+        if (isAbortError(err, fetchOptions.signal)) {
+          throw err
+        }
+
+        const canRetryNetworkError = method === 'GET' && retryNetworkErrors && attempt < maxRetries
+        if (canRetryNetworkError) {
+          await sleep(retryDelaysMs[attempt], fetchOptions.signal)
+          attempt += 1
+          continue
+        }
+        throw err
       }
-    }
 
-    const contentType = response.headers.get('content-type') || ''
-    const responseText = await response.text()
-    let data = null
-
-    if (responseText && contentType.includes('application/json')) {
-      try {
-        data = JSON.parse(responseText)
-      } catch {
-        data = null
+      if (response.status === 401 && !(_skipAuthRetry || _skipRetry)) {
+        try {
+          await authStore.refresh()
+          return this._request(path, {
+            ...options,
+            _skipAuthRetry: true,
+            _skipRetry: true
+          })
+        } catch {
+          await authStore.clearSessionState()
+          throw new Error('Sesion expirada')
+        }
       }
-    }
 
-    if (!response.ok) {
-      const fallbackMessages = {
-        413: 'El archivo es demasiado grande. Usa una imagen de 5 MB o menos.'
+      const contentType = response.headers.get('content-type') || ''
+      const responseText = await response.text()
+      let data = null
+
+      if (responseText && contentType.includes('application/json')) {
+        try {
+          data = JSON.parse(responseText)
+        } catch {
+          data = null
+        }
       }
-      const err = new Error(data?.message || fallbackMessages[response.status] || 'Error en la peticion')
-      err.status = response.status
-      throw err
-    }
 
-    return data ?? {}
+      if (!response.ok) {
+        const fallbackMessages = {
+          413: 'El archivo es demasiado grande. Usa una imagen de 5 MB o menos.'
+        }
+        const err = new Error(data?.message || fallbackMessages[response.status] || 'Error en la peticion')
+        err.status = response.status
+
+        const canRetryStatus = method === 'GET' && retryStatuses.has(response.status) && attempt < maxRetries
+        if (canRetryStatus) {
+          await sleep(retryDelaysMs[attempt], fetchOptions.signal)
+          attempt += 1
+          continue
+        }
+
+        throw err
+      }
+
+      return data ?? {}
+    }
   }
 
   get(path, options) {

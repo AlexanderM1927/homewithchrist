@@ -124,6 +124,7 @@ import { computed, onActivated, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import bibleService from 'src/services/BibleService'
+import createLatestRequest from 'src/utils/createLatestRequest'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -144,6 +145,11 @@ const loadingChapters = ref(false)
 const loadingVerses = ref(false)
 const searching = ref(false)
 const initialized = ref(false)
+const versionsRequest = createLatestRequest()
+const booksRequest = createLatestRequest()
+const chaptersRequest = createLatestRequest()
+const versesRequest = createLatestRequest()
+const searchRequest = createLatestRequest()
 
 const normalizedSearch = computed(() => searchText.value?.trim() || '')
 const showingSearch = computed(() => normalizedSearch.value.length >= 2)
@@ -168,14 +174,20 @@ async function initialize() {
 
   loadingVersions.value = true
   try {
-    versions.value = await bibleService.getVersions()
-    selectedVersion.value = versions.value.includes('BJ') ? 'BJ' : versions.value[0] || ''
+    const result = await versionsRequest.run(signal => bibleService.getVersions({ signal }))
+    if (result.status !== 'success') return
+    const nextVersions = result.value
+
+    versions.value = nextVersions
+    selectedVersion.value = nextVersions.includes('BJ') ? 'BJ' : nextVersions[0] || ''
     await loadBooks()
     initialized.value = true
   } catch {
     $q.notify({ type: 'negative', message: t('bible.loadError') })
   } finally {
-    loadingVersions.value = false
+    if (!versionsRequest.isRunning()) {
+      loadingVersions.value = false
+    }
   }
 }
 
@@ -187,14 +199,20 @@ async function handleVersionChange() {
 async function loadBooks() {
   loadingBooks.value = true
   try {
-    books.value = await bibleService.getBooks(selectedVersion.value)
-    filteredBooks.value = [...books.value]
-    selectedBook.value = books.value[0] || ''
+    const result = await booksRequest.run(signal => bibleService.getBooks(selectedVersion.value, { signal }))
+    if (result.status !== 'success') return
+    const nextBooks = result.value
+
+    books.value = nextBooks
+    filteredBooks.value = [...nextBooks]
+    selectedBook.value = nextBooks[0] || ''
     await loadChapters()
   } catch {
     $q.notify({ type: 'negative', message: t('bible.loadError') })
   } finally {
-    loadingBooks.value = false
+    if (!booksRequest.isRunning()) {
+      loadingBooks.value = false
+    }
   }
 }
 
@@ -207,16 +225,22 @@ async function loadChapters() {
 
   loadingChapters.value = true
   try {
-    chapters.value = await bibleService.getChapters({
+    const result = await chaptersRequest.run(signal => bibleService.getChapters({
       book: selectedBook.value,
       version: selectedVersion.value
-    })
-    selectedChapter.value = chapters.value[0] || null
+    }, { signal }))
+    if (result.status !== 'success') return
+    const nextChapters = result.value
+
+    chapters.value = nextChapters
+    selectedChapter.value = nextChapters[0] || null
     await loadVerses()
   } catch {
     $q.notify({ type: 'negative', message: t('bible.loadError') })
   } finally {
-    loadingChapters.value = false
+    if (!chaptersRequest.isRunning()) {
+      loadingChapters.value = false
+    }
   }
 }
 
@@ -225,20 +249,28 @@ async function loadVerses() {
 
   loadingVerses.value = true
   try {
-    verses.value = await bibleService.getVerses({
+    const result = await versesRequest.run(signal => bibleService.getVerses({
       book: selectedBook.value,
       chapter: selectedChapter.value,
       version: selectedVersion.value
-    })
+    }, { signal }))
+    if (result.status !== 'success') return
+    const nextVerses = result.value
+
+    verses.value = nextVerses
   } catch {
     $q.notify({ type: 'negative', message: t('bible.loadError') })
   } finally {
-    loadingVerses.value = false
+    if (!versesRequest.isRunning()) {
+      loadingVerses.value = false
+    }
   }
 }
 
 async function handleSearchChange() {
   if (!showingSearch.value) {
+    searchRequest.cancel()
+    searching.value = false
     searchResults.value = []
     return
   }
@@ -249,18 +281,26 @@ async function handleSearchChange() {
 async function searchVerses() {
   searching.value = true
   try {
-    searchResults.value = await bibleService.search({
+    const result = await searchRequest.run(signal => bibleService.search({
       query: normalizedSearch.value,
       version: selectedVersion.value
-    })
+    }, { signal }))
+    if (result.status !== 'success') return
+    const results = result.value
+
+    searchResults.value = results
   } catch {
     $q.notify({ type: 'negative', message: t('bible.searchError') })
   } finally {
-    searching.value = false
+    if (!searchRequest.isRunning()) {
+      searching.value = false
+    }
   }
 }
 
 function clearSearch() {
+  searchRequest.cancel()
+  searching.value = false
   searchText.value = ''
   searchResults.value = []
 }

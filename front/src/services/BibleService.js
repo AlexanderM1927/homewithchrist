@@ -5,32 +5,32 @@ class BibleService extends ApiService {
     super('/bible')
   }
 
-  getVersions() {
-    return this.get('/versions')
+  getVersions(options) {
+    return this.get('/versions', options)
   }
 
-  getBooks(version) {
+  getBooks(version, options) {
     const params = new URLSearchParams()
     if (version) params.set('version', version)
-    return this.get(`/books?${params.toString()}`)
+    return this.get(`/books?${params.toString()}`, options)
   }
 
-  getChapters({ book, version }) {
+  getChapters({ book, version }, options) {
     const params = new URLSearchParams({ book })
     if (version) params.set('version', version)
-    return this.get(`/chapters?${params.toString()}`)
+    return this.get(`/chapters?${params.toString()}`, options)
   }
 
-  getVerses({ book, chapter, version }) {
+  getVerses({ book, chapter, version }, options) {
     const params = new URLSearchParams({ book, chapter })
     if (version) params.set('version', version)
-    return this.get(`/verses?${params.toString()}`)
+    return this.get(`/verses?${params.toString()}`, options)
   }
 
-  search({ query, version, limit = 30 }) {
+  search({ query, version, limit = 30 }, options) {
     const params = new URLSearchParams({ q: query, limit })
     if (version) params.set('version', version)
-    return this.get(`/search?${params.toString()}`)
+    return this.get(`/search?${params.toString()}`, options)
   }
 }
 

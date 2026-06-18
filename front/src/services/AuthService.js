@@ -57,8 +57,8 @@ class AuthService extends ApiService {
     return this.delete('/account')
   }
 
-  getUsers() {
-    return this.get('/users')
+  getUsers(options) {
+    return this.get('/users', options)
   }
 
   updateUserRole(userId, roleId) {

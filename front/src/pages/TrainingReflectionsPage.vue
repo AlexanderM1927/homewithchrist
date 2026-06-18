@@ -111,6 +111,7 @@ import TableFilters from 'src/components/TableFilters.vue'
 import authService from 'src/services/AuthService'
 import trainingService from 'src/services/TrainingService'
 import reflectionService from 'src/services/TrainingReflectionService'
+import createLatestRequest from 'src/utils/createLatestRequest'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -129,6 +130,9 @@ const saving = ref(false)
 const updating = ref(false)
 const deletingId = ref(null)
 const editDialog = ref(false)
+const reflectionsRequest = createLatestRequest()
+const topicsRequest = createLatestRequest()
+const usersRequest = createLatestRequest()
 
 const columns = computed(() => [
   { name: 'topic', label: t('trainingReflections.topic'), field: row => row.Topic?.name || '', align: 'left' },
@@ -149,39 +153,53 @@ function truncate(message) {
 async function loadReflections(page = 1, limit = pagination.value.rowsPerPage) {
   loading.value = true
   try {
-    const data = await reflectionService.getReflections({ page, limit, ...filters.value })
+    const result = await reflectionsRequest.run(signal =>
+      reflectionService.getReflections({ page, limit, ...filters.value }, { signal })
+    )
+    if (result.status !== 'success') return
+    const data = result.value
     reflections.value = data
     pagination.value = { ...pagination.value, page: data.page, rowsNumber: data.total }
   } catch (err) {
     $q.notify({ type: 'negative', message: err.message || t('trainingReflections.loadError') })
   } finally {
-    loading.value = false
+    if (!reflectionsRequest.isRunning()) {
+      loading.value = false
+    }
   }
 }
 
 async function loadTopics() {
   loadingTopics.value = true
   try {
-    const topics = await trainingService.getTopics()
+    const result = await topicsRequest.run(signal => trainingService.getTopics({ signal }))
+    if (result.status !== 'success') return
+    const topics = result.value
     topicOptions.value = topics.map(topic => ({ label: topic.name, value: topic.id }))
   } catch {
     $q.notify({ type: 'negative', message: t('trainingReflections.loadTopicsError') })
   } finally {
-    loadingTopics.value = false
+    if (!topicsRequest.isRunning()) {
+      loadingTopics.value = false
+    }
   }
 }
 
 async function loadUsers() {
   loadingUsers.value = true
   try {
-    const data = await authService.getUsers()
+    const result = await usersRequest.run(signal => authService.getUsers({ signal }))
+    if (result.status !== 'success') return
+    const data = result.value
     userFilterOptions.value = data.users
       .filter(user => user.role === 'admin' || user.role_id === 3)
       .map(user => ({ label: user.name || user.phone, value: user.id }))
   } catch {
     $q.notify({ type: 'negative', message: t('trainingReflections.loadUsersError') })
   } finally {
-    loadingUsers.value = false
+    if (!usersRequest.isRunning()) {
+      loadingUsers.value = false
+    }
   }
 }
 

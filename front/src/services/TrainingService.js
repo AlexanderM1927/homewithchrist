@@ -6,8 +6,8 @@ class TrainingService extends ApiService {
   }
 
   /** Obtiene todos los temas activos */
-  getTopics() {
-    return this.get('/topics')
+  getTopics(options) {
+    return this.get('/topics', options)
   }
 
   /**
@@ -22,13 +22,13 @@ class TrainingService extends ApiService {
     return this.put(`/verses/${id}`, payload)
   }
 
-  getChapterVerses({ book = null, chapter = null, version = null, modifiedBy = null }) {
+  getChapterVerses({ book = null, chapter = null, version = null, modifiedBy = null }, options) {
     const params = new URLSearchParams()
     if (book) params.set('book', book)
     if (chapter) params.set('chapter', chapter)
     if (version) params.set('version', version)
     if (modifiedBy) params.set('modifiedBy', modifiedBy)
-    return this.get(`/verses/chapter?${params.toString()}`)
+    return this.get(`/verses/chapter?${params.toString()}`, options)
   }
 
   associateVerses(payload) {

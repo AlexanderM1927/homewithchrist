@@ -128,6 +128,7 @@ import { nextTick, onActivated, onBeforeUnmount, onMounted, reactive, ref } from
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import diaryService from 'src/services/DiaryService'
+import createLatestRequest from 'src/utils/createLatestRequest'
 
 const $q = useQuasar()
 const { t, locale } = useI18n()
@@ -145,6 +146,7 @@ const form = reactive({
 })
 const imagePreview = ref('')
 const maxImageSizeBytes = 5 * 1024 * 1024
+const entriesRequest = createLatestRequest()
 
 function formatDate(date) {
   return new Intl.DateTimeFormat(locale.value, {
@@ -184,14 +186,18 @@ function notifyImageRejected() {
 async function loadEntries(requestedPage = page.value) {
   loading.value = true
   try {
-    const data = await diaryService.getEntries(requestedPage)
+    const result = await entriesRequest.run(signal => diaryService.getEntries(requestedPage, { signal }))
+    if (result.status !== 'success') return
+    const data = result.value
     entries.value = data.entries
     page.value = data.pagination.page
     totalPages.value = Math.max(data.pagination.totalPages, 1)
   } catch {
     $q.notify({ type: 'negative', message: t('diary.loadError') })
   } finally {
-    loading.value = false
+    if (!entriesRequest.isRunning()) {
+      loading.value = false
+    }
   }
 }
 

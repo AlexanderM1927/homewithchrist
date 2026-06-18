@@ -158,6 +158,7 @@ import { useQuasar } from 'quasar'
 import bibleService from 'src/services/BibleService'
 import trainingService from 'src/services/TrainingService'
 import authService from 'src/services/AuthService'
+import createLatestRequest from 'src/utils/createLatestRequest'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -168,6 +169,7 @@ const loadingChapters = ref(false)
 const loadingVerses = ref(false)
 const loadingAdmins = ref(false)
 const saving = ref(false)
+const versionsRequest = createLatestRequest()
 const versions = ref([])
 const books = ref([])
 const filteredBooks = ref([])
@@ -181,6 +183,9 @@ const admins = ref([])
 const editDialog = ref(false)
 const editingVerse = ref(null)
 const editForm = ref({ text: '' })
+const booksRequest = createLatestRequest()
+const chaptersRequest = createLatestRequest()
+const versesRequest = createLatestRequest()
 
 const versionOptions = computed(() => versions.value.map(version => ({ label: version, value: version })))
 const bookOptions = computed(() => filteredBooks.value.map(book => ({ label: book, value: book })))
@@ -214,13 +219,19 @@ async function loadAdmins() {
 async function initializeBible() {
   loadingVersions.value = true
   try {
-    versions.value = await bibleService.getVersions()
-    selectedVersion.value = versions.value.includes('BJ') ? 'BJ' : versions.value[0] || ''
+    const result = await versionsRequest.run(signal => bibleService.getVersions({ signal }))
+    if (result.status !== 'success') return
+    const nextVersions = result.value
+
+    versions.value = nextVersions
+    selectedVersion.value = nextVersions.includes('BJ') ? 'BJ' : nextVersions[0] || ''
     await loadBooks()
   } catch {
     notifyLoadError()
   } finally {
-    loadingVersions.value = false
+    if (!versionsRequest.isRunning()) {
+      loadingVersions.value = false
+    }
   }
 }
 
@@ -229,14 +240,20 @@ async function loadBooks() {
   loadingBooks.value = true
   verses.value = []
   try {
-    books.value = await bibleService.getBooks(selectedVersion.value)
-    filteredBooks.value = [...books.value]
-    selectedBook.value = books.value[0] || ''
+    const result = await booksRequest.run(signal => bibleService.getBooks(selectedVersion.value, { signal }))
+    if (result.status !== 'success') return
+    const nextBooks = result.value
+
+    books.value = nextBooks
+    filteredBooks.value = [...nextBooks]
+    selectedBook.value = nextBooks[0] || ''
     await loadChapters()
   } catch {
     notifyLoadError()
   } finally {
-    loadingBooks.value = false
+    if (!booksRequest.isRunning()) {
+      loadingBooks.value = false
+    }
   }
 }
 
@@ -252,16 +269,22 @@ async function loadChapters() {
   loadingChapters.value = true
   verses.value = []
   try {
-    chapters.value = await bibleService.getChapters({
+    const result = await chaptersRequest.run(signal => bibleService.getChapters({
       book: selectedBook.value,
       version: selectedVersion.value
-    })
-    selectedChapter.value = chapters.value[0] || null
+    }, { signal }))
+    if (result.status !== 'success') return
+    const nextChapters = result.value
+
+    chapters.value = nextChapters
+    selectedChapter.value = nextChapters[0] || null
     await loadChapterVerses()
   } catch {
     notifyLoadError()
   } finally {
-    loadingChapters.value = false
+    if (!chaptersRequest.isRunning()) {
+      loadingChapters.value = false
+    }
   }
 }
 
@@ -269,21 +292,35 @@ async function loadChapterVerses() {
   if (!selectedModifier.value && (!selectedBook.value || !selectedChapter.value)) return
   loadingVerses.value = true
   try {
-    verses.value = await trainingService.getChapterVerses({
+    const result = await versesRequest.run(signal => trainingService.getChapterVerses({
       book: selectedModifier.value ? null : selectedBook.value,
       chapter: selectedModifier.value ? null : selectedChapter.value,
       version: selectedModifier.value ? null : selectedVersion.value,
       modifiedBy: selectedModifier.value
-    })
+    }, { signal }))
+    if (result.status !== 'success') return
+    const nextVerses = result.value
+
+    verses.value = nextVerses
   } catch {
     notifyLoadError()
   } finally {
-    loadingVerses.value = false
+    if (!versesRequest.isRunning()) {
+      loadingVerses.value = false
+    }
   }
 }
 
 async function onModifierChange(adminId) {
   if (adminId) {
+    versionsRequest.cancel()
+    booksRequest.cancel()
+    chaptersRequest.cancel()
+    versesRequest.cancel()
+    loadingVersions.value = false
+    loadingBooks.value = false
+    loadingChapters.value = false
+    loadingVerses.value = false
     selectedVersion.value = ''
     selectedBook.value = ''
     selectedChapter.value = null
@@ -294,6 +331,7 @@ async function onModifierChange(adminId) {
     return
   }
 
+  versesRequest.cancel()
   verses.value = []
   await initializeBible()
 }

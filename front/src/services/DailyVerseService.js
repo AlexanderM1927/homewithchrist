@@ -5,17 +5,17 @@ class DailyVerseService extends ApiService {
     super('/daily-verses')
   }
 
-  getToday() {
-    return this.get('/today')
+  getToday(options) {
+    return this.get('/today', options)
   }
 
-  getVerses({ page = 1, limit = 20, search = '', createdBy = null } = {}) {
+  getVerses({ page = 1, limit = 20, search = '', createdBy = null } = {}, options) {
     const params = new URLSearchParams({ page, limit })
     const trimmedSearch = search.trim()
     if (trimmedSearch) params.set('search', trimmedSearch)
     if (createdBy) params.set('createdBy', createdBy)
 
-    return this.get(`/?${params.toString()}`)
+    return this.get(`/?${params.toString()}`, options)
   }
 
   createVerse(payload) {

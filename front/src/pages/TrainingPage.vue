@@ -214,6 +214,7 @@ import trainingService from 'src/services/TrainingService'
 import bibleService from 'src/services/BibleService'
 import authService from 'src/services/AuthService'
 import TableFilters from 'src/components/TableFilters.vue'
+import createLatestRequest from 'src/utils/createLatestRequest'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -227,6 +228,11 @@ const loadingRelations = ref(false)
 const loadingUsers = ref(false)
 const saving = ref(false)
 const updating = ref(false)
+const versionsRequest = createLatestRequest()
+const topicsRequest = createLatestRequest()
+const booksRequest = createLatestRequest()
+const chaptersRequest = createLatestRequest()
+const versesRequest = createLatestRequest()
 
 const topics = ref([])
 const versions = ref([])
@@ -274,24 +280,34 @@ onMounted(async () => {
 async function loadTopics() {
   loadingTopics.value = true
   try {
-    topics.value = await trainingService.getTopics()
+    const result = await topicsRequest.run(signal => trainingService.getTopics({ signal }))
+    if (result.status !== 'success') return
+    topics.value = result.value
   } catch {
     $q.notify({ type: 'negative', message: t('training.loadTopicsError') })
   } finally {
-    loadingTopics.value = false
+    if (!topicsRequest.isRunning()) {
+      loadingTopics.value = false
+    }
   }
 }
 
 async function initializeBible() {
   loadingVersions.value = true
   try {
-    versions.value = await bibleService.getVersions()
-    selectedVersion.value = versions.value.includes('BJ') ? 'BJ' : versions.value[0] || ''
+    const result = await versionsRequest.run(signal => bibleService.getVersions({ signal }))
+    if (result.status !== 'success') return
+    const nextVersions = result.value
+
+    versions.value = nextVersions
+    selectedVersion.value = nextVersions.includes('BJ') ? 'BJ' : nextVersions[0] || ''
     await loadBooks()
   } catch {
     $q.notify({ type: 'negative', message: t('bible.loadError') })
   } finally {
-    loadingVersions.value = false
+    if (!versionsRequest.isRunning()) {
+      loadingVersions.value = false
+    }
   }
 }
 
@@ -300,12 +316,20 @@ async function loadBooks() {
   loadingBooks.value = true
   selectedVerseIds.value = []
   try {
-    books.value = await bibleService.getBooks(selectedVersion.value)
-    filteredBooks.value = [...books.value]
-    selectedBook.value = books.value[0] || ''
+    const result = await booksRequest.run(signal => bibleService.getBooks(selectedVersion.value, { signal }))
+    if (result.status !== 'success') return
+    const nextBooks = result.value
+
+    books.value = nextBooks
+    filteredBooks.value = [...nextBooks]
+    selectedBook.value = nextBooks[0] || ''
     await loadChapters()
+  } catch {
+    $q.notify({ type: 'negative', message: t('bible.loadError') })
   } finally {
-    loadingBooks.value = false
+    if (!booksRequest.isRunning()) {
+      loadingBooks.value = false
+    }
   }
 }
 
@@ -321,11 +345,19 @@ async function loadChapters() {
   loadingChapters.value = true
   selectedVerseIds.value = []
   try {
-    chapters.value = await bibleService.getChapters({ book: selectedBook.value, version: selectedVersion.value })
-    selectedChapter.value = chapters.value[0] || null
+    const result = await chaptersRequest.run(signal => bibleService.getChapters({ book: selectedBook.value, version: selectedVersion.value }, { signal }))
+    if (result.status !== 'success') return
+    const nextChapters = result.value
+
+    chapters.value = nextChapters
+    selectedChapter.value = nextChapters[0] || null
     await loadChapterVerses()
+  } catch {
+    $q.notify({ type: 'negative', message: t('bible.loadError') })
   } finally {
-    loadingChapters.value = false
+    if (!chaptersRequest.isRunning()) {
+      loadingChapters.value = false
+    }
   }
 }
 
@@ -336,13 +368,21 @@ async function loadChapterVerses() {
   rangeStart.value = null
   rangeEnd.value = null
   try {
-    chapterVerses.value = await bibleService.getVerses({
+    const result = await versesRequest.run(signal => bibleService.getVerses({
       book: selectedBook.value,
       chapter: selectedChapter.value,
       version: selectedVersion.value
-    })
+    }, { signal }))
+    if (result.status !== 'success') return
+    const nextVerses = result.value
+
+    chapterVerses.value = nextVerses
+  } catch {
+    $q.notify({ type: 'negative', message: t('bible.loadError') })
   } finally {
-    loadingChapterVerses.value = false
+    if (!versesRequest.isRunning()) {
+      loadingChapterVerses.value = false
+    }
   }
 }
 

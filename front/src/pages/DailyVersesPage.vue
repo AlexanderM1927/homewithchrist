@@ -109,6 +109,7 @@ import { useQuasar } from 'quasar'
 import dailyVerseService from 'src/services/DailyVerseService'
 import authService from 'src/services/AuthService'
 import TableFilters from 'src/components/TableFilters.vue'
+import createLatestRequest from 'src/utils/createLatestRequest'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -123,6 +124,8 @@ const pagination = ref({ page: 1, rowsPerPage: 10, rowsNumber: 0 })
 const filters = ref({ search: '', createdBy: null })
 const userFilterOptions = ref([])
 const form = ref(defaultForm())
+const dailyVersesRequest = createLatestRequest()
+const usersRequest = createLatestRequest()
 
 const tableColumns = computed(() => [
   { name: 'reference', label: t('dailyVerses.reference'), field: 'reference', align: 'left', sortable: false },
@@ -150,19 +153,23 @@ function truncateText(text) {
 async function loadDailyVerses(page = 1, limit = pagination.value.rowsPerPage) {
   loading.value = true
   try {
-    const data = await dailyVerseService.getVerses({
+    const result = await dailyVersesRequest.run(signal => dailyVerseService.getVerses({
       page,
       limit,
       search: filters.value.search,
       createdBy: filters.value.createdBy
-    })
+    }, { signal }))
+    if (result.status !== 'success') return
+    const data = result.value
     dailyVerses.value = data
     pagination.value.rowsNumber = data.total
     pagination.value.page = data.page
   } catch {
     $q.notify({ type: 'negative', message: t('dailyVerses.loadError') })
   } finally {
-    loading.value = false
+    if (!dailyVersesRequest.isRunning()) {
+      loading.value = false
+    }
   }
 }
 
@@ -183,7 +190,9 @@ function onFiltersClear() {
 async function loadUsers() {
   loadingUsers.value = true
   try {
-    const data = await authService.getUsers()
+    const result = await usersRequest.run(signal => authService.getUsers({ signal }))
+    if (result.status !== 'success') return
+    const data = result.value
     userFilterOptions.value = data.users
       .filter(user => user.role === 'admin' || user.role_id === 3)
       .map(user => ({
@@ -193,7 +202,9 @@ async function loadUsers() {
   } catch {
     $q.notify({ type: 'negative', message: t('users.loadError') })
   } finally {
-    loadingUsers.value = false
+    if (!usersRequest.isRunning()) {
+      loadingUsers.value = false
+    }
   }
 }
 

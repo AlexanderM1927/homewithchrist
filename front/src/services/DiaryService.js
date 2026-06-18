@@ -8,12 +8,12 @@ class DiaryService extends ApiService {
     super('/diary')
   }
 
-  getEntries(page = 1) {
-    return this.get(`/?page=${page}`)
+  getEntries(page = 1, options) {
+    return this.get(`/?page=${page}`, options)
   }
 
-  getEntry(entryId) {
-    return this.get(`/${entryId}`)
+  getEntry(entryId, options) {
+    return this.get(`/${entryId}`, options)
   }
 
   shareEntry(entryId) {
