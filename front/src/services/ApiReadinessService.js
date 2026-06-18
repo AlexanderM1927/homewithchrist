@@ -3,6 +3,7 @@ import { getRuntimePlatform } from 'src/composables/useRuntimePlatform'
 
 const RETRY_DELAYS_MS = [0, 1000, 3000]
 const REQUEST_TIMEOUT_MS = 5000
+const HEALTH_URL = `${API_BASE_URL.replace(/\/+$/, '')}/health`
 
 function wait(ms) {
   return new Promise(resolve => window.setTimeout(resolve, ms))
@@ -35,7 +36,7 @@ class ApiReadinessService {
       .catch((error) => {
         this.ready = false
         console.warn('API readiness check failed', {
-          url: `${API_BASE_URL}/health`,
+          url: HEALTH_URL,
           platform: getRuntimePlatform().name,
           error: error?.message || String(error)
         })
@@ -70,7 +71,7 @@ class ApiReadinessService {
     const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/health`, {
+      const response = await fetch(HEALTH_URL, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
