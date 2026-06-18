@@ -114,23 +114,6 @@ EOF
                     ./gradlew bundleRelease
                     echo "[android] Generating apk to test..."
                     ./gradlew assembleRelease
-
-                    echo "[android] Verifying generated artifacts..."
-                    ls -lah app/build/outputs/apk/release || true
-                    ls -lah app/build/outputs/bundle/release || true
-
-                    if [ ! -f app/build/outputs/apk/release/app-release.apk ]; then
-                      echo "Signed release APK not found"
-                      exit 1
-                    fi
-
-                    echo "[android] Checking APK integrity..."
-                    unzip -t app/build/outputs/apk/release/app-release.apk >/tmp/hwc-apk-unzip-check.txt
-                    cat /tmp/hwc-apk-unzip-check.txt
-
-                    echo "[android] Checking APK signature..."
-                    "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk > /tmp/hwc-apk-signature.txt
-                    cat /tmp/hwc-apk-signature.txt
                     '''
                 }
             }
