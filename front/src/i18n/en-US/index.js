@@ -382,7 +382,7 @@ export default {
   privacyPolicy: {
     title: 'Privacy Policy',
     back: 'Back',
-    lastUpdated: 'Last updated: June 16, 2026',
+    lastUpdated: 'Last updated: June 17, 2026',
     sections: {
       responsible: {
         title: 'Controller',
@@ -400,7 +400,7 @@ export default {
           'Account data, such as your name, phone number, email address if you add it, and access credentials.',
           'Content you write in the app, such as diary entries, reflections, messages, and conversations with the spiritual counselor.',
           'Content you choose to share through private links, such as chats or diary entries.',
-          'Technical data needed to operate the app, such as session tokens, error logs, usage dates, request metadata, and performance diagnostics.',
+          'Technical data needed to operate the app, such as session and notification tokens, error logs, usage dates, request metadata, and performance diagnostics.',
           'Images or files you voluntarily attach in features that allow them.'
         ]
       },
@@ -421,7 +421,7 @@ export default {
       aiProviders: {
         title: 'Artificial intelligence and external providers',
         paragraphs: [
-          { text: 'Some features may send the text you write to artificial intelligence providers to generate responses. Avoid including sensitive information that you do not want processed in these features. We may also use infrastructure, database, hosting, email, or technical analytics providers to operate the application.' }
+          { text: 'Some features may send the text you write to artificial intelligence providers to generate responses. Avoid including sensitive information that you do not want processed in these features. We may also use infrastructure, database, hosting, email, notification providers such as Firebase Cloud Messaging, or technical analytics providers to operate the application.' }
         ],
         items: []
       },

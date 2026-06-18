@@ -32,6 +32,8 @@ const ChatMessage = require('./ChatMessage')(sequelize, DataTypes)
 const DiaryEntry = require('./DiaryEntry')(sequelize, DataTypes)
 const TrainingReflection = require('./TrainingReflection')(sequelize, DataTypes)
 const UserSession = require('./UserSession')(sequelize, DataTypes)
+const PushNotificationToken = require('./PushNotificationToken')(sequelize, DataTypes)
+const DailyNotificationDelivery = require('./DailyNotificationDelivery')(sequelize, DataTypes)
 
 // Associations
 Role.hasMany(User, { foreignKey: 'role_id' })
@@ -50,6 +52,14 @@ User.hasMany(AiUsageEvent, { as: 'aiUsageEvents', foreignKey: 'user_id', onDelet
 AiUsageEvent.belongsTo(User, { foreignKey: 'user_id' })
 User.hasMany(UserSession, { as: 'sessions', foreignKey: 'user_id', onDelete: 'CASCADE' })
 UserSession.belongsTo(User, { foreignKey: 'user_id' })
+User.hasMany(PushNotificationToken, { as: 'pushTokens', foreignKey: 'user_id', onDelete: 'CASCADE' })
+PushNotificationToken.belongsTo(User, { foreignKey: 'user_id' })
+UserSession.hasMany(PushNotificationToken, { as: 'pushTokens', foreignKey: 'session_id', onDelete: 'CASCADE' })
+PushNotificationToken.belongsTo(UserSession, { as: 'session', foreignKey: 'session_id' })
+PushNotificationToken.hasMany(DailyNotificationDelivery, { as: 'deliveries', foreignKey: 'push_token_id', onDelete: 'CASCADE' })
+DailyNotificationDelivery.belongsTo(PushNotificationToken, { foreignKey: 'push_token_id' })
+DailyVerse.hasMany(DailyNotificationDelivery, { as: 'notificationDeliveries', foreignKey: 'daily_verse_id', onDelete: 'SET NULL' })
+DailyNotificationDelivery.belongsTo(DailyVerse, { foreignKey: 'daily_verse_id' })
 
 Topic.belongsToMany(Verse, { through: TopicVerse, foreignKey: 'topic_id', otherKey: 'verse_id' })
 Verse.belongsToMany(Topic, { through: TopicVerse, foreignKey: 'verse_id', otherKey: 'topic_id' })
@@ -68,4 +78,21 @@ TrainingReflection.belongsTo(User, { as: 'creator', foreignKey: 'created_by' })
 Verse.hasMany(VerseEmbedding, { as: 'embeddings', foreignKey: 'verse_id', onDelete: 'CASCADE' })
 VerseEmbedding.belongsTo(Verse, { foreignKey: 'verse_id' })
 
-module.exports = { sequelize, Role, User, UserSession, Topic, Verse, TopicVerse, VerseEmbedding, AiUsageEvent, DailyVerse, Chat, ChatMessage, DiaryEntry, TrainingReflection }
+module.exports = {
+  sequelize,
+  Role,
+  User,
+  UserSession,
+  PushNotificationToken,
+  DailyNotificationDelivery,
+  Topic,
+  Verse,
+  TopicVerse,
+  VerseEmbedding,
+  AiUsageEvent,
+  DailyVerse,
+  Chat,
+  ChatMessage,
+  DiaryEntry,
+  TrainingReflection
+}

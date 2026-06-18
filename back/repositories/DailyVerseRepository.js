@@ -1,6 +1,6 @@
 'use strict'
 const { Op } = require('sequelize')
-const { sequelize, DailyVerse, User } = require('../models')
+const { DailyVerse, User } = require('../models')
 
 class DailyVerseRepository {
   async findAll({ page = 1, limit = 20, search = '', createdBy = null } = {}) {
@@ -36,10 +36,17 @@ class DailyVerseRepository {
     return { total: count, page, limit, rows }
   }
 
-  async findToday() {
+  async findToday(dateKey = new Date().toISOString().slice(0, 10)) {
+    const count = await DailyVerse.count()
+    if (!count) return null
+
+    const dayNumber = Math.floor(Date.parse(`${dateKey}T00:00:00Z`) / 86400000)
+    const offset = Math.abs(dayNumber) % count
+
     return DailyVerse.findOne({
       attributes: ['id', 'reference', 'text'],
-      order: sequelize.random()
+      order: [['id', 'ASC']],
+      offset
     })
   }
 

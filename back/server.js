@@ -12,6 +12,8 @@ const diaryRoutes = require('./routes/diary')
 const bibleRoutes = require('./routes/bible')
 const dailyVerseRoutes = require('./routes/dailyVerse')
 const trainingReflectionRoutes = require('./routes/trainingReflection')
+const notificationRoutes = require('./routes/notifications')
+const dailyVerseNotificationService = require('./services/DailyVerseNotificationService')
 
 const app = express()
 const publicDir = path.join(process.cwd(), 'public')
@@ -40,6 +42,7 @@ app.use('/api/diary', diaryRoutes)
 app.use('/api/bible', bibleRoutes)
 app.use('/api/daily-verses', dailyVerseRoutes)
 app.use('/api/training-reflections', trainingReflectionRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
@@ -55,4 +58,5 @@ const PORT = process.env.PORT || 8004
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend corriendo en http://localhost:${PORT}`)
+  dailyVerseNotificationService.start()
 })

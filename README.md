@@ -274,37 +274,12 @@ docker compose exec -T backend npm run db:reset
 
 ---
 
-## Variables de entorno
-
-### Backend (`back/.env`)
-
-```env
-NODE_ENV=development
-PORT=8004
-
-AI_PROVIDER=ollama
-OLLAMA_URL=http://host-o-ip-ollama:11434
-MAIN_OLLAMA_MODEL=gemma3:4b
-SECONDARY_OLLAMA_MODEL=qwen3:0.6b
-
-DB_CONNECTION=mysql
-DB_HOST=db
-DB_PORT=3306
-DB_DATABASE=hwc
-DB_USERNAME=root
-DB_PASSWORD=secret
-
-JWT_ACCESS_SECRET=change_me_access_secret
-JWT_REFRESH_SECRET=change_me_refresh_secret
-
-ALLOWED_ORIGINS=https://hwc.alexanderm.co,https://homewithchrist.com
-```
-
 Notas:
 
 - En desarrollo, el backend permite CORS con `origin: true` y `credentials: true`.
 - En produccion, `ALLOWED_ORIGINS` se usa como lista separada por comas.
 - `OLLAMA_URL` debe apuntar a un Ollama accesible desde el contenedor `backend`. Puede ser una IP de red, host interno o servicio Docker agregado manualmente.
+- `google-services.json` configura la app Android, pero el backend necesita ademas una cuenta de servicio de Firebase para enviar mensajes. Se puede usar `FIREBASE_SERVICE_ACCOUNT_BASE64`, `FIREBASE_SERVICE_ACCOUNT_JSON` o `GOOGLE_APPLICATION_CREDENTIALS`.
 
 ### Frontend (`front/.env`)
 

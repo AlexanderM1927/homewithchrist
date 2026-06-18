@@ -360,7 +360,7 @@ export default {
   privacyPolicy: {
     title: 'Politica de privacidad',
     back: 'Volver',
-    lastUpdated: 'Ultima actualizacion: 16 de junio de 2026',
+    lastUpdated: 'Ultima actualizacion: 17 de junio de 2026',
     sections: {
       responsible: {
         title: 'Responsable',
@@ -378,7 +378,7 @@ export default {
           'Datos de cuenta, como nombre, telefono, correo electronico si lo agregas, y credenciales de acceso.',
           'Contenido que escribes en la app, como entradas del diario, reflexiones, mensajes y conversaciones con el asesor espiritual.',
           'Contenido compartido por ti mediante enlaces privados, como chats o entradas del diario que decidas compartir.',
-          'Datos tecnicos necesarios para operar la app, como tokens de sesion, registros de errores, fecha de uso, metadatos de solicitudes y diagnosticos de funcionamiento.',
+          'Datos tecnicos necesarios para operar la app, como tokens de sesion y notificaciones, registros de errores, fecha de uso, metadatos de solicitudes y diagnosticos de funcionamiento.',
           'Imagenes o archivos que adjuntes voluntariamente en funciones que lo permitan.'
         ]
       },
@@ -399,7 +399,7 @@ export default {
       aiProviders: {
         title: 'Inteligencia artificial y proveedores externos',
         paragraphs: [
-          { text: 'Algunas funciones pueden enviar el texto que escribes a proveedores de inteligencia artificial para generar respuestas. Evita incluir informacion sensible que no quieras procesar en estas funciones. Tambien podemos usar proveedores de infraestructura, base de datos, alojamiento, correo o analitica tecnica para operar la aplicacion.' }
+          { text: 'Algunas funciones pueden enviar el texto que escribes a proveedores de inteligencia artificial para generar respuestas. Evita incluir informacion sensible que no quieras procesar en estas funciones. Tambien podemos usar proveedores de infraestructura, base de datos, alojamiento, correo, notificaciones como Firebase Cloud Messaging o analitica tecnica para operar la aplicacion.' }
         ],
         items: []
       },

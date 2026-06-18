@@ -1,5 +1,6 @@
 'use strict'
 const dailyVerseRepository = require('../repositories/DailyVerseRepository')
+const { DEFAULT_TIME_ZONE, getZonedDateTime } = require('../utils/zonedDate')
 
 class DailyVerseController {
   async getAll(req, res) {
@@ -26,7 +27,8 @@ class DailyVerseController {
 
   async getToday(req, res) {
     try {
-      const verse = await dailyVerseRepository.findToday()
+      const timeZone = process.env.DAILY_VERSE_NOTIFICATION_TIME_ZONE || DEFAULT_TIME_ZONE
+      const verse = await dailyVerseRepository.findToday(getZonedDateTime(timeZone).date)
 
       if (!verse) {
         return res.status(404).json({ message: 'No hay versiculos del dia disponibles' })

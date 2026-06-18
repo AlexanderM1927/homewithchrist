@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "804031391356",
+    "project_id": "home-with-christ",
+    "storage_bucket": "home-with-christ.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:804031391356:android:d8a41adc942ef7a5340bf9",
+        "android_client_info": {
+          "package_name": "co.alexanderm.homewithchrist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-OrOfTdg4p7cDFEB9lCrcw9fZwCJqUUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

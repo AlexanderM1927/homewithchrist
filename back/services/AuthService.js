@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const userRepository = require('../repositories/UserRepository')
 const userSessionRepository = require('../repositories/UserSessionRepository')
+const pushNotificationRepository = require('../repositories/PushNotificationRepository')
 const emailService = require('./EmailService')
 const passwordResetEmail = require('./emailTemplates/passwordResetEmail')
 const { resolveSupportedLocale } = require('../utils/locale')
@@ -236,8 +237,10 @@ class AuthService {
       const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
       if (payload.sid) {
         await userSessionRepository.revokeSession(payload.sid)
+        await pushNotificationRepository.disableForSession(payload.sid)
       } else if (payload.sub) {
         await userSessionRepository.revokeAllForUser(payload.sub)
+        await pushNotificationRepository.disableForUser(payload.sub)
       }
     } catch {
       // Si el token ya expiro, no hay nada que invalidar
@@ -331,6 +334,7 @@ class AuthService {
     await userRepository.updatePassword(user.user_id, hashedPin)
     await userRepository.saveRefreshToken(user.user_id, null)
     await userSessionRepository.revokeAllForUser(user.user_id)
+    await pushNotificationRepository.disableForUser(user.user_id)
   }
 }
 
