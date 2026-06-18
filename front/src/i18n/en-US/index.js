@@ -179,6 +179,10 @@ export default {
   admin: {
     title: 'Administration Panel',
     options: {
+      verseCorrections: {
+        label: 'Correct verses',
+        desc: 'Filter the Bible by version, book, and chapter to correct its content'
+      },
       training: {
         label: 'Train AI - By verses and topics',
         desc: 'Link Bible verses to training topics'
@@ -196,6 +200,21 @@ export default {
         desc: 'Add and delete verses shown on the home screen'
       }
     }
+  },
+  verseCorrections: {
+    title: 'Correct verses',
+    subtitle: 'Find a verse as in training and correct its text; the reference is normalized automatically.',
+    edit: 'Edit verse',
+    editTitle: 'Correct verse',
+    empty: 'There are no verses for this selection.',
+    required: 'Required field',
+    cancel: 'Cancel',
+    save: 'Save correction',
+    referenceHint: 'The reference is generated automatically from the book, chapter, and verse number.',
+    modifiedBy: 'Modified by {name} · {date}',
+    loadError: 'Could not load verses',
+    saveSuccess: 'Verse corrected successfully',
+    saveError: 'Could not correct the verse'
   },
   trainingReflections: {
     title: 'Train AI - By reflections and topics',

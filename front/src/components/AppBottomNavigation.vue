@@ -44,6 +44,7 @@ const routeToTab = {
   '/bible': 'bible',
   '/diary': 'diary',
   '/admin': 'admin',
+  '/verse-corrections': 'admin',
   '/training': 'admin',
   '/users': 'admin',
   '/daily-verses': 'admin'

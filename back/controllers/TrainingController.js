@@ -1,5 +1,6 @@
 'use strict'
 const trainingRepository = require('../repositories/TrainingRepository')
+const bibleService = require('../services/BibleService')
 
 class TrainingController {
   /**
@@ -70,6 +71,50 @@ class TrainingController {
       return res.status(200).json(data)
     } catch (err) {
       return res.status(500).json({ message: err.message })
+    }
+  }
+
+  async getChapterVerses(req, res) {
+    const book = String(req.query.book || '').trim()
+    const version = String(req.query.version || '').trim()
+    const chapter = Number(req.query.chapter)
+
+    if (!book || !version || !Number.isInteger(chapter) || chapter < 1) {
+      return res.status(400).json({ message: 'Libro, version y capitulo son requeridos' })
+    }
+
+    try {
+      const verses = await trainingRepository.findChapterVerses({ book, version, chapter })
+      return res.status(200).json(verses)
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  async updateVerse(req, res) {
+    const id = Number(req.params.id)
+    const text = String(req.body.text || '').trim()
+
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({ message: 'Id invalido' })
+    }
+    if (!text) {
+      return res.status(400).json({ message: 'El texto del versiculo es requerido' })
+    }
+    if (text.length > 700) {
+      return res.status(400).json({ message: 'El texto del versiculo no puede superar 700 caracteres' })
+    }
+
+    try {
+      const verse = await bibleService.updateVerse({
+        id,
+        text,
+        userId: req.user.sub
+      })
+      if (!verse) return res.status(404).json({ message: 'Versiculo no encontrado' })
+      return res.status(200).json(verse)
+    } catch (err) {
+      return res.status(err.status || 500).json({ message: err.message })
     }
   }
 

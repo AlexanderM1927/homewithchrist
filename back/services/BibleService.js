@@ -1,7 +1,7 @@
 'use strict'
 const crypto = require('crypto')
 const { Op } = require('sequelize')
-const { sequelize, Verse, TopicVerse, VerseEmbedding, DailyVerse } = require('../models')
+const { sequelize, Verse, TopicVerse, VerseEmbedding, DailyVerse, User } = require('../models')
 const aiProvider = require('./ai')
 const { parseRvr1960Pdf } = require('./bible/Rvr1960PdfParser')
 const { parseJerusalemPdf } = require('./bible/JerusalemPdfParser')
@@ -102,10 +102,6 @@ const NUMBERED_ABBREVIATIONS = [
 ].map(([abbr, book]) => [normalizeText(abbr), book])
 
 class BibleService {
-  constructor() {
-    this.embeddingCache = new Map()
-  }
-
   async importVersesFromPdf({ pdfPath, version = 'BJ', createdBy = null, replace = false }) {
     const fs = require('fs/promises')
     const buffer = await fs.readFile(pdfPath)
@@ -190,6 +186,70 @@ class BibleService {
       version,
       warnings
     }
+  }
+
+  async updateVerse({ id, text, userId }) {
+    const verse = await Verse.findOne({ where: { id, is_active: true } })
+    if (!verse) return null
+
+    const reference = formatVerseReference(verse)
+    const embeddingText = `${reference} (${verse.version}): ${text}`
+    const semanticContentChanged = verse.reference !== reference || verse.text !== text
+    let embeddingData = null
+
+    if (semanticContentChanged) {
+      if (!aiProvider.canEmbed()) {
+        const error = new Error('No se puede corregir el versiculo porque el servicio de embeddings no esta disponible')
+        error.status = 503
+        throw error
+      }
+
+      const result = await aiProvider.generateEmbeddingsWithMetadata([embeddingText])
+      embeddingData = {
+        provider: result.provider,
+        model: result.model,
+        embedding: result.embeddings[0],
+        text_hash: sha256(embeddingText)
+      }
+    }
+
+    const updatedVerse = await sequelize.transaction(async transaction => {
+      const currentVerse = await Verse.findOne({
+        where: { id, is_active: true },
+        transaction,
+        lock: transaction.LOCK.UPDATE
+      })
+      if (!currentVerse) return null
+
+      await currentVerse.update({
+        reference,
+        text,
+        updated_by: userId
+      }, { transaction })
+
+      if (embeddingData) {
+        await VerseEmbedding.destroy({
+          where: { verse_id: id },
+          transaction
+        })
+        await VerseEmbedding.create({
+          verse_id: id,
+          ...embeddingData
+        }, { transaction })
+      }
+
+      return Verse.findByPk(id, {
+        include: [{
+          model: User,
+          as: 'modifier',
+          attributes: ['user_id', 'name'],
+          required: false
+        }],
+        transaction
+      })
+    })
+
+    return updatedVerse
   }
 
   async replaceImportedVersion({ sourceVersion, targetVersion }) {
@@ -523,19 +583,11 @@ class BibleService {
     await VerseEmbedding.bulkCreate(rows, {
       updateOnDuplicate: ['embedding', 'text_hash']
     })
-    this.embeddingCache.clear()
 
     return rows.length
   }
 
   async _getEmbeddingRows(verseWhere, embeddingIdentity = this._embeddingIdentity()) {
-    const cacheKey = JSON.stringify({
-      ...embeddingIdentity,
-      verseWhere
-    })
-
-    if (this.embeddingCache.has(cacheKey)) return this.embeddingCache.get(cacheKey)
-
     const rows = await VerseEmbedding.findAll({
       where: embeddingIdentity,
       include: [
@@ -546,13 +598,10 @@ class BibleService {
         }
       ]
     })
-    const normalizedRows = rows.map(row => ({
+    return rows.map(row => ({
       embedding: row.embedding,
       verse: row.Verse
     }))
-
-    this.embeddingCache.set(cacheKey, normalizedRows)
-    return normalizedRows
   }
 
   _embeddingIdentity() {
@@ -606,6 +655,13 @@ function cleanPdfLine(line) {
 
 function verseKey(verse) {
   return `${verse.book}\u0000${verse.chapter}\u0000${verse.verse_start}`
+}
+
+function formatVerseReference(verse) {
+  const end = verse.verse_end && verse.verse_end !== verse.verse_start
+    ? `-${verse.verse_end}`
+    : ''
+  return `${verse.book} ${verse.chapter}:${verse.verse_start}${end}`
 }
 
 function cleanVerseText(text) {

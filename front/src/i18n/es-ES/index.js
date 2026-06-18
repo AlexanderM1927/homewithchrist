@@ -157,6 +157,10 @@ export default {
   admin: {
     title: 'Panel de Administración',
     options: {
+      verseCorrections: {
+        label: 'Corregir versículos',
+        desc: 'Filtrar la Biblia por versión, libro y capítulo para corregir su contenido'
+      },
       training: {
         label: 'Entrenar IA - Por versículos y temas',
         desc: 'Relacionar versículos bíblicos con temas de entrenamiento'
@@ -174,6 +178,21 @@ export default {
         desc: 'Agregar y eliminar versículos mostrados en el inicio'
       }
     }
+  },
+  verseCorrections: {
+    title: 'Corregir versículos',
+    subtitle: 'Busca un versículo como en entrenamiento y corrige su texto; la referencia se normaliza automáticamente.',
+    edit: 'Editar versículo',
+    editTitle: 'Corregir versículo',
+    empty: 'No hay versículos para esta selección.',
+    required: 'Campo requerido',
+    cancel: 'Cancelar',
+    save: 'Guardar corrección',
+    referenceHint: 'La referencia se genera automáticamente desde el libro, capítulo y número del versículo.',
+    modifiedBy: 'Modificado por {name} · {date}',
+    loadError: 'No se pudieron cargar los versículos',
+    saveSuccess: 'Versículo corregido correctamente',
+    saveError: 'No se pudo corregir el versículo'
   },
   trainingReflections: {
     title: 'Entrenar IA - Por reflexiones y temas',

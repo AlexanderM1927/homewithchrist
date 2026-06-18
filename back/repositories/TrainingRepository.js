@@ -109,6 +109,36 @@ class TrainingRepository {
     return topicVerse.update({ weight })
   }
 
+  async findChapterVerses({ book, version, chapter }) {
+    return Verse.findAll({
+      where: {
+        book,
+        version,
+        chapter,
+        is_active: true
+      },
+      attributes: [
+        'id',
+        'book',
+        'chapter',
+        'verse_start',
+        'verse_end',
+        'reference',
+        'text',
+        'version',
+        'updated_by',
+        'updatedAt'
+      ],
+      include: [{
+        model: User,
+        as: 'modifier',
+        attributes: ['user_id', 'name'],
+        required: false
+      }],
+      order: [['verse_start', 'ASC'], ['id', 'ASC']]
+    })
+  }
+
   async deleteTopicVerse(id) {
     return TopicVerse.destroy({ where: { id } })
   }

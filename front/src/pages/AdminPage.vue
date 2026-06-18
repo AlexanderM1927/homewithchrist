@@ -28,6 +28,13 @@
 <script setup>
 const adminOptions = [
   {
+    key: 'verseCorrections',
+    icon: 'edit_note',
+    labelKey: 'admin.options.verseCorrections.label',
+    descKey: 'admin.options.verseCorrections.desc',
+    route: '/verse-corrections'
+  },
+  {
     key: 'training',
     icon: 'model_training',
     labelKey: 'admin.options.training.label',

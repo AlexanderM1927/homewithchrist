@@ -21,6 +21,8 @@ router.post('/verses', authMiddleware, adminMiddleware, (req, res) => trainingCo
 
 // GET /api/training/verses  — solo admin
 router.get('/verses', authMiddleware, adminMiddleware, (req, res) => trainingController.getVerses(req, res))
+router.get('/verses/chapter', authMiddleware, adminMiddleware, (req, res) => trainingController.getChapterVerses(req, res))
+router.put('/verses/:id', authMiddleware, adminMiddleware, (req, res) => trainingController.updateVerse(req, res))
 
 router.post('/topic-verses', authMiddleware, adminMiddleware, (req, res) => trainingController.createTopicVerses(req, res))
 router.get('/topic-verses', authMiddleware, adminMiddleware, (req, res) => trainingController.getTopicVerses(req, res))

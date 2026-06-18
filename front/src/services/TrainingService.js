@@ -18,6 +18,15 @@ class TrainingService extends ApiService {
     return this.post('/verses', payload)
   }
 
+  updateVerse(id, payload) {
+    return this.put(`/verses/${id}`, payload)
+  }
+
+  getChapterVerses({ book, chapter, version }) {
+    const params = new URLSearchParams({ book, chapter, version })
+    return this.get(`/verses/chapter?${params.toString()}`)
+  }
+
   associateVerses(payload) {
     return this.post('/topic-verses', payload)
   }

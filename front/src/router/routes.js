@@ -87,6 +87,7 @@ const routes = [
       { path: 'diary', component: () => import('pages/DiaryPage.vue') },
       { path: 'diary/:id', component: () => import('pages/DiaryEntryPage.vue') },
       { path: 'admin', component: () => import('pages/AdminPage.vue'), meta: { requiresAdmin: true } },
+      { path: 'verse-corrections', component: () => import('pages/VerseCorrectionsPage.vue'), meta: { requiresAdmin: true } },
       { path: 'training', component: () => import('pages/TrainingPage.vue'), meta: { requiresAdmin: true } },
       { path: 'training-reflections', component: () => import('pages/TrainingReflectionsPage.vue'), meta: { requiresAdmin: true } },
       { path: 'users', component: () => import('pages/UsersPage.vue'), meta: { requiresAdmin: true } },

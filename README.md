@@ -223,7 +223,9 @@ El training permite administrar temas y versiculos usados como fuente prioritari
 |---|---|---|---|
 | GET | `/api/training/topics` | Usuario autenticado | Lista temas activos |
 | GET | `/api/training/verses?page=1&limit=20` | Admin | Lista versiculos |
+| GET | `/api/training/verses/chapter?version=BJ&book=Juan&chapter=3` | Admin | Lista un capitulo con auditoria de modificaciones |
 | POST | `/api/training/verses` | Admin | Crea un versiculo asociado a un tema |
+| PUT | `/api/training/verses/:id` | Admin | Corrige el texto y regenera la referencia y el embedding del versiculo |
 
 Body para crear versiculos:
 
