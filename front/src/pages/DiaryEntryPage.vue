@@ -156,6 +156,7 @@ import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 import diaryService from 'src/services/DiaryService'
+import { buildPublicAppUrl } from 'src/utils/publicAppUrl'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -298,8 +299,10 @@ async function shareEntry() {
   sharing.value = true
   try {
     const { token } = await diaryService.shareEntry(entry.value.diary_entry_id)
-    const sharedRoute = router.resolve({ name: 'shared-diary', params: { token } })
-    const url = new URL(sharedRoute.href, window.location.origin).href
+    const url = buildPublicAppUrl({
+      name: 'shared-diary',
+      params: { token }
+    }, router)
 
     if (navigator.share) {
       await navigator.share({

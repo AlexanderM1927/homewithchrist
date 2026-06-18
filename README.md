@@ -281,14 +281,6 @@ Notas:
 - `OLLAMA_URL` debe apuntar a un Ollama accesible desde el contenedor `backend`. Puede ser una IP de red, host interno o servicio Docker agregado manualmente.
 - `google-services.json` configura la app Android, pero el backend necesita ademas una cuenta de servicio de Firebase para enviar mensajes. Se puede usar `FIREBASE_SERVICE_ACCOUNT_BASE64`, `FIREBASE_SERVICE_ACCOUNT_JSON` o `GOOGLE_APPLICATION_CREDENTIALS`.
 
-### Frontend (`front/.env`)
-
-```env
-VITE_API_URL=http://localhost:8004/api
-```
-
----
-
 ## Desarrollo local con Docker
 
 Levantar servicios:

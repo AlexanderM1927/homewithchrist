@@ -190,6 +190,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import chatService from 'src/services/ChatService'
+import { buildPublicAppUrl } from 'src/utils/publicAppUrl'
 
 const props = defineProps({
   guestMode: {
@@ -461,8 +462,10 @@ async function shareCurrentChat () {
   sharing.value = true
   try {
     const { token } = await chatService.shareChat(currentChatId.value)
-    const route = router.resolve({ name: 'shared-chat', params: { token } })
-    const url = new URL(route.href, window.location.href).href
+    const url = buildPublicAppUrl({
+      name: 'shared-chat',
+      params: { token }
+    }, router)
 
     if (navigator.share) {
       await navigator.share({
