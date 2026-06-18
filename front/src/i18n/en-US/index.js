@@ -187,6 +187,10 @@ export default {
         label: 'Train AI - By verses and topics',
         desc: 'Link Bible verses to training topics'
       },
+      topics: {
+        label: 'Manage topics',
+        desc: 'Create and delete available training topics'
+      },
       trainingReflections: {
         label: 'Train AI - By reflections and topics',
         desc: 'Create approved reflections and link them to topics'
@@ -218,6 +222,27 @@ export default {
     loadAdminsError: 'Could not load administrators',
     saveSuccess: 'Verse corrected successfully',
     saveError: 'Could not correct the verse'
+  },
+  topics: {
+    title: 'Manage topics',
+    subtitle: 'Add new training topics and remove the ones you no longer want to use.',
+    name: 'Topic name',
+    slug: 'Slug',
+    description: 'Description',
+    save: 'Save topic',
+    clear: 'Clear',
+    currentTopics: 'Current topics',
+    empty: 'No topics yet.',
+    required: 'Required field',
+    slugHint: 'It is auto-filled from the name, but you can adjust it.',
+    deleteTitle: 'Delete topic',
+    deleteMessage: 'Delete topic "{name}"? Its linked relations and reflections will also be removed.',
+    deleteConfirm: 'Delete',
+    saveSuccess: 'Topic saved successfully',
+    saveError: 'Could not save the topic',
+    loadError: 'Could not load topics',
+    deleteSuccess: 'Topic deleted successfully',
+    deleteError: 'Could not delete the topic'
   },
   trainingReflections: {
     title: 'Train AI - By reflections and topics',

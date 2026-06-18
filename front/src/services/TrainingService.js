@@ -10,6 +10,19 @@ class TrainingService extends ApiService {
     return this.get('/topics', options)
   }
 
+  getAdminTopics({ page = 1, limit = 20 } = {}, options) {
+    const params = new URLSearchParams({ page, limit })
+    return this.get(`/topics/admin?${params.toString()}`, options)
+  }
+
+  createTopic(payload) {
+    return this.post('/topics', payload)
+  }
+
+  deleteTopic(id) {
+    return this.delete(`/topics/${id}`)
+  }
+
   /**
    * Crea un versículo asociado a un tema.
    * @param {{ topic_id, book, chapter, verse_start, verse_end, reference, text, version, weight, notes }} payload

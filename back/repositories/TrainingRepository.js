@@ -11,6 +11,35 @@ class TrainingRepository {
     })
   }
 
+  async findTopics({ page = 1, limit = 20 } = {}) {
+    const offset = (page - 1) * limit
+    const { count, rows } = await Topic.findAndCountAll({
+      where: { is_active: true },
+      order: [['name', 'ASC']],
+      limit,
+      offset
+    })
+
+    return { total: count, page, limit, rows }
+  }
+
+  async findTopicBySlug(slug) {
+    return Topic.findOne({ where: { slug } })
+  }
+
+  async createTopic({ name, slug, description }) {
+    return Topic.create({
+      name,
+      slug,
+      description: description || null,
+      is_active: true
+    })
+  }
+
+  async deleteTopic(id) {
+    return Topic.destroy({ where: { id } })
+  }
+
   /**
    * Crea un versículo y lo asocia al tema indicado en una sola transacción.
    * @param {{ book, chapter, verse_start, verse_end, reference, text, version, topic_id, weight, notes, userId }} data

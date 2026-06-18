@@ -165,6 +165,10 @@ export default {
         label: 'Entrenar IA - Por versículos y temas',
         desc: 'Relacionar versículos bíblicos con temas de entrenamiento'
       },
+      topics: {
+        label: 'Gestionar temas',
+        desc: 'Crear y eliminar temas disponibles para el entrenamiento'
+      },
       trainingReflections: {
         label: 'Entrenar IA - Por reflexiones y temas',
         desc: 'Crear reflexiones aprobadas y relacionarlas con temas'
@@ -196,6 +200,27 @@ export default {
     loadAdminsError: 'No se pudieron cargar los administradores',
     saveSuccess: 'Versículo corregido correctamente',
     saveError: 'No se pudo corregir el versículo'
+  },
+  topics: {
+    title: 'Gestionar temas',
+    subtitle: 'Agrega nuevos temas para entrenamiento y elimina los que ya no se usarán.',
+    name: 'Nombre del tema',
+    slug: 'Slug',
+    description: 'Descripción',
+    save: 'Guardar tema',
+    clear: 'Limpiar',
+    currentTopics: 'Temas actuales',
+    empty: 'Aún no hay temas registrados.',
+    required: 'Campo requerido',
+    slugHint: 'Se completa automáticamente desde el nombre, pero puedes ajustarlo.',
+    deleteTitle: 'Eliminar tema',
+    deleteMessage: '¿Eliminar el tema "{name}"? También se borrarán sus relaciones y reflexiones asociadas.',
+    deleteConfirm: 'Eliminar',
+    saveSuccess: 'Tema guardado correctamente',
+    saveError: 'No se pudo guardar el tema',
+    loadError: 'No se pudieron cargar los temas',
+    deleteSuccess: 'Tema eliminado correctamente',
+    deleteError: 'No se pudo eliminar el tema'
   },
   trainingReflections: {
     title: 'Entrenar IA - Por reflexiones y temas',

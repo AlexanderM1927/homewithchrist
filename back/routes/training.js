@@ -15,6 +15,9 @@ function adminMiddleware(req, res, next) {
 
 // GET /api/training/topics  — cualquier usuario autenticado puede listar temas
 router.get('/topics', authMiddleware, (req, res) => trainingController.getTopics(req, res))
+router.get('/topics/admin', authMiddleware, adminMiddleware, (req, res) => trainingController.getAdminTopics(req, res))
+router.post('/topics', authMiddleware, adminMiddleware, (req, res) => trainingController.createTopic(req, res))
+router.delete('/topics/:id', authMiddleware, adminMiddleware, (req, res) => trainingController.deleteTopic(req, res))
 
 // POST /api/training/verses  — solo admin
 router.post('/verses', authMiddleware, adminMiddleware, (req, res) => trainingController.createVerse(req, res))

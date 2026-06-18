@@ -2,6 +2,17 @@
 const trainingRepository = require('../repositories/TrainingRepository')
 const bibleService = require('../services/BibleService')
 
+function toTopicSlug(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+}
+
 class TrainingController {
   /**
    * GET /api/training/topics
@@ -11,6 +22,57 @@ class TrainingController {
     try {
       const topics = await trainingRepository.findAllTopics()
       return res.status(200).json(topics)
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  async getAdminTopics(req, res) {
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 20
+
+    if (page < 1 || limit < 1 || limit > 100) {
+      return res.status(400).json({ message: 'Parametros de paginacion invalidos' })
+    }
+
+    try {
+      const data = await trainingRepository.findTopics({ page, limit })
+      return res.status(200).json(data)
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  async createTopic(req, res) {
+    const name = String(req.body.name || '').trim()
+    const description = String(req.body.description || '').trim()
+    const slugSource = String(req.body.slug || name).trim()
+    const slug = toTopicSlug(slugSource)
+
+    if (!name) {
+      return res.status(400).json({ message: 'El nombre del tema es requerido' })
+    }
+    if (name.length > 100) {
+      return res.status(400).json({ message: 'El nombre del tema no puede superar 100 caracteres' })
+    }
+    if (description.length > 5000) {
+      return res.status(400).json({ message: 'La descripcion no puede superar 5000 caracteres' })
+    }
+    if (!slug) {
+      return res.status(400).json({ message: 'No se pudo generar un slug valido para el tema' })
+    }
+    if (slug.length > 100) {
+      return res.status(400).json({ message: 'El slug no puede superar 100 caracteres' })
+    }
+
+    try {
+      const existingTopic = await trainingRepository.findTopicBySlug(slug)
+      if (existingTopic) {
+        return res.status(409).json({ message: 'Ya existe un tema con ese slug' })
+      }
+
+      const topic = await trainingRepository.createTopic({ name, slug, description })
+      return res.status(201).json(topic)
     } catch (err) {
       return res.status(500).json({ message: err.message })
     }
@@ -197,6 +259,21 @@ class TrainingController {
     try {
       const deleted = await trainingRepository.deleteTopicVerse(id)
       if (!deleted) return res.status(404).json({ message: 'Relacion no encontrada' })
+      return res.status(200).json({ deleted: true })
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
+    }
+  }
+
+  async deleteTopic(req, res) {
+    const id = Number(req.params.id)
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({ message: 'Id invalido' })
+    }
+
+    try {
+      const deleted = await trainingRepository.deleteTopic(id)
+      if (!deleted) return res.status(404).json({ message: 'Tema no encontrado' })
       return res.status(200).json({ deleted: true })
     } catch (err) {
       return res.status(500).json({ message: err.message })

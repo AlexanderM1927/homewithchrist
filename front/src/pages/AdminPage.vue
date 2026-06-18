@@ -42,6 +42,13 @@ const adminOptions = [
     route: '/training'
   },
   {
+    key: 'topics',
+    icon: 'local_offer',
+    labelKey: 'admin.options.topics.label',
+    descKey: 'admin.options.topics.desc',
+    route: '/topics'
+  },
+  {
     key: 'trainingReflections',
     icon: 'auto_stories',
     labelKey: 'admin.options.trainingReflections.label',
