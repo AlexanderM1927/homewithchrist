@@ -78,13 +78,22 @@ class TrainingController {
     const book = String(req.query.book || '').trim()
     const version = String(req.query.version || '').trim()
     const chapter = Number(req.query.chapter)
+    const modifiedBy = req.query.modifiedBy ? Number(req.query.modifiedBy) : null
 
-    if (!book || !version || !Number.isInteger(chapter) || chapter < 1) {
-      return res.status(400).json({ message: 'Libro, version y capitulo son requeridos' })
+    if (req.query.modifiedBy && (!Number.isInteger(modifiedBy) || modifiedBy < 1)) {
+      return res.status(400).json({ message: 'El administrador seleccionado no es valido' })
+    }
+    if (!modifiedBy && (!book || !version || !Number.isInteger(chapter) || chapter < 1)) {
+      return res.status(400).json({ message: 'Selecciona un administrador o indica libro, version y capitulo' })
     }
 
     try {
-      const verses = await trainingRepository.findChapterVerses({ book, version, chapter })
+      const verses = await trainingRepository.findChapterVerses({
+        book: modifiedBy ? null : book,
+        version: modifiedBy ? null : version,
+        chapter: modifiedBy ? null : chapter,
+        modifiedBy
+      })
       return res.status(200).json(verses)
     } catch (err) {
       return res.status(500).json({ message: err.message })

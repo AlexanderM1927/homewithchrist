@@ -189,8 +189,11 @@ export default {
     cancel: 'Cancelar',
     save: 'Guardar corrección',
     referenceHint: 'La referencia se genera automáticamente desde el libro, capítulo y número del versículo.',
+    modifiedByFilter: 'Editado por',
+    allAdmins: 'Selecciona un admin para buscar sin libro ni capítulo',
     modifiedBy: 'Modificado por {name} · {date}',
     loadError: 'No se pudieron cargar los versículos',
+    loadAdminsError: 'No se pudieron cargar los administradores',
     saveSuccess: 'Versículo corregido correctamente',
     saveError: 'No se pudo corregir el versículo'
   },

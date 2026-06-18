@@ -12,7 +12,7 @@
       <q-card flat bordered class="panel-card q-mb-lg">
         <q-card-section>
           <div class="row q-col-gutter-sm">
-            <div class="col-12 col-sm-4 col-md-3">
+            <div class="col-12 col-sm-6 col-md-3">
               <q-select
                 v-model="selectedVersion"
                 :options="versionOptions"
@@ -21,10 +21,11 @@
                 emit-value
                 map-options
                 :loading="loadingVersions"
+                :disable="Boolean(selectedModifier)"
                 @update:model-value="loadBooks"
               />
             </div>
-            <div class="col-12 col-sm-5 col-md-6">
+            <div class="col-12 col-sm-6 col-md-3">
               <q-select
                 v-model="selectedBook"
                 :options="bookOptions"
@@ -35,11 +36,12 @@
                 use-input
                 input-debounce="0"
                 :loading="loadingBooks"
+                :disable="Boolean(selectedModifier)"
                 @filter="filterBooks"
                 @update:model-value="loadChapters"
               />
             </div>
-            <div class="col-12 col-sm-3 col-md-3">
+            <div class="col-12 col-sm-6 col-md-3">
               <q-select
                 v-model="selectedChapter"
                 :options="chapterOptions"
@@ -48,8 +50,22 @@
                 emit-value
                 map-options
                 :loading="loadingChapters"
-                :disable="!selectedBook"
+                :disable="Boolean(selectedModifier) || !selectedBook"
                 @update:model-value="loadChapterVerses"
+              />
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <q-select
+                v-model="selectedModifier"
+                :options="adminOptions"
+                :label="$t('verseCorrections.modifiedByFilter')"
+                :hint="$t('verseCorrections.allAdmins')"
+                outlined
+                clearable
+                emit-value
+                map-options
+                :loading="loadingAdmins"
+                @update:model-value="onModifierChange"
               />
             </div>
           </div>
@@ -141,6 +157,7 @@ import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import bibleService from 'src/services/BibleService'
 import trainingService from 'src/services/TrainingService'
+import authService from 'src/services/AuthService'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -149,6 +166,7 @@ const loadingVersions = ref(false)
 const loadingBooks = ref(false)
 const loadingChapters = ref(false)
 const loadingVerses = ref(false)
+const loadingAdmins = ref(false)
 const saving = ref(false)
 const versions = ref([])
 const books = ref([])
@@ -158,6 +176,8 @@ const verses = ref([])
 const selectedVersion = ref('')
 const selectedBook = ref('')
 const selectedChapter = ref(null)
+const selectedModifier = ref(null)
+const admins = ref([])
 const editDialog = ref(false)
 const editingVerse = ref(null)
 const editForm = ref({ text: '' })
@@ -165,13 +185,31 @@ const editForm = ref({ text: '' })
 const versionOptions = computed(() => versions.value.map(version => ({ label: version, value: version })))
 const bookOptions = computed(() => filteredBooks.value.map(book => ({ label: book, value: book })))
 const chapterOptions = computed(() => chapters.value.map(chapter => ({ label: String(chapter), value: chapter })))
+const adminOptions = computed(() => admins.value.map(admin => ({
+  label: admin.name || admin.phone || `#${admin.id}`,
+  value: admin.id
+})))
 const canSave = computed(() => {
   const text = editForm.value.text.trim()
   return Boolean(text) && text.length <= 700
 })
 const requiredRule = value => Boolean(String(value || '').trim()) || t('verseCorrections.required')
 
-onMounted(initializeBible)
+onMounted(async () => {
+  await Promise.all([initializeBible(), loadAdmins()])
+})
+
+async function loadAdmins() {
+  loadingAdmins.value = true
+  try {
+    const data = await authService.getUsers()
+    admins.value = data.users.filter(user => user.role === 'admin' || user.role_id === 3)
+  } catch {
+    $q.notify({ type: 'negative', message: t('verseCorrections.loadAdminsError') })
+  } finally {
+    loadingAdmins.value = false
+  }
+}
 
 async function initializeBible() {
   loadingVersions.value = true
@@ -228,19 +266,36 @@ async function loadChapters() {
 }
 
 async function loadChapterVerses() {
-  if (!selectedBook.value || !selectedChapter.value) return
+  if (!selectedModifier.value && (!selectedBook.value || !selectedChapter.value)) return
   loadingVerses.value = true
   try {
     verses.value = await trainingService.getChapterVerses({
-      book: selectedBook.value,
-      chapter: selectedChapter.value,
-      version: selectedVersion.value
+      book: selectedModifier.value ? null : selectedBook.value,
+      chapter: selectedModifier.value ? null : selectedChapter.value,
+      version: selectedModifier.value ? null : selectedVersion.value,
+      modifiedBy: selectedModifier.value
     })
   } catch {
     notifyLoadError()
   } finally {
     loadingVerses.value = false
   }
+}
+
+async function onModifierChange(adminId) {
+  if (adminId) {
+    selectedVersion.value = ''
+    selectedBook.value = ''
+    selectedChapter.value = null
+    books.value = []
+    filteredBooks.value = []
+    chapters.value = []
+    await loadChapterVerses()
+    return
+  }
+
+  verses.value = []
+  await initializeBible()
 }
 
 function openEdit(verse) {
@@ -258,8 +313,12 @@ async function saveVerse() {
     const updated = await trainingService.updateVerse(editingVerse.value.id, {
       text: editForm.value.text.trim()
     })
-    const index = verses.value.findIndex(verse => verse.id === updated.id)
-    if (index >= 0) verses.value[index] = updated
+    if (selectedModifier.value) {
+      await loadChapterVerses()
+    } else {
+      const index = verses.value.findIndex(verse => verse.id === updated.id)
+      if (index >= 0) verses.value[index] = updated
+    }
     editDialog.value = false
     $q.notify({ type: 'positive', message: t('verseCorrections.saveSuccess') })
   } catch (err) {

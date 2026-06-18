@@ -211,8 +211,11 @@ export default {
     cancel: 'Cancel',
     save: 'Save correction',
     referenceHint: 'The reference is generated automatically from the book, chapter, and verse number.',
+    modifiedByFilter: 'Edited by',
+    allAdmins: 'Select an admin to search without book or chapter',
     modifiedBy: 'Modified by {name} · {date}',
     loadError: 'Could not load verses',
+    loadAdminsError: 'Could not load administrators',
     saveSuccess: 'Verse corrected successfully',
     saveError: 'Could not correct the verse'
   },

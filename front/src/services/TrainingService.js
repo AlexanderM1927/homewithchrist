@@ -22,8 +22,12 @@ class TrainingService extends ApiService {
     return this.put(`/verses/${id}`, payload)
   }
 
-  getChapterVerses({ book, chapter, version }) {
-    const params = new URLSearchParams({ book, chapter, version })
+  getChapterVerses({ book = null, chapter = null, version = null, modifiedBy = null }) {
+    const params = new URLSearchParams()
+    if (book) params.set('book', book)
+    if (chapter) params.set('chapter', chapter)
+    if (version) params.set('version', version)
+    if (modifiedBy) params.set('modifiedBy', modifiedBy)
     return this.get(`/verses/chapter?${params.toString()}`)
   }
 

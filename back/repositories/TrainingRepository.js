@@ -109,13 +109,14 @@ class TrainingRepository {
     return topicVerse.update({ weight })
   }
 
-  async findChapterVerses({ book, version, chapter }) {
+  async findChapterVerses({ book, version, chapter, modifiedBy = null }) {
     return Verse.findAll({
       where: {
-        book,
-        version,
-        chapter,
-        is_active: true
+        is_active: true,
+        ...(book ? { book } : {}),
+        ...(version ? { version } : {}),
+        ...(chapter ? { chapter } : {}),
+        ...(modifiedBy ? { updated_by: modifiedBy } : {})
       },
       attributes: [
         'id',
@@ -135,7 +136,7 @@ class TrainingRepository {
         attributes: ['user_id', 'name'],
         required: false
       }],
-      order: [['verse_start', 'ASC'], ['id', 'ASC']]
+      order: [['book', 'ASC'], ['chapter', 'ASC'], ['verse_start', 'ASC'], ['id', 'ASC']]
     })
   }
 
