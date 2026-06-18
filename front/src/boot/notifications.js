@@ -34,7 +34,9 @@ export default defineBoot(({ router, store }) => {
     () => authStore.isAuthenticated,
     (isAuthenticated) => {
       if (isAuthenticated) {
-        notificationService.registerCurrentDevice()
+        notificationService.registerCurrentDevice().catch((error) => {
+          console.error('No se pudieron activar las notificaciones push:', error)
+        })
       }
     },
     { immediate: true }

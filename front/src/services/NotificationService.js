@@ -60,10 +60,7 @@ class NotificationService extends ApiService {
     await PushNotifications.addListener('registration', async ({ value }) => {
       this.currentToken = value
       try {
-        await this.post('/device', {
-          token: value,
-          platform: getRuntimePlatform().isIos ? 'ios' : 'android'
-        })
+        await this.post('/device', { token: value })
       } catch (error) {
         console.error('No se pudo registrar el dispositivo para notificaciones:', error)
       }

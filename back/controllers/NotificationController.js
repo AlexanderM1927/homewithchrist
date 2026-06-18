@@ -1,10 +1,10 @@
 'use strict'
 const pushNotificationRepository = require('../repositories/PushNotificationRepository')
+const userSessionRepository = require('../repositories/UserSessionRepository')
 
 class NotificationController {
   async registerDevice(req, res) {
     const token = String(req.body?.token || '').trim()
-    const platform = String(req.body?.platform || 'android').trim().toLowerCase()
 
     if (!req.user.sid) {
       return res.status(400).json({ message: 'La sesion no permite registrar notificaciones' })
@@ -14,16 +14,22 @@ class NotificationController {
       return res.status(400).json({ message: 'Token de notificaciones invalido' })
     }
 
-    if (!['android', 'ios'].includes(platform)) {
-      return res.status(400).json({ message: 'Plataforma de notificaciones invalida' })
-    }
-
     try {
+      const session = await userSessionRepository.findActiveBySessionId(req.user.sid)
+
+      if (!session || session.user_id !== req.user.sub) {
+        return res.status(401).json({ message: 'Sesion no valida' })
+      }
+
+      if (!['android', 'ios'].includes(session.platform)) {
+        return res.status(403).json({ message: 'Las notificaciones solo estan disponibles en la app movil' })
+      }
+
       await pushNotificationRepository.registerToken({
         userId: req.user.sub,
         sessionId: req.user.sid,
         token,
-        platform
+        platform: session.platform
       })
       return res.status(204).send()
     } catch (error) {
