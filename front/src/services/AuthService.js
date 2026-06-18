@@ -53,6 +53,10 @@ class AuthService extends ApiService {
     return this.put('/password', data)
   }
 
+  deleteAccount() {
+    return this.delete('/account')
+  }
+
   getUsers() {
     return this.get('/users')
   }

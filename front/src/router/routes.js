@@ -92,6 +92,7 @@ const routes = [
       { path: 'users', component: () => import('pages/UsersPage.vue'), meta: { requiresAdmin: true } },
       { path: 'daily-verses', component: () => import('pages/DailyVersesPage.vue'), meta: { requiresAdmin: true } },
       { path: 'profile', component: () => import('pages/ProfilePage.vue') },
+      { path: 'delete-account', component: () => import('pages/DeleteAccountPage.vue') },
       { path: 'change-password', component: () => import('pages/ChangePasswordPage.vue') }
     ]
   },

@@ -328,10 +328,36 @@ export default {
     language: 'Language',
     save: 'Save changes',
     changePassword: 'Change password',
+    deleteAccount: 'Delete my account',
     required: 'Required field',
     invalidEmail: 'Invalid email',
     saveSuccess: 'Profile updated successfully',
     saveError: 'Error updating profile'
+  },
+  deleteAccount: {
+    title: 'Delete my account',
+    warningTitle: 'This action is permanent',
+    description: 'Carefully review which information will be deleted and which will be preserved. This action cannot be undone.',
+    deletedTitle: 'Permanently deleted',
+    deleted: {
+      account: 'Your account, name, email, phone number, PIN, language, and role.',
+      diary: 'All diary entries and images, including their shared links.',
+      chats: 'All conversations with Hope AI, including their messages and shared links.',
+      sessions: 'Your active sessions, registered devices, and notification data.',
+      usage: 'Artificial intelligence usage records associated with your account.'
+    },
+    preservedTitle: 'Preserved',
+    preserved: {
+      communityContent: 'Administrative content published for the community, such as Bible verses, topic relationships, daily verses, and training reflections.'
+    },
+    sharedContentNote: 'Preserved content will no longer be associated with your name or account. Your personal author information will not be retained.',
+    action: 'Delete account',
+    confirmTitle: 'Confirm deletion',
+    confirmMessage: 'Your account and personal data will be permanently deleted. Community content will be preserved without identifying you as its author. Do you want to continue?',
+    cancel: 'Cancel',
+    confirm: 'Yes, delete permanently',
+    success: 'Your account was deleted successfully',
+    error: 'The account could not be deleted'
   },
   changePassword: {
     title: 'Change password',

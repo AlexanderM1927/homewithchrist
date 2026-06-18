@@ -1,4 +1,6 @@
 'use strict'
+const fs = require('fs')
+const path = require('path')
 const authService = require('../services/AuthService')
 const userRepository = require('../repositories/UserRepository')
 const { resolveSupportedLocale } = require('../utils/locale')
@@ -429,6 +431,30 @@ class AuthController {
       return res.status(200).json({ message: 'Clave actualizada correctamente' })
     } catch (err) {
       return res.status(err.status || 500).json({ message: err.message })
+    }
+  }
+
+  /**
+   * DELETE /api/auth/account
+   * Elimina la cuenta autenticada y todos sus datos personales.
+   */
+  async deleteAccount(req, res) {
+    try {
+      const imagePaths = await userRepository.deleteAccount(req.user.sub)
+
+      if (!imagePaths) {
+        return res.status(404).json({ message: 'Cuenta no encontrada' })
+      }
+
+      for (const imagePath of imagePaths) {
+        const filename = path.basename(imagePath)
+        fs.unlink(path.join(process.cwd(), 'public', 'uploads', filename), () => {})
+      }
+
+      res.clearCookie(REFRESH_COOKIE_NAME, CLEAR_COOKIE_OPTIONS)
+      return res.status(200).json({ message: 'Cuenta eliminada correctamente' })
+    } catch (err) {
+      return res.status(500).json({ message: err.message })
     }
   }
 }

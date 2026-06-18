@@ -1,5 +1,19 @@
 'use strict'
-const { User, Role } = require('../models')
+const { Op } = require('sequelize')
+const {
+  sequelize,
+  User,
+  Role,
+  Chat,
+  DiaryEntry,
+  AiUsageEvent,
+  UserSession,
+  PushNotificationToken,
+  TopicVerse,
+  Verse,
+  DailyVerse,
+  TrainingReflection
+} = require('../models')
 
 class UserRepository {
   /**
@@ -108,6 +122,48 @@ class UserRepository {
     if (preferred_locale !== undefined) fields.preferred_locale = preferred_locale
     await User.update(fields, { where: { user_id: userId } })
     return this.findById(userId)
+  }
+
+  /**
+   * Elimina la cuenta y todos sus datos personales en una sola transaccion.
+   * El contenido administrativo compartido se conserva sin referencia al autor.
+   * @param {number} userId
+   * @returns {Promise<string[]>} Rutas de imagenes que deben eliminarse del disco.
+   */
+  async deleteAccount(userId) {
+    return sequelize.transaction(async (transaction) => {
+      const user = await User.findByPk(userId, { transaction, lock: transaction.LOCK.UPDATE })
+      if (!user) return null
+
+      const diaryEntries = await DiaryEntry.findAll({
+        where: { user_id: userId },
+        attributes: ['image_path'],
+        transaction
+      })
+      const imagePaths = diaryEntries.map(entry => entry.image_path).filter(Boolean)
+
+      await AiUsageEvent.destroy({ where: { user_id: userId }, transaction })
+      await DiaryEntry.destroy({ where: { user_id: userId }, transaction })
+      await Chat.destroy({ where: { user_id: userId }, transaction })
+      await PushNotificationToken.destroy({ where: { user_id: userId }, transaction })
+      await TopicVerse.update({ created_by: null }, { where: { created_by: userId }, transaction })
+      await Verse.update(
+        { created_by: null, updated_by: null },
+        {
+          where: {
+            [Op.or]: [{ created_by: userId }, { updated_by: userId }]
+          },
+          transaction
+        }
+      )
+      await DailyVerse.update({ created_by: null }, { where: { created_by: userId }, transaction })
+      await TrainingReflection.update({ created_by: null }, { where: { created_by: userId }, transaction })
+
+      await UserSession.destroy({ where: { user_id: userId }, transaction })
+      await user.destroy({ transaction })
+
+      return imagePaths
+    })
   }
 }
 

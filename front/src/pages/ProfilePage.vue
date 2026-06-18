@@ -85,6 +85,19 @@
           class="full-width"
           to="/change-password"
         />
+
+        <q-separator class="q-my-sm" />
+
+        <q-btn
+          :label="$t('profile.deleteAccount')"
+          icon="delete_forever"
+          color="negative"
+          outline
+          rounded
+          no-caps
+          class="full-width"
+          to="/delete-account"
+        />
       </div>
 
     </q-form>

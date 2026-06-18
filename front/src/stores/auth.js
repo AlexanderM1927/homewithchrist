@@ -200,6 +200,13 @@ export const useAuthStore = defineStore('auth', {
       return authService.changePassword(data)
     },
 
+    async deleteAccount() {
+      const result = await authService.deleteAccount()
+      await this.clearSessionState()
+      await biometricAuthService.clearSession()
+      return result
+    },
+
     applyPreferredLocale(locale) {
       const preferredLocale = setPreferredLocale(locale)
       if (typeof i18n.global.locale === 'object') {

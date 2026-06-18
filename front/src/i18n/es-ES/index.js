@@ -306,10 +306,36 @@ export default {
     language: 'Idioma',
     save: 'Guardar cambios',
     changePassword: 'Cambiar clave',
+    deleteAccount: 'Eliminar mi cuenta',
     required: 'Campo requerido',
     invalidEmail: 'Correo inválido',
     saveSuccess: 'Perfil actualizado correctamente',
     saveError: 'Error al actualizar el perfil'
+  },
+  deleteAccount: {
+    title: 'Eliminar mi cuenta',
+    warningTitle: 'Esta accion es permanente',
+    description: 'Revisa cuidadosamente qué información se eliminará y cuál se conservará. Esta acción no se puede deshacer.',
+    deletedTitle: 'Se eliminará definitivamente',
+    deleted: {
+      account: 'Tu cuenta, nombre, correo, teléfono, clave, idioma y rol.',
+      diary: 'Todas las entradas e imágenes de tu diario, incluidos sus enlaces compartidos.',
+      chats: 'Todas tus conversaciones con Hope IA, incluidos sus mensajes y enlaces compartidos.',
+      sessions: 'Tus sesiones abiertas, dispositivos registrados y datos de notificaciones.',
+      usage: 'Los registros de uso de inteligencia artificial asociados a tu cuenta.'
+    },
+    preservedTitle: 'Se conservará',
+    preserved: {
+      communityContent: 'El contenido administrativo publicado para toda la comunidad, como versículos, relaciones de temas, versículos diarios y reflexiones de entrenamiento.'
+    },
+    sharedContentNote: 'El contenido conservado dejará de estar asociado a tu nombre o cuenta. No se conservarán tus datos personales como autor.',
+    action: 'Eliminar cuenta',
+    confirmTitle: 'Confirmar eliminacion',
+    confirmMessage: 'Se eliminarán definitivamente tu cuenta y tus datos personales. El contenido comunitario se conservará sin identificarte como autor. ¿Deseas continuar?',
+    cancel: 'Cancelar',
+    confirm: 'Si, eliminar definitivamente',
+    success: 'Tu cuenta fue eliminada correctamente',
+    error: 'No se pudo eliminar la cuenta'
   },
   changePassword: {
     title: 'Cambiar clave',
