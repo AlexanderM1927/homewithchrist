@@ -179,12 +179,13 @@
 
             <q-btn
               type="submit"
-              :label="submitLabel"
+              :label="submitButtonLabel"
               color="primary"
               class="full-width"
               size="md"
               unelevated
               :loading="loading"
+              :disable="connectionChecking"
             />
 
             <q-btn
@@ -262,6 +263,7 @@ import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/auth'
 import { useI18n } from 'vue-i18n'
 import biometricAuthService from 'src/services/BiometricAuthService'
+import apiReadinessService from 'src/services/ApiReadinessService'
 
 const router = useRouter()
 const route = useRoute()
@@ -282,11 +284,13 @@ const showRegisterInvite = ref(false)
 const biometricLoading = ref(false)
 const biometricAvailable = ref(false)
 const biometricEnabled = ref(false)
+const connectionChecking = ref(false)
 
 const isLogin = computed(() => mode.value === 'login')
 const isRegister = computed(() => mode.value === 'register')
 const modeSubtitle = computed(() => isRegister.value ? t('login.registerSubtitle') : t('login.subtitle'))
 const submitLabel = computed(() => isRegister.value ? t('login.registerSubmit') : t('login.submit'))
+const submitButtonLabel = computed(() => connectionChecking.value ? t('login.connecting') : submitLabel.value)
 const helperText = computed(() => isRegister.value ? t('login.hasAccount') : t('login.noAccount'))
 const helperActionLabel = computed(() => isRegister.value ? t('login.goToLogin') : t('login.goToRegister'))
 const showBiometricButton = computed(() => isLogin.value && biometricAvailable.value && biometricEnabled.value)
@@ -354,6 +358,12 @@ const countries = [
 const selectedCountry = ref(countries[0])
 
 onMounted(async () => {
+  connectionChecking.value = !apiReadinessService.isReady()
+  if (connectionChecking.value) {
+    await apiReadinessService.warmUp()
+    connectionChecking.value = false
+  }
+
   if (!biometricAuthService.isSupported()) return
 
   const availability = await authStore.getBiometricAvailability()
@@ -395,9 +405,17 @@ async function handleSubmit() {
 
   errorMsg.value = ''
   showRegisterInvite.value = false
-  loading.value = true
+  connectionChecking.value = !apiReadinessService.isReady()
 
   try {
+    if (connectionChecking.value) {
+      const apiReady = await apiReadinessService.warmUp({ force: true })
+      if (!apiReady) {
+        throw new Error(t('login.serverUnavailable'))
+      }
+    }
+
+    loading.value = true
     const fullPhone = `${selectedCountry.value.dial}${phoneNumber.value}`
     if (isRegister.value) {
       await authStore.register({
@@ -416,6 +434,7 @@ async function handleSubmit() {
     errorMsg.value = err.message || t('login.error')
     showRegisterInvite.value = !isRegister.value && err.status === 404
   } finally {
+    connectionChecking.value = false
     loading.value = false
   }
 }

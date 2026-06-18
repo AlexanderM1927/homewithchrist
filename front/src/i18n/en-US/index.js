@@ -280,6 +280,8 @@ export default {
     pin: 'PIN (4 digits)',
     submit: 'Sign In',
     registerSubmit: 'Create account',
+    connecting: 'Connecting to the server...',
+    serverUnavailable: 'We could not connect to the server. Check your connection and try again.',
     goToRegister: 'Register',
     goToLogin: 'Sign in',
     noAccount: 'Do not have an account?',

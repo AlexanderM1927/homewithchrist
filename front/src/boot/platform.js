@@ -1,5 +1,6 @@
 import { defineBoot } from '#q-app/wrappers'
 import { getRuntimePlatform } from 'src/composables/useRuntimePlatform'
+import apiReadinessService from 'src/services/ApiReadinessService'
 
 function setBodyClass(className, enabled) {
   document.body.classList.toggle(className, enabled)
@@ -16,4 +17,8 @@ export default defineBoot(() => {
   setBodyClass('platform-ios', runtimePlatform.isIos)
 
   document.body.dataset.platform = runtimePlatform.name
+
+  if (runtimePlatform.isNativeMobile) {
+    void apiReadinessService.warmUp()
+  }
 })

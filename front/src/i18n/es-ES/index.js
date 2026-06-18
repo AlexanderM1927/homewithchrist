@@ -258,6 +258,8 @@ export default {
     pin: 'Clave (4 dígitos)',
     submit: 'Ingresar',
     registerSubmit: 'Crear cuenta',
+    connecting: 'Conectando con el servidor...',
+    serverUnavailable: 'No pudimos conectar con el servidor. Revisa tu conexion e intenta de nuevo.',
     goToRegister: 'Registrarme',
     goToLogin: 'Ingresar',
     noAccount: '¿No tienes cuenta?',

@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8004/api'
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8004/api'
 
 class ApiService {
   constructor(prefix = '') {
@@ -20,7 +20,7 @@ class ApiService {
       headers.Authorization = `Bearer ${authStore.accessToken}`
     }
 
-    const url = `${BASE_URL}${this.prefix}${path}`
+    const url = `${API_BASE_URL}${this.prefix}${path}`
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
