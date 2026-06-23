@@ -315,6 +315,7 @@ export default {
     language: 'Idioma',
     forgotPassword: 'Olvide mi clave',
     biometricCta: 'Ingresar con huella',
+    biometricHeroHint: 'Ya tienes la huella guardada en este dispositivo. Inicia sesión primero con tu huella y usa tu PIN solo si lo necesitas.',
     biometricTitle: 'Activar ingreso biometrico',
     biometricPrompt: 'Puedes usar tu huella para volver a entrar en este dispositivo Android.',
     biometricEnable: 'Activar',

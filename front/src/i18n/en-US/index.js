@@ -337,6 +337,7 @@ export default {
     language: 'Language',
     forgotPassword: 'Forgot my PIN',
     biometricCta: 'Sign in with fingerprint',
+    biometricHeroHint: 'You already have fingerprint access saved on this device. Start with your fingerprint first and use your PIN only if you need it.',
     biometricTitle: 'Enable biometric sign-in',
     biometricPrompt: 'You can use your fingerprint to sign in again on this Android device.',
     biometricEnable: 'Enable',

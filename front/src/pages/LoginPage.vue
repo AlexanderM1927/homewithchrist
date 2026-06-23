@@ -23,6 +23,25 @@
       </q-card-section>
 
       <q-card-section class="q-pt-md">
+        <div v-if="showBiometricButton" class="biometric-hero q-mb-lg">
+          <div class="biometric-hero__icon">
+            <q-icon name="fingerprint" size="36px" />
+          </div>
+          <div class="biometric-hero__content">
+            <div class="text-subtitle1 text-weight-bold">{{ $t('login.biometricCta') }}</div>
+            <div class="text-caption text-grey-7 q-mt-xs">{{ $t('login.biometricHeroHint') }}</div>
+          </div>
+          <q-btn
+            :label="$t('login.biometricCta')"
+            color="primary"
+            unelevated
+            class="full-width biometric-hero__button q-mt-md"
+            icon="fingerprint"
+            :loading="biometricLoading"
+            @click="handleBiometricLogin"
+          />
+        </div>
+
         <div class="auth-switch q-mb-md">
           <q-btn
             :outline="!isLogin"
@@ -186,17 +205,6 @@
               unelevated
               :loading="loading"
               :disable="connectionChecking"
-            />
-
-            <q-btn
-              v-if="showBiometricButton"
-              :label="$t('login.biometricCta')"
-              color="primary"
-              outline
-              class="full-width q-mt-sm"
-              icon="fingerprint"
-              :loading="biometricLoading"
-              @click="handleBiometricLogin"
             />
 
             <q-btn
@@ -481,6 +489,73 @@ async function handleBiometricLogin() {
   min-height: 44px;
   border-radius: 8px;
   font-weight: 700;
+}
+
+.biometric-hero {
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  background:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.16), transparent 45%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 240, 250, 0.96));
+  box-shadow: 0 16px 40px rgba(43, 24, 69, 0.12);
+  animation: biometricHeroIn 280ms ease-out both;
+}
+
+.biometric-hero__icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: rgba(124, 58, 237, 0.12);
+  color: var(--q-primary, #7c3aed);
+  margin-bottom: 12px;
+  animation: biometricIconPulse 3.6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.biometric-hero__content {
+  line-height: 1.35;
+}
+
+.biometric-hero__button {
+  min-height: 52px;
+  border-radius: 14px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+@keyframes biometricHeroIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes biometricIconPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .biometric-hero,
+  .biometric-hero__icon {
+    animation: none;
+  }
 }
 
 .mode-helper {
