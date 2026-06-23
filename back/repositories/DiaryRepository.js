@@ -59,6 +59,10 @@ class DiaryRepository {
       return null
     }
 
+    return this.updateEntry(entry, { title, content, imagePath })
+  }
+
+  async updateEntry(entry, { title, content, imagePath }) {
     entry.title = title || null
     entry.content = content
     if (imagePath !== undefined) {

@@ -2,6 +2,7 @@
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
+const sharp = require('sharp')
 const diaryRepository = require('../repositories/DiaryRepository')
 
 function deleteUploadedFile(file) {
@@ -19,11 +20,44 @@ function deleteStoredImage(imagePath) {
   fs.unlink(filePath, () => {})
 }
 
+async function convertUploadedImageToWebp(file) {
+  if (!file?.path || !file.filename) return null
+
+  const outputFilename = `${path.parse(file.filename).name}-optimized.webp`
+  const outputPath = path.join(path.dirname(file.path), outputFilename)
+
+  try {
+    await sharp(file.path)
+      .rotate()
+      .resize({
+        width: 1600,
+        height: 1600,
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      .webp({
+        quality: 80
+      })
+      .toFile(outputPath)
+  } catch (err) {
+    fs.unlink(outputPath, () => {})
+    deleteUploadedFile(file)
+    throw new Error('No se pudo procesar la imagen')
+  }
+
+  deleteUploadedFile(file)
+
+  file.filename = outputFilename
+  file.path = outputPath
+  file.mimetype = 'image/webp'
+
+  return `/uploads/${outputFilename}`
+}
+
 class DiaryController {
   async create(req, res) {
     const title = typeof req.body.title === 'string' ? req.body.title.trim() : ''
     const content = typeof req.body.content === 'string' ? req.body.content.trim() : ''
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null
 
     if (!content) {
       deleteUploadedFile(req.file)
@@ -36,6 +70,7 @@ class DiaryController {
     }
 
     try {
+      const imagePath = req.file ? await convertUploadedImageToWebp(req.file) : null
       const entry = await diaryRepository.create({
         userId: req.user.sub,
         title,
@@ -134,7 +169,6 @@ class DiaryController {
     const entryId = Number(req.params.id)
     const title = typeof req.body.title === 'string' ? req.body.title.trim() : ''
     const content = typeof req.body.content === 'string' ? req.body.content.trim() : ''
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : undefined
 
     if (!Number.isInteger(entryId) || entryId <= 0) {
       deleteUploadedFile(req.file)
@@ -152,15 +186,23 @@ class DiaryController {
     }
 
     try {
-      const entry = await diaryRepository.updateByIdAndUser(entryId, req.user.sub, {
+      const existingEntry = await diaryRepository.findByIdAndUser(entryId, req.user.sub)
+
+      if (!existingEntry) {
+        deleteUploadedFile(req.file)
+        return res.status(404).json({ message: 'Entrada no encontrada' })
+      }
+
+      const previousImagePath = existingEntry.image_path
+      const imagePath = req.file ? await convertUploadedImageToWebp(req.file) : undefined
+      const entry = await diaryRepository.updateEntry(existingEntry, {
         title,
         content,
         imagePath
       })
 
-      if (!entry) {
-        deleteUploadedFile(req.file)
-        return res.status(404).json({ message: 'Entrada no encontrada' })
+      if (imagePath && previousImagePath && previousImagePath !== imagePath) {
+        deleteStoredImage(previousImagePath)
       }
 
       return res.status(200).json({ entry })

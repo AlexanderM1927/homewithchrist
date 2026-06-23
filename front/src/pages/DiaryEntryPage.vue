@@ -81,7 +81,7 @@
               v-model="form.image"
               outlined
               clearable
-              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
               :max-file-size="maxImageSizeBytes"
               :label="$t('diary.image')"
               :hint="$t('diary.imageEditHint')"

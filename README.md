@@ -112,7 +112,7 @@ homewithchrist/
 - **Login y registro automatico**: el usuario entra con telefono y PIN de 4 digitos. Si el telefono no existe, se crea el usuario.
 - **Home**: muestra accesos a las areas principales y contenido de entrada.
 - **Consejero IA**: permite conversar con Hope, guardar chats, retomar conversaciones recientes y recibir respuestas por streaming.
-- **Diario**: cada usuario autenticado puede crear, listar, ver y editar entradas privadas. Las entradas aceptan imagen JPG/PNG opcional de hasta 5 MB.
+- **Diario**: cada usuario autenticado puede crear, listar, ver y editar entradas privadas. Las entradas aceptan imagen JPG/PNG/WEBP opcional de hasta 5 MB y se convierten automaticamente a WebP al subirlas.
 - **Perfil**: el usuario puede actualizar nombre, correo y telefono.
 - **Administracion**: usuarios admin pueden gestionar usuarios, roles/contacto y cargar versiculos de training.
 - **Training biblico**: los temas y versiculos aprobados por administradores tienen prioridad en el contexto usado por la IA.
@@ -207,9 +207,10 @@ Campos:
 
 - `title`: opcional, maximo 150 caracteres.
 - `content`: requerido.
-- `image`: opcional, `jpg`, `jpeg` o `png`, maximo 5 MB.
+- `image`: opcional, `jpg`, `jpeg`, `png` o `webp`, maximo 5 MB.
 
 Las imagenes se guardan en `back/public/uploads` y se sirven como archivos estaticos desde el backend.
+Las imagenes nuevas del diario se convierten automaticamente a formato `webp` para mejorar eficiencia de almacenamiento y transferencia.
 
 El consejero IA puede usar entradas recientes o relacionadas como contexto personal secundario. Ese contexto nunca tiene prioridad sobre la Biblia o el training aprobado.
 

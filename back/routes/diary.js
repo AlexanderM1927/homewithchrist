@@ -8,8 +8,8 @@ const authMiddleware = require('../middlewares/authMiddleware')
 
 const router = express.Router()
 const uploadDir = path.join(process.cwd(), 'public', 'uploads')
-const allowedImageTypes = new Set(['image/jpeg', 'image/png'])
-const allowedImageExtensions = new Set(['.jpg', '.jpeg', '.png'])
+const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
+const allowedImageExtensions = new Set(['.jpg', '.jpeg', '.png', '.webp'])
 const maxImageSizeMb = 5
 const maxImageSizeBytes = maxImageSizeMb * 1024 * 1024
 
@@ -30,7 +30,7 @@ const uploadImage = multer({
   fileFilter: (req, file, cb) => {
     const extension = path.extname(file.originalname).toLowerCase()
     if (!allowedImageTypes.has(file.mimetype) || !allowedImageExtensions.has(extension)) {
-      return cb(new Error('Solo se permiten imagenes JPG, JPEG o PNG'))
+      return cb(new Error('Solo se permiten imagenes JPG, JPEG, PNG o WEBP'))
     }
     cb(null, true)
   }
