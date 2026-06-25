@@ -71,6 +71,13 @@ class ChatRepository {
     })
   }
 
+  async updateTitle(chatId, userId, title) {
+    return Chat.update(
+      { title },
+      { where: { chat_id: chatId, user_id: userId } }
+    )
+  }
+
   async createMessage(chatId, role, content, messageOrder) {
     return ChatMessage.create({
       chat_id: chatId,

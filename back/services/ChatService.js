@@ -97,12 +97,16 @@ class ChatService {
     const chat = await this._resolveChat(userId, requestChatId, userMessage)
     emit({ chatId: chat.chat_id, title: chat.title })
 
-    const history = await chatRepository.findRecentMessages(chat.chat_id, CHAT_HISTORY_LIMIT)
+    if (!requestChatId) {
+      void this._refreshChatTitleInBackground(chat.chat_id, userId, userMessage)
+    }
+
+    const historyPromise = chatRepository.findRecentMessages(chat.chat_id, CHAT_HISTORY_LIMIT)
 
     const assistantContent = await this._generateResponse({
       userMessage,
       locale,
-      history,
+      history: await historyPromise,
       emit,
       metadata: { userId }
     })
@@ -129,7 +133,12 @@ class ChatService {
   async _generateResponse({ userMessage, locale, history, emit, metadata }) {
 
     emit({ phase: 'classifying' })
-    const topics = await trainingRepository.findAllTopics()
+    const topicsPromise = trainingRepository.findAllTopics()
+    const semanticVersesPromise = bibleService.findRelevantVerses(userMessage, {
+      limit: SEMANTIC_BIBLE_LIMIT,
+      version: BIBLE_CONTEXT_VERSION
+    })
+    const topics = await topicsPromise
     const matchedSlugs = await aiProvider.classifyTopics(userMessage, topics)
     const searchTerms = this._extractSearchTerms(userMessage)
     const fallbackSlugs = matchedSlugs.length === 0
@@ -138,13 +147,18 @@ class ChatService {
     const trainingSlugs = this._uniqueValues([...matchedSlugs, ...fallbackSlugs])
 
     emit({ phase: 'searching' })
-    const semanticVerses = await bibleService.findRelevantVerses(userMessage, {
-      limit: SEMANTIC_BIBLE_LIMIT,
-      version: BIBLE_CONTEXT_VERSION
-    })
-    const topicVerses = trainingSlugs.length > 0
-      ? await trainingRepository.findVersesByTopicSlugs(trainingSlugs)
-      : []
+    const [semanticVerses, topicVerses, reflectionsByTopic] = await Promise.all([
+      semanticVersesPromise,
+      trainingSlugs.length > 0
+        ? trainingRepository.findVersesByTopicSlugs(trainingSlugs)
+        : Promise.resolve([]),
+      trainingSlugs.length > 0
+        ? trainingReflectionRepository.findByTopicSlugs(
+          trainingSlugs,
+          REFLECTION_CONTEXT_LIMIT
+        )
+        : Promise.resolve([])
+    ])
     const fallbackVerses = topicVerses.length === 0
       ? await this._findFallbackBibleVerses(searchTerms, FALLBACK_VERSE_LIMIT)
       : []
@@ -152,10 +166,7 @@ class ChatService {
       ? this._uniqueBy([...topicVerses, ...semanticVerses, ...fallbackVerses], 'id')
       : this._uniqueBy([...semanticVerses, ...fallbackVerses], 'id')
 
-    let reflections = await trainingReflectionRepository.findByTopicSlugs(
-      trainingSlugs,
-      REFLECTION_CONTEXT_LIMIT
-    )
+    let reflections = reflectionsByTopic
     if (reflections.length === 0) {
       reflections = await trainingReflectionRepository.findBySearchTerms(
         searchTerms,
@@ -181,8 +192,22 @@ class ChatService {
       return chat
     }
 
-    const title = await aiProvider.generateTitle(userMessage)
+    const title = this._fallbackChatTitle(userMessage)
     return chatRepository.create(userId, title)
+  }
+
+  async _refreshChatTitleInBackground(chatId, userId, userMessage) {
+    try {
+      const title = await aiProvider.generateTitle(userMessage)
+      const fallbackTitle = this._fallbackChatTitle(userMessage)
+      const nextTitle = title || fallbackTitle
+
+      if (nextTitle && nextTitle !== fallbackTitle) {
+        await chatRepository.updateTitle(chatId, userId, nextTitle)
+      }
+    } catch (err) {
+      console.warn('[ChatService] No se pudo actualizar el titulo del chat:', err.message)
+    }
   }
 
   async _findFallbackBibleVerses(searchTerms, limit) {
@@ -252,6 +277,10 @@ class ChatService {
       seen.add(value)
       return true
     })
+  }
+
+  _fallbackChatTitle(userMessage) {
+    return (userMessage || '').slice(0, 60) || 'Nuevo chat'
   }
 }
 

@@ -4,7 +4,7 @@ const aiUsageService = require('../AiUsageService')
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MAIN_MODEL = 'gpt-5.4-mini'
-const DEFAULT_SECONDARY_MODEL = 'gpt-5.4-mini'
+const DEFAULT_SECONDARY_MODEL = 'gpt-5.4-nano'
 const DEFAULT_EMBEDDING_MODEL = 'text-embedding-3-small'
 const DEFAULT_MAX_OUTPUT_TOKENS = 700
 
