@@ -90,6 +90,14 @@ EOF
 
                     npx cap sync android
 
+                    sh '''
+                    echo "===== CHECK AFTER CAP SYNC ====="
+                    pwd
+                    ls -lah android
+                    echo "-----"
+                    cat android/keystore.properties || echo "NO KEYSTORE"
+                    '''
+
                     echo "===== CAPACITOR VERSION FILE ====="
                     cat android/app/src/main/assets/public/version.json || true
                     '''
