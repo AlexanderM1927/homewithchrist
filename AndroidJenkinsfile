@@ -13,6 +13,27 @@ pipeline {
     }
 
     stages {
+
+        stage('Generate Keystore Properties') {
+            steps {
+                dir('./front/src-capacitor/android') {
+                    withCredentials([
+                        string(credentialsId: 'ANDROID_STORE_PASSWORD', variable: 'STORE_PASSWORD'),
+                        string(credentialsId: 'ANDROID_KEY_PASSWORD', variable: 'KEY_PASSWORD')
+                    ]) {
+                        sh '''
+                        cat > keystore.properties <<EOF
+storeFile=/opt/android-keystore/hwc-upload-key.jks
+storePassword=$STORE_PASSWORD
+keyAlias=hwc
+keyPassword=$KEY_PASSWORD
+EOF
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Build Android') {
             tools {
                 nodejs 'node-22.22.3'
@@ -51,26 +72,6 @@ pipeline {
             }
         }
 
-        stage('Generate Keystore Properties') {
-            steps {
-                dir('./front/src-capacitor/android') {
-                    withCredentials([
-                        string(credentialsId: 'ANDROID_STORE_PASSWORD', variable: 'STORE_PASSWORD'),
-                        string(credentialsId: 'ANDROID_KEY_PASSWORD', variable: 'KEY_PASSWORD')
-                    ]) {
-                        sh '''
-                        cat > keystore.properties <<EOF
-storeFile=/opt/android-keystore/hwc-upload-key.jks
-storePassword=$STORE_PASSWORD
-keyAlias=hwc
-keyPassword=$KEY_PASSWORD
-EOF
-                        '''
-                    }
-                }
-            }
-        }
-
         stage('Capacitor Sync') {
             tools {
                 nodejs 'node-22.22.3'
@@ -89,12 +90,6 @@ EOF
                     npm ci
 
                     npx cap sync android
-
-                    echo "===== CHECK AFTER CAP SYNC ====="
-                    pwd
-                    ls -lah android
-                    echo "-----"
-                    cat android/keystore.properties || echo "NO KEYSTORE"
 
                     echo "===== CAPACITOR VERSION FILE ====="
                     cat android/app/src/main/assets/public/version.json || true
