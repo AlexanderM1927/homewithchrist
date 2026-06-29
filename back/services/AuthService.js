@@ -13,7 +13,7 @@ const ACCESS_TOKEN_EXPIRY = '15m'
 const REFRESH_TOKEN_EXPIRY = '7d'
 const PASSWORD_RESET_TOKEN_EXPIRY = '20m'
 const SALT_ROUNDS = 12
-const SUPPORT_EMAIL = 'hwc@alexanderm.co'
+const SUPPORT_EMAIL = 'admin@homewithchrist.com'
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 function generateAccessToken(payload) {

@@ -627,7 +627,7 @@ export default {
     email: {
       title: 'Contact email',
       description: 'Use this email for support, privacy requests, or general questions.',
-      value: 'hwc@alexanderm.co'
+      value: 'admin@homewithchrist.com'
     },
     support: {
       title: 'Support',

@@ -2,7 +2,7 @@
 
 const { escapeHtml } = require('./helpers')
 
-const SUPPORT_EMAIL = 'hwc@alexanderm.co'
+const SUPPORT_EMAIL = 'admin@homewithchrist.com'
 
 function passwordResetEmail({ user, resetUrl }) {
   const isEnglish = user.preferred_locale === 'en-US'
