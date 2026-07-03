@@ -620,7 +620,7 @@ onActivated(initialize)
 
 .verse-row {
   display: grid;
-  grid-template-columns: auto minmax(42px, auto) 1fr;
+  grid-template-columns: minmax(42px, auto) 1fr;
   gap: 12px;
   align-items: start;
   padding: 10px 12px;
@@ -643,13 +643,7 @@ onActivated(initialize)
 }
 
 .verse-checkbox {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  opacity: 0;
-  pointer-events: none;
-  overflow: hidden;
+  display: none;
 }
 
 .verse-number {
@@ -674,7 +668,7 @@ onActivated(initialize)
   }
 
   .verse-row {
-    grid-template-columns: auto 36px 1fr;
+    grid-template-columns: 28px 1fr;
     gap: 10px;
   }
 }
