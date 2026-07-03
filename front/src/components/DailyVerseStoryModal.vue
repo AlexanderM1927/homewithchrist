@@ -231,7 +231,7 @@ async function shareStoryImage() {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({
         title: currentVerse.reference,
-        text: currentVerse.text,
+        text: publicAppUrl,
         files: [file]
       })
       return
