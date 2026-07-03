@@ -457,6 +457,9 @@ async function handleBiometricLogin() {
     await router.push('/')
   } catch (err) {
     if (!biometricAuthService.isUserCancel(err)) {
+      if (err.code === 'BIOMETRIC_SESSION_EXPIRED') {
+        biometricEnabled.value = false
+      }
       errorMsg.value = err.message || t('login.biometricError')
     }
   } finally {

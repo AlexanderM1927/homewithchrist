@@ -372,7 +372,8 @@ export default {
     biometricEnable: 'Enable',
     biometricSkip: 'Not now',
     biometricEnabled: 'Biometric sign-in enabled',
-    biometricError: 'Biometric sign-in could not be completed'
+    biometricError: 'Biometric sign-in could not be completed',
+    biometricSessionExpired: 'Your fingerprint sign-in expired on this device. Sign in with your PIN to continue, then you can enable fingerprint again.'
   },
   forgotPassword: {
     title: 'Recover PIN',

@@ -19,6 +19,15 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    isMobileRefreshSessionError(err) {
+      return err?.status === 401
+    },
+
+    async clearBiometricSessionWithFallback() {
+      await this.clearSessionState()
+      await biometricAuthService.clearSession()
+    },
+
     async login({ phone, pin }) {
       const preferred_locale = getPreferredLocale()
       const runtimePlatform = getRuntimePlatform()
@@ -135,10 +144,22 @@ export const useAuthStore = defineStore('auth', {
         throw err
       }
 
-      const data = await authService.mobileRefresh(refreshToken)
-      this.refreshToken = data.refreshToken
-      await this.persistMobileSession(data.refreshToken, storedSession?.biometricEnabled === true)
-      return data
+      try {
+        const data = await authService.mobileRefresh(refreshToken)
+        this.refreshToken = data.refreshToken
+        await this.persistMobileSession(data.refreshToken, storedSession?.biometricEnabled === true)
+        return data
+      } catch (err) {
+        if (this.isMobileRefreshSessionError(err)) {
+          await this.clearBiometricSessionWithFallback()
+          const expiredSessionError = new Error(i18n.global.t('login.biometricSessionExpired'))
+          expiredSessionError.status = 401
+          expiredSessionError.code = 'BIOMETRIC_SESSION_EXPIRED'
+          throw expiredSessionError
+        }
+
+        throw err
+      }
     },
 
     async persistMobileSession(refreshToken, biometricEnabled = null) {

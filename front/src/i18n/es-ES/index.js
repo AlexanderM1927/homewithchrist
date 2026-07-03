@@ -350,7 +350,8 @@ export default {
     biometricEnable: 'Activar',
     biometricSkip: 'Ahora no',
     biometricEnabled: 'Ingreso biometrico activado',
-    biometricError: 'No se pudo completar el ingreso biometrico'
+    biometricError: 'No se pudo completar el ingreso biometrico',
+    biometricSessionExpired: 'Tu acceso con huella vencio en este dispositivo. Ingresa con tu clave para continuar y luego puedes volver a activar la huella.'
   },
   forgotPassword: {
     title: 'Recuperar clave',
