@@ -72,7 +72,7 @@ class FirebasePushService {
         priority: 'high',
         notification: {
           channelId: 'daily_verse',
-          icon: 'ic_launcher',
+          icon: 'ic_notification_cross',
           color: '#7B2FBE'
         }
       }
