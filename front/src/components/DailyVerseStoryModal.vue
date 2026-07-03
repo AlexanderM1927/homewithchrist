@@ -231,13 +231,18 @@ async function shareStoryImage() {
     const blob = await createStoryImageBlob()
     const currentVerse = unref(verse)
     const file = new File([blob], 'home-with-christ-versiculo-del-dia.png', { type: 'image/png' })
+    const sharePayload = runtimePlatform.isCapacitor && runtimePlatform.isAndroid
+      ? {
+          files: [file]
+        }
+      : {
+          title: currentVerse.reference,
+          text: publicAppUrl,
+          files: [file]
+        }
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        title: currentVerse.reference,
-        text: publicAppUrl,
-        files: [file]
-      })
+      await navigator.share(sharePayload)
       return
     }
 
