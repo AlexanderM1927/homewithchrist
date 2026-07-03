@@ -46,7 +46,6 @@
         />
         <q-btn
           outline
-          v-if="!hideDownloadOption"
           color="white"
           icon="file_download"
           :label="$t('dashboard.verse.downloadStory')"
@@ -61,6 +60,8 @@
 
 <script setup>
 import { ref, toRefs, unref } from 'vue'
+import { Directory, Filesystem } from '@capacitor/filesystem'
+import { Share } from '@capacitor/share'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { getRuntimePlatform } from 'src/composables/useRuntimePlatform'
@@ -86,7 +87,6 @@ const publicAppUrl = getPublicAppBaseUrl()
 const publicAppUrlLabel = publicAppUrl.replace(/^https?:\/\//, '')
 const storySharing = ref(false)
 const runtimePlatform = getRuntimePlatform()
-const hideDownloadOption = runtimePlatform.isCapacitor && runtimePlatform.isAndroid
 
 function wrapCanvasText(ctx, text, maxWidth) {
   const words = String(text || '').split(/\s+/).filter(Boolean)
@@ -208,13 +208,79 @@ function saveBlob(blob) {
   URL.revokeObjectURL(objectUrl)
 }
 
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const result = String(reader.result || '')
+      const [, base64 = ''] = result.split(',')
+      if (base64) {
+        resolve(base64)
+        return
+      }
+      reject(new Error('blob_base64_conversion_failed'))
+    }
+    reader.onerror = () => reject(reader.error || new Error('blob_base64_conversion_failed'))
+    reader.readAsDataURL(blob)
+  })
+}
+
+async function shareStoryImageNatively(blob, currentVerse) {
+  const fileName = `home-with-christ-versiculo-del-dia-${Date.now()}.png`
+  const data = await blobToBase64(blob)
+
+  await Filesystem.writeFile({
+    path: fileName,
+    data,
+    directory: Directory.Cache,
+    recursive: true
+  })
+
+  const { uri } = await Filesystem.getUri({
+    path: fileName,
+    directory: Directory.Cache
+  })
+
+  await Share.share({
+    title: currentVerse.reference,
+    url: uri,
+    dialogTitle: t('dashboard.verse.shareStory')
+  })
+}
+
+async function saveStoryImageNatively(blob) {
+  const fileName = `home-with-christ-versiculo-del-dia-${Date.now()}.png`
+  const data = await blobToBase64(blob)
+  const permissionStatus = await Filesystem.checkPermissions()
+
+  if (permissionStatus.publicStorage !== 'granted') {
+    const requestedPermissionStatus = await Filesystem.requestPermissions()
+    if (requestedPermissionStatus.publicStorage !== 'granted') {
+      throw new Error('story_download_permission_denied')
+    }
+  }
+
+  await Filesystem.writeFile({
+    path: fileName,
+    data,
+    directory: Directory.Documents,
+    recursive: true
+  })
+}
+
 async function downloadStoryImage() {
   if (storySharing.value) return
 
   storySharing.value = true
   try {
     const blob = await createStoryImageBlob()
-    saveBlob(blob)
+
+    if (runtimePlatform.isCapacitor && runtimePlatform.isAndroid) {
+      await saveStoryImageNatively(blob)
+    } else {
+      saveBlob(blob)
+    }
+
     $q.notify({ type: 'positive', message: t('dashboard.verse.storyDownloaded') })
   } catch {
     $q.notify({ type: 'negative', message: t('dashboard.verse.storyError') })
@@ -230,16 +296,18 @@ async function shareStoryImage() {
   try {
     const blob = await createStoryImageBlob()
     const currentVerse = unref(verse)
+
+    if (runtimePlatform.isCapacitor && runtimePlatform.isAndroid) {
+      await shareStoryImageNatively(blob, currentVerse)
+      return
+    }
+
     const file = new File([blob], 'home-with-christ-versiculo-del-dia.png', { type: 'image/png' })
-    const sharePayload = runtimePlatform.isCapacitor && runtimePlatform.isAndroid
-      ? {
-          files: [file]
-        }
-      : {
-          title: currentVerse.reference,
-          text: publicAppUrl,
-          files: [file]
-        }
+    const sharePayload = {
+      title: currentVerse.reference,
+      text: publicAppUrl,
+      files: [file]
+    }
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share(sharePayload)
