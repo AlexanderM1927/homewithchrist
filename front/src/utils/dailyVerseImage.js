@@ -14,12 +14,15 @@ function getDayOfYear(date = new Date()) {
   return Math.floor(diff / oneDayInMs)
 }
 
-export function getDailyVerseImage(date = new Date()) {
+export function getDailyVerseImage(seed = new Date()) {
   if (!DAILY_VERSE_IMAGES.length) {
     return '/imgs/day-verse.avif'
   }
 
-  const imageIndex = getDayOfYear(date) % DAILY_VERSE_IMAGES.length
+  const normalizedSeed = Number.isFinite(Number(seed))
+    ? Math.abs(Number(seed))
+    : getDayOfYear(seed instanceof Date ? seed : new Date())
+  const imageIndex = normalizedSeed % DAILY_VERSE_IMAGES.length
   return DAILY_VERSE_IMAGES[imageIndex]
 }
 

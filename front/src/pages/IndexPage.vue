@@ -223,7 +223,7 @@ const dailyVerseLoading = ref(true)
 const dailyVerseModalOpen = ref(false)
 const iosInstallModalOpen = ref(false)
 const androidStoreUrl = 'https://play.google.com/store/apps/details?id=co.alexanderm.homewithchrist'
-const dailyVerseImageSrc = getDailyVerseImage()
+const dailyVerseImageSrc = computed(() => getDailyVerseImage(dailyVerse.value?.id))
 
 const userName = computed(() => authStore.user?.name || 'usuario')
 const hasDailyVerse = computed(() => Boolean(dailyVerse.value.reference && dailyVerse.value.text))

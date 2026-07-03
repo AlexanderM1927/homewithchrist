@@ -1,4 +1,5 @@
 'use strict'
+const crypto = require('crypto')
 const { Op } = require('sequelize')
 const { DailyVerse, User } = require('../models')
 
@@ -36,12 +37,42 @@ class DailyVerseRepository {
     return { total: count, page, limit, rows }
   }
 
-  async findToday(dateKey = new Date().toISOString().slice(0, 10)) {
-    const count = await DailyVerse.count()
+  getDailyOffset({ count, dateKey, userId = null }) {
+    if (!count) return 0
+
+    const seed = userId ? `${dateKey}:${userId}` : dateKey
+    const hash = crypto.createHash('sha256').update(seed).digest()
+    return hash.readUInt32BE(0) % count
+  }
+
+  async countDailyVerses() {
+    return DailyVerse.count()
+  }
+
+  async listDailyVersesOrdered() {
+    return DailyVerse.findAll({
+      attributes: ['id', 'reference', 'text'],
+      order: [['id', 'ASC']]
+    })
+  }
+
+  getVerseForUserFromList({ verses, dateKey = new Date().toISOString().slice(0, 10), userId = null }) {
+    if (!Array.isArray(verses) || verses.length === 0) return null
+
+    const offset = this.getDailyOffset({
+      count: verses.length,
+      dateKey,
+      userId
+    })
+
+    return verses[offset] || null
+  }
+
+  async findToday(dateKey = new Date().toISOString().slice(0, 10), userId = null, countOverride = null) {
+    const count = Number.isInteger(countOverride) ? countOverride : await this.countDailyVerses()
     if (!count) return null
 
-    const dayNumber = Math.floor(Date.parse(`${dateKey}T00:00:00Z`) / 86400000)
-    const offset = Math.abs(dayNumber) % count
+    const offset = this.getDailyOffset({ count, dateKey, userId })
 
     return DailyVerse.findOne({
       attributes: ['id', 'reference', 'text'],

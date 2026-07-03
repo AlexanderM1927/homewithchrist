@@ -63,8 +63,8 @@ class DailyVerseNotificationService {
   }
 
   async sendForDate(notificationDate) {
-    const verse = await dailyVerseRepository.findToday(notificationDate)
-    if (!verse) return
+    const verses = await dailyVerseRepository.listDailyVersesOrdered()
+    if (!verses.length) return
 
     const maxAttempts = getPositiveInteger(
       process.env.DAILY_VERSE_NOTIFICATION_MAX_ATTEMPTS,
@@ -75,8 +75,21 @@ class DailyVerseNotificationService {
       DEFAULT_RETRY_BASE_MINUTES
     )
     const tokens = await pushNotificationRepository.findEligibleTokens(notificationDate, maxAttempts)
+    const verseByUserId = new Map()
 
     for (const pushToken of tokens) {
+      let verse = verseByUserId.get(pushToken.user_id)
+      if (verse === undefined) {
+        verse = dailyVerseRepository.getVerseForUserFromList({
+          verses,
+          dateKey: notificationDate,
+          userId: pushToken.user_id
+        })
+        verseByUserId.set(pushToken.user_id, verse || null)
+      }
+
+      if (!verse) continue
+
       const delivery = await pushNotificationRepository.reserveDailyDelivery({
         pushTokenId: pushToken.id,
         dailyVerseId: verse.id,

@@ -58,7 +58,7 @@ class PushNotificationRepository {
       where: {
         enabled: true
       },
-      attributes: ['id', 'token', 'platform'],
+      attributes: ['id', 'token', 'platform', 'user_id'],
       include: [
         {
           model: User,

@@ -59,7 +59,7 @@
 </template>
 
 <script setup>
-import { ref, toRefs, unref } from 'vue'
+import { computed, ref, toRefs, unref } from 'vue'
 import { Directory, Filesystem } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import { useQuasar } from 'quasar'
@@ -88,7 +88,7 @@ const publicAppUrl = getPublicAppBaseUrl()
 const publicAppUrlLabel = publicAppUrl.replace(/^https?:\/\//, '')
 const storySharing = ref(false)
 const runtimePlatform = getRuntimePlatform()
-const dailyVerseImageSrc = getDailyVerseImage()
+const dailyVerseImageSrc = computed(() => getDailyVerseImage(unref(verse)?.id))
 
 function wrapCanvasText(ctx, text, maxWidth) {
   const words = String(text || '').split(/\s+/).filter(Boolean)
@@ -148,7 +148,7 @@ async function createStoryImageBlob() {
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   try {
-    const image = await loadImage(`${window.location.origin}${dailyVerseImageSrc}`)
+    const image = await loadImage(`${window.location.origin}${dailyVerseImageSrc.value}`)
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
   } catch {
     ctx.fillStyle = '#7b2fbe'

@@ -28,7 +28,7 @@ class DailyVerseController {
   async getToday(req, res) {
     try {
       const timeZone = process.env.DAILY_VERSE_NOTIFICATION_TIME_ZONE || DEFAULT_TIME_ZONE
-      const verse = await dailyVerseRepository.findToday(getZonedDateTime(timeZone).date)
+      const verse = await dailyVerseRepository.findToday(getZonedDateTime(timeZone).date, req.user.sub)
 
       if (!verse) {
         return res.status(404).json({ message: 'No hay versiculos del dia disponibles' })
