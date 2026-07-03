@@ -25,6 +25,21 @@ export default {
       storyFallback: 'Se descargó la imagen y se copió el enlace de la app',
       storyError: 'No se pudo generar la imagen del versículo'
     },
+    download: {
+      ios: 'Descargar en dispositivo iOS',
+      android: 'Descargar en Android',
+      iosModal: {
+        title: 'Instalar en iPhone',
+        subtitle: 'Sigue estos pasos para agregar Home With Christ a tu pantalla de inicio.',
+        close: 'Cerrar',
+        steps: {
+          openInSafari: 'Abre Home With Christ en Safari.',
+          tapShare: 'Toca el boton Compartir en la parte inferior de la pantalla.',
+          selectAddToHome: 'Desplazate hacia abajo y selecciona "Agregar a pantalla de inicio".',
+          confirm: 'Confirma tocando "Agregar" arriba a la derecha.'
+        }
+      }
+    },
     streak: {
       label: 'RACHA',
       days: 'días',

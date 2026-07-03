@@ -66,7 +66,22 @@ export default {
     diary: {
       label: 'LAST DIARY ENTRY',
       empty: 'You do not have any entries yet'
-    }
+    },
+    download: {
+      ios: 'Add to Home Screen',
+      android: 'Download Android App',
+      iosModal: {
+        title: 'Install on iPhone',
+        subtitle: 'Follow these steps to add Home With Christ to your home screen.',
+        close: 'Close',
+        steps: {
+          openInSafari: 'Open Home With Christ in Safari.',
+          tapShare: 'Tap the Share button at the bottom of the screen.',
+          selectAddToHome: 'Scroll down and select "Add to Home Screen".',
+          confirm: 'Confirm by tapping "Add" in the top-right corner.'
+        }
+      }
+    },
   },
   diary: {
     title: 'My diary',
