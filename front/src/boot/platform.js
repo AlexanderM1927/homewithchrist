@@ -15,6 +15,8 @@ export default defineBoot(() => {
   setBodyClass('browser', runtimePlatform.isBrowser)
   setBodyClass('platform-android', runtimePlatform.isAndroid)
   setBodyClass('platform-ios', runtimePlatform.isIos)
+  setBodyClass('standalone-web-app', runtimePlatform.isStandaloneWebApp)
+  setBodyClass('ios-home-screen', runtimePlatform.isIosHomeScreen)
 
   document.body.dataset.platform = runtimePlatform.name
 

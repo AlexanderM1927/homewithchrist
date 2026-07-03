@@ -225,7 +225,7 @@ const androidStoreUrl = 'https://play.google.com/store/apps/details?id=co.alexan
 
 const userName = computed(() => authStore.user?.name || 'usuario')
 const hasDailyVerse = computed(() => Boolean(dailyVerse.value.reference && dailyVerse.value.text))
-const showDownloadCards = computed(() => !runtimePlatform.isCapacitor)
+const showDownloadCards = computed(() => !runtimePlatform.isCapacitor && !runtimePlatform.isHomeScreenApp)
 const iosInstallSteps = computed(() => ([
   t('dashboard.download.iosModal.steps.openInSafari'),
   t('dashboard.download.iosModal.steps.tapShare'),
