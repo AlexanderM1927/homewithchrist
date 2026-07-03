@@ -442,8 +442,9 @@ async function shareStoryImage() {
 }
 
 .story-modal__actions {
-  gap: 12px;
   padding: 0 18px 28px;
+  display: flex;
+  align-items: center;
 }
 
 @media (max-width: 420px) {
