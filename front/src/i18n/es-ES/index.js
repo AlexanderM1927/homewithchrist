@@ -16,7 +16,14 @@ export default {
     blessing: 'Que Dios bendiga tu día ✨',
     verse: {
       label: '☀️ VERSÍCULO DEL DÍA PARA TÍ',
-      altImg: 'Versículo del día'
+      altImg: 'Versículo del día',
+      storyLabel: 'Historia compartible',
+      storySubtitle: 'Abre la card y compártela como imagen',
+      shareStory: 'Compartir imagen',
+      downloadStory: 'Descargar imagen',
+      storyDownloaded: 'Imagen descargada correctamente',
+      storyFallback: 'Se descargó la imagen y se copió el enlace de la app',
+      storyError: 'No se pudo generar la imagen del versículo'
     },
     streak: {
       label: 'RACHA',

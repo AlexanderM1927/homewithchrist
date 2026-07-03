@@ -17,6 +17,13 @@ export default {
     verse: {
       label: '☀️ VERSE OF THE DAY',
       altImg: 'Verse of the day',
+      storyLabel: 'Shareable story',
+      storySubtitle: 'Open the card and share it as an image',
+      shareStory: 'Share image',
+      downloadStory: 'Download image',
+      storyDownloaded: 'Image downloaded successfully',
+      storyFallback: 'The image was downloaded and the app link was copied',
+      storyError: 'Could not generate the verse image',
       list: [
         { reference: 'Jeremiah 29:11', text: '"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future."' },
         { reference: 'Philippians 4:13', text: '"I can do all things through Christ who strengthens me."' },

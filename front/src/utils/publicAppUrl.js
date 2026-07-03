@@ -16,6 +16,10 @@ function getConfiguredPublicBaseUrl() {
   return window.location.origin
 }
 
+export function getPublicAppBaseUrl() {
+  return getConfiguredPublicBaseUrl()
+}
+
 export function buildPublicAppUrl(routeLocation, router) {
   const resolvedRoute = router.resolve(routeLocation)
   const routePath = resolvedRoute.fullPath.startsWith('/')
