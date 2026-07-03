@@ -46,6 +46,7 @@
         />
         <q-btn
           outline
+          v-if="!hideDownloadOption"
           color="white"
           icon="file_download"
           :label="$t('dashboard.verse.downloadStory')"
@@ -62,6 +63,7 @@
 import { ref, toRefs, unref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
+import { getRuntimePlatform } from 'src/composables/useRuntimePlatform'
 import { getPublicAppBaseUrl } from 'src/utils/publicAppUrl'
 
 const props = defineProps({
@@ -83,6 +85,8 @@ const { t } = useI18n()
 const publicAppUrl = getPublicAppBaseUrl()
 const publicAppUrlLabel = publicAppUrl.replace(/^https?:\/\//, '')
 const storySharing = ref(false)
+const runtimePlatform = getRuntimePlatform()
+const hideDownloadOption = runtimePlatform.isCapacitor && runtimePlatform.isAndroid
 
 function wrapCanvasText(ctx, text, maxWidth) {
   const words = String(text || '').split(/\s+/).filter(Boolean)
