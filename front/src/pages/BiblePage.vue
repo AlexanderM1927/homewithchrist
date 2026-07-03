@@ -135,7 +135,16 @@
                 v-for="verse in displayedVerses"
                 :key="verse.id"
                 class="verse-row"
-                :class="{ 'verse-row--selected': !showingSearch && isVerseSelected(verse) }"
+                :class="{
+                  'verse-row--selected': !showingSearch && isVerseSelected(verse),
+                  'verse-row--interactive': !showingSearch
+                }"
+                :tabindex="showingSearch ? -1 : 0"
+                :role="showingSearch ? undefined : 'checkbox'"
+                :aria-checked="showingSearch ? undefined : String(isVerseSelected(verse))"
+                @click="!showingSearch && handleVerseRowClick(verse)"
+                @keydown.enter.prevent="!showingSearch && handleVerseRowClick(verse)"
+                @keydown.space.prevent="!showingSearch && handleVerseRowClick(verse)"
               >
                 <q-checkbox
                   v-if="!showingSearch"
@@ -311,6 +320,10 @@ function toggleVerseSelection(verse, checked) {
 
   setSelectedVerseNumbers([...current])
   syncRouteQuery()
+}
+
+function handleVerseRowClick(verse) {
+  toggleVerseSelection(verse, !isVerseSelected(verse))
 }
 
 function clearVerseSelection() {
@@ -615,13 +628,28 @@ onActivated(initialize)
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.verse-row--interactive {
+  cursor: pointer;
+}
+
+.verse-row--interactive:focus-visible {
+  outline: 2px solid #7b2fbe;
+  outline-offset: 2px;
+}
+
 .verse-row--selected {
   background: #faf5ff;
   box-shadow: inset 0 0 0 1px #eadcf9;
 }
 
 .verse-checkbox {
-  margin-top: 1px;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .verse-number {
