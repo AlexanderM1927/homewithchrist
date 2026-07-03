@@ -16,7 +16,7 @@
       <q-card-section class="story-modal__body">
         <div class="story-card-share">
           <img
-            src="/imgs/day-verse.avif"
+            :src="dailyVerseImageSrc"
             class="story-card-share__image"
             :alt="$t('dashboard.verse.altImg')"
           />
@@ -66,6 +66,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { getRuntimePlatform } from 'src/composables/useRuntimePlatform'
 import { getPublicAppBaseUrl } from 'src/utils/publicAppUrl'
+import { getDailyVerseImage } from 'src/utils/dailyVerseImage'
 
 const props = defineProps({
   modelValue: {
@@ -87,6 +88,7 @@ const publicAppUrl = getPublicAppBaseUrl()
 const publicAppUrlLabel = publicAppUrl.replace(/^https?:\/\//, '')
 const storySharing = ref(false)
 const runtimePlatform = getRuntimePlatform()
+const dailyVerseImageSrc = getDailyVerseImage()
 
 function wrapCanvasText(ctx, text, maxWidth) {
   const words = String(text || '').split(/\s+/).filter(Boolean)
@@ -146,7 +148,7 @@ async function createStoryImageBlob() {
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   try {
-    const image = await loadImage(`${window.location.origin}/imgs/day-verse.avif`)
+    const image = await loadImage(`${window.location.origin}${dailyVerseImageSrc}`)
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
   } catch {
     ctx.fillStyle = '#7b2fbe'

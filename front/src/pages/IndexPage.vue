@@ -44,7 +44,7 @@
             </div>
             <div class="verse-img-wrap col-auto">
               <img
-                src="/imgs/day-verse.avif"
+                :src="dailyVerseImageSrc"
                 class="verse-img"
                 :alt="$t('dashboard.verse.altImg')"
               />
@@ -210,6 +210,7 @@ import DailyVerseStoryModal from 'src/components/DailyVerseStoryModal.vue'
 import { getRuntimePlatform } from 'src/composables/useRuntimePlatform'
 import diaryService from 'src/services/DiaryService'
 import dailyVerseService from 'src/services/DailyVerseService'
+import { getDailyVerseImage } from 'src/utils/dailyVerseImage'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -222,6 +223,7 @@ const dailyVerseLoading = ref(true)
 const dailyVerseModalOpen = ref(false)
 const iosInstallModalOpen = ref(false)
 const androidStoreUrl = 'https://play.google.com/store/apps/details?id=co.alexanderm.homewithchrist'
+const dailyVerseImageSrc = getDailyVerseImage()
 
 const userName = computed(() => authStore.user?.name || 'usuario')
 const hasDailyVerse = computed(() => Boolean(dailyVerse.value.reference && dailyVerse.value.text))
@@ -324,15 +326,19 @@ onActivated(() => {
 
 .verse-img-wrap {
   width: 120px;
+  display: flex;
   flex-shrink: 0;
+  align-self: stretch;
+  overflow: hidden;
+  border-radius: 0 16px 16px 0;
 }
 
 .verse-img {
-  width: 120px;
+  width: 100%;
   height: 100%;
+  flex: 1 1 auto;
   object-fit: cover;
   display: block;
-  border-radius: 0 16px 16px 0;
 }
 
 .stat-card {
