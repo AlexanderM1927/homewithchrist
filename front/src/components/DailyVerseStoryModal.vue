@@ -35,15 +35,6 @@
 
       <q-card-actions align="center" class="story-modal__actions">
         <q-btn
-          outline
-          color="white"
-          icon="file_download"
-          :label="$t('dashboard.verse.downloadStory')"
-          :loading="storySharing"
-          no-caps
-          @click="downloadStoryImage"
-        />
-        <q-btn
           unelevated
           color="white"
           text-color="primary"
@@ -52,6 +43,15 @@
           :loading="storySharing"
           no-caps
           @click="shareStoryImage"
+        />
+        <q-btn
+          outline
+          color="white"
+          icon="file_download"
+          :label="$t('dashboard.verse.downloadStory')"
+          :loading="storySharing"
+          no-caps
+          @click="downloadStoryImage"
         />
       </q-card-actions>
     </q-card>
