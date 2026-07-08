@@ -82,17 +82,33 @@
         </div>
 
         <!-- AI message -->
-        <div v-else class="message-row row justify-start items-end">
-          <q-avatar size="28px" class="ai-avatar">
-            <q-icon name="auto_awesome" color="white" size="16px" />
-          </q-avatar>
-          <div class="ai-bubble q-px-md q-py-sm">
-            <span v-if="msg.loading" class="phase-wrapper">
-              <span class="typing-indicator"><span /><span /><span /></span>
-              <span v-if="msg.phase" class="phase-label q-ml-xs">{{ $t(`advisor.phases.${msg.phase}`) }}</span>
-            </span>
-            <span v-else v-html="formatMessage(msg.content)" />
+        <div v-else class="ai-message-stack column items-start">
+          <div class="message-row row justify-start items-end">
+            <q-avatar size="28px" class="ai-avatar">
+              <q-icon name="auto_awesome" color="white" size="16px" />
+            </q-avatar>
+            <div class="ai-bubble q-px-md q-py-sm" :class="{ 'ai-bubble-loading': msg.loading }">
+              <span v-if="msg.loading" class="phase-wrapper">
+                <span class="typing-indicator"><span /><span /><span /></span>
+                <span v-if="msg.phase" class="phase-label q-ml-xs">{{ $t(`advisor.phases.${msg.phase}`) }}</span>
+              </span>
+              <span v-else v-html="formatMessage(msg.content)" />
+            </div>
           </div>
+          <q-btn
+            v-if="speechSupported && !msg.loading && msg.content"
+            flat
+            dense
+            round
+            size="sm"
+            color="grey-7"
+            class="message-audio-btn q-mt-xs"
+            :icon="speakingMessageIndex === idx ? 'stop' : 'volume_up'"
+            :aria-label="speakingMessageIndex === idx ? $t('advisor.stopAudio') : $t('advisor.listenAudio')"
+            @click="toggleSpeech(msg, idx)"
+          >
+            <q-tooltip>{{ speakingMessageIndex === idx ? $t('advisor.stopAudio') : $t('advisor.listenAudio') }}</q-tooltip>
+          </q-btn>
         </div>
       </div>
     </div>
@@ -272,7 +288,9 @@ const currentChatId = ref(null)
 const currentChatTitle = ref('')
 const pendingScrollAfterHistoryClose = ref(false)
 const sharing = ref(false)
+const speakingMessageIndex = ref(null)
 let mobileScrollTimer = null
+let activeUtterance = null
 
 function getGuestTrialUsed () {
   try {
@@ -291,6 +309,68 @@ function setGuestTrialUsed () {
 }
 
 const suggestions = computed(() => tm('advisor.suggestions'))
+const speechSupported = computed(() => (
+  typeof window !== 'undefined' &&
+  'speechSynthesis' in window &&
+  typeof SpeechSynthesisUtterance !== 'undefined'
+))
+
+function getSpeechLanguage () {
+  return locale.value?.startsWith('es') ? 'es-ES' : 'en-US'
+}
+
+function normalizeSpeechText (text) {
+  return text
+    .replace(/#{1,3}\s+/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1$2')
+    .replace(/^\s*[-*]\s+/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function stopSpeech () {
+  if (!speechSupported.value) return
+
+  window.speechSynthesis.cancel()
+  activeUtterance = null
+  speakingMessageIndex.value = null
+}
+
+function toggleSpeech (message, index) {
+  if (!message?.content) return
+
+  if (!speechSupported.value) {
+    $q.notify({ type: 'warning', message: t('advisor.audioUnavailable') })
+    return
+  }
+
+  if (speakingMessageIndex.value === index) {
+    stopSpeech()
+    return
+  }
+
+  stopSpeech()
+
+  const utterance = new SpeechSynthesisUtterance(normalizeSpeechText(message.content))
+  utterance.lang = getSpeechLanguage()
+  utterance.rate = 1
+  utterance.pitch = 1
+  utterance.onend = () => {
+    if (activeUtterance !== utterance) return
+    activeUtterance = null
+    speakingMessageIndex.value = null
+  }
+  utterance.onerror = () => {
+    if (activeUtterance !== utterance) return
+    activeUtterance = null
+    speakingMessageIndex.value = null
+  }
+
+  activeUtterance = utterance
+  speakingMessageIndex.value = index
+  window.speechSynthesis.speak(utterance)
+}
 
 async function scrollToBottom () {
   await nextTick()
@@ -347,6 +427,7 @@ function goToRegister () {
 }
 
 function clearChat () {
+  stopSpeech()
   messages.value = []
   inputText.value = ''
   isLoading.value = false
@@ -378,6 +459,7 @@ async function openHistoryModal () {
 async function selectChat (chatId) {
   if (loadingChatId.value !== null) return
 
+  stopSpeech()
   loadingChatId.value = chatId
   try {
     const data = await chatService.getChat(chatId)
@@ -402,6 +484,8 @@ async function selectChat (chatId) {
 async function sendMessage () {
   const text = inputText.value.trim()
   if (!text || isLoading.value) return
+
+  stopSpeech()
 
   if (guestMode.value && getGuestTrialUsed()) {
     loginModalOpen.value = true
@@ -502,6 +586,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  stopSpeech()
   clearTimeout(mobileScrollTimer)
   window.visualViewport?.removeEventListener('resize', keepWelcomeInputVisible)
 })
@@ -558,6 +643,10 @@ onUnmounted(() => {
   gap: 4px;
 }
 
+.ai-message-stack {
+  align-items: flex-start;
+}
+
 .input-area {
   flex-shrink: 0;
   overflow-x: hidden;
@@ -586,24 +675,43 @@ onUnmounted(() => {
 }
 
 .user-bubble {
+  display: inline-block;
   background: #7B2FBE;
   color: white;
   border-radius: 18px 18px 4px 18px;
   max-width: 75%;
+  width: fit-content;
   font-size: 14px;
   line-height: 1.5;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 .ai-bubble {
+  display: inline-block;
   background: white;
   color: #1A1A2E;
   border-radius: 18px 18px 18px 4px;
   max-width: 75%;
+  width: fit-content;
   font-size: 14px;
   line-height: 1.5;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
   word-break: break-word;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.ai-bubble-loading {
+  width: auto;
+  max-width: max-content;
+}
+
+.message-audio-btn {
+  margin-left: 6px;
 }
 
 .ai-bubble :deep(.ai-message-heading) {
@@ -666,14 +774,17 @@ onUnmounted(() => {
 
 /* Phase label */
 .phase-wrapper {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .phase-label {
   font-size: 12px;
   color: #9C59D1;
   font-style: italic;
+  white-space: nowrap;
 }
 
 /* Typing dots animation */

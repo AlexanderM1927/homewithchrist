@@ -443,6 +443,10 @@ export default {
     shareText: 'Revisa esta conversación',
     shareCopied: 'Enlace del chat copiado',
     shareError: 'No se pudo compartir el chat',
+    listenAudio: 'Escuchar respuesta',
+    stopAudio: 'Detener audio',
+    audioUnavailable: 'Tu dispositivo no permite reproducir esta respuesta por voz.',
+    audioError: 'No se pudo reproducir el audio de esta respuesta.',
     errorMessage: 'Hubo un error al conectar con el consejero. Intenta de nuevo más tarde.',
     unavailableMessage: 'Hope no está disponible ahora mismo. Intenta en un rato 🙏',
     phases: {

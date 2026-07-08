@@ -465,6 +465,10 @@ export default {
     shareText: 'Check out this conversation',
     shareCopied: 'Chat link copied',
     shareError: 'The chat could not be shared',
+    listenAudio: 'Listen to response',
+    stopAudio: 'Stop audio',
+    audioUnavailable: 'Your device cannot play this response aloud.',
+    audioError: 'This response audio could not be played.',
     errorMessage: 'There was an error connecting to the counselor. Please try again later.',
     unavailableMessage: 'Hope is not available right now. Please try again in a moment 🙏',
     phases: {
