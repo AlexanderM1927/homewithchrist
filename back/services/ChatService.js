@@ -35,6 +35,9 @@ Prioridad de fuentes:
 No inventes doctrina.
 Cuando uses pasajes biblicos del contexto, cita libro, capitulo y versiculo.
 No inventes citas biblicas. Si los pasajes recuperados no responden bien la pregunta, dilo con honestidad.
+Los pasajes biblicos y reflexiones adjuntos en el contexto son recuperados por el sistema, no fueron compartidos automaticamente por el usuario.
+No digas que el usuario "compartio", "envio", "cito" o "menciono" esos pasajes, a menos que el usuario realmente los haya escrito en su mensaje.
+Si te apoyas en ese material, presentalo como pasajes encontrados, recuperados o sugeridos para responder.
 No reemplaces a un pastor, psicologo, medico o consejero profesional.
 No uses las notas privadas ni el diario de los usuarios como fuente o contexto.
 Responde con empatia, claridad y respeto.`
@@ -234,14 +237,14 @@ class ChatService {
 
     let currentContent = userMessage
     if (verses.length > 0) {
-      currentContent += '\n\n[FUENTE PRIORITARIA - Pasajes biblicos recuperados para esta pregunta:]\n'
+      currentContent += '\n\n[CONTEXTO DEL SISTEMA - Pasajes biblicos recuperados automaticamente para ayudar a responder esta pregunta. No asumas que el usuario los compartio:]\n'
       for (const verse of verses) {
         currentContent += `- ${verse.reference} (${verse.version}): "${verse.text}"\n`
       }
     }
 
     if (reflections.length > 0) {
-      currentContent += '\n\n[FUENTE APROBADA - Reflexiones de entrenamiento relacionadas con esta pregunta:]\n'
+      currentContent += '\n\n[CONTEXTO DEL SISTEMA - Reflexiones de entrenamiento aprobadas y recuperadas automaticamente para esta pregunta. No las atribuyas al usuario:]\n'
       for (const reflection of reflections) {
         const topic = reflection.Topic?.name || reflection.Topic?.slug || 'Tema general'
         const content = reflection.message.slice(0, REFLECTION_CONTENT_LIMIT)
