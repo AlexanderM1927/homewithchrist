@@ -6,6 +6,7 @@ class SpeechRecognitionService {
     this.webRecognition = null
     this.nativeListenerHandles = []
     this.listening = false
+    this.webPermissionPrimed = false
   }
 
   isNativeSupported () {
@@ -40,15 +41,56 @@ class SpeechRecognitionService {
   }
 
   async ensurePermission () {
+    const runtimePlatform = getRuntimePlatform()
+
     if (this.isNativeSupported()) {
       const status = await SpeechRecognition.checkPermissions()
-      if (status.speechRecognition === 'granted') return true
+      if (status.speechRecognition === 'granted') {
+        return { granted: true, requiresRetry: false }
+      }
 
       const requestedStatus = await SpeechRecognition.requestPermissions()
-      return requestedStatus.speechRecognition === 'granted'
+      return {
+        granted: requestedStatus.speechRecognition === 'granted',
+        requiresRetry: false
+      }
     }
 
-    return true
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      return { granted: true, requiresRetry: false }
+    }
+
+    try {
+      if (navigator.permissions?.query) {
+        const permissionStatus = await navigator.permissions.query({ name: 'microphone' })
+        if (permissionStatus.state === 'granted') {
+          this.webPermissionPrimed = true
+          return { granted: true, requiresRetry: false }
+        }
+        if (permissionStatus.state === 'denied') {
+          return { granted: false, requiresRetry: false }
+        }
+      }
+    } catch {
+      // Some browsers, especially Safari, do not support querying microphone permission.
+    }
+
+    const requiresPrimingRetry = runtimePlatform.isIosHomeScreen
+    const wasPrimed = requiresPrimingRetry ? this.webPermissionPrimed : true
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream.getTracks().forEach(track => track.stop())
+      if (requiresPrimingRetry) {
+        this.webPermissionPrimed = true
+      }
+      return {
+        granted: wasPrimed,
+        requiresRetry: requiresPrimingRetry && !wasPrimed
+      }
+    } catch {
+      return { granted: false, requiresRetry: false }
+    }
   }
 
   async isListening () {

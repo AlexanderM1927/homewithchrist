@@ -331,6 +331,9 @@ const speechRecognitionSupported = ref(false)
 const isListening = ref(false)
 const speechRecognitionBusy = ref(false)
 const speechRecognitionBaseText = ref('')
+const speechRecognitionStarting = ref(false)
+const SPEECH_RECOGNITION_START_TIMEOUT_MS = 8000
+let speechRecognitionStartTimeout = null
 
 function getSpeechLanguage () {
   return locale.value?.startsWith('es') ? 'es-ES' : 'en-US'
@@ -354,6 +357,30 @@ function buildSpeechRecognitionText (baseText, transcript) {
 
   const separator = /\s$/.test(normalizedBaseText) ? '' : ' '
   return `${normalizedBaseText}${separator}${normalizedTranscript}`
+}
+
+function clearSpeechRecognitionStartTimeout () {
+  clearTimeout(speechRecognitionStartTimeout)
+  speechRecognitionStartTimeout = null
+}
+
+function scheduleSpeechRecognitionStartTimeout () {
+  clearSpeechRecognitionStartTimeout()
+  speechRecognitionStartTimeout = setTimeout(async () => {
+    if (!speechRecognitionStarting.value) return
+
+    speechRecognitionStarting.value = false
+
+    try {
+      await speechRecognitionService.stop()
+    } catch {
+      // Ignore recognizer cleanup failures during startup timeout recovery.
+    } finally {
+      isListening.value = false
+      speechRecognitionBusy.value = false
+      $q.notify({ type: 'warning', message: t('advisor.voiceStartTimeout') })
+    }
+  }, SPEECH_RECOGNITION_START_TIMEOUT_MS)
 }
 
 async function stopSpeech () {
@@ -451,6 +478,8 @@ async function toggleSpeech (message, index) {
 
 async function stopSpeechRecognition () {
   speechRecognitionBusy.value = true
+  speechRecognitionStarting.value = false
+  clearSpeechRecognitionStartTimeout()
 
   try {
     await speechRecognitionService.stop()
@@ -470,8 +499,13 @@ async function startSpeechRecognition () {
       return
     }
 
-    const permissionGranted = await speechRecognitionService.ensurePermission()
-    if (!permissionGranted) {
+    const permissionResult = await speechRecognitionService.ensurePermission()
+    if (permissionResult.requiresRetry) {
+      $q.notify({ type: 'positive', message: t('advisor.voicePermissionReady') })
+      return
+    }
+
+    if (!permissionResult.granted) {
       $q.notify({ type: 'warning', message: t('advisor.voicePermissionDenied') })
       return
     }
@@ -479,6 +513,8 @@ async function startSpeechRecognition () {
     await stopSpeech()
 
     speechRecognitionBaseText.value = inputText.value
+    speechRecognitionStarting.value = true
+    scheduleSpeechRecognitionStartTimeout()
     await speechRecognitionService.start({
       lang: getSpeechLanguage(),
       prompt: t('advisor.voiceListening'),
@@ -488,12 +524,22 @@ async function startSpeechRecognition () {
       },
       onStateChange: (status) => {
         isListening.value = status === 'started'
+        if (status === 'started') {
+          speechRecognitionStarting.value = false
+          clearSpeechRecognitionStartTimeout()
+        }
+        if (status === 'stopped') {
+          speechRecognitionStarting.value = false
+          clearSpeechRecognitionStartTimeout()
+        }
         speechRecognitionBusy.value = false
       },
       onError: (error) => {
         const errorCode = String(error?.code || error?.message || '')
         isListening.value = false
         speechRecognitionBusy.value = false
+        speechRecognitionStarting.value = false
+        clearSpeechRecognitionStartTimeout()
         if (errorCode === 'not-allowed' || errorCode === 'service-not-allowed' || errorCode === 'permission_denied') {
           $q.notify({ type: 'warning', message: t('advisor.voicePermissionDenied') })
           return
@@ -504,6 +550,8 @@ async function startSpeechRecognition () {
     })
   } catch (err) {
     const errorCode = String(err?.code || err?.message || '')
+    speechRecognitionStarting.value = false
+    clearSpeechRecognitionStartTimeout()
     if (errorCode === 'not-allowed' || errorCode === 'service-not-allowed' || errorCode === 'permission_denied') {
       $q.notify({ type: 'warning', message: t('advisor.voicePermissionDenied') })
     } else {
@@ -511,7 +559,7 @@ async function startSpeechRecognition () {
     }
     isListening.value = false
   } finally {
-    if (!isListening.value) {
+    if (!isListening.value && !speechRecognitionStarting.value) {
       speechRecognitionBusy.value = false
     }
   }
@@ -753,6 +801,7 @@ onUnmounted(() => {
   stopSpeechRecognition()
   stopSpeech()
   clearSpeechSupportRetry()
+  clearSpeechRecognitionStartTimeout()
   clearTimeout(mobileScrollTimer)
   window.visualViewport?.removeEventListener('resize', keepWelcomeInputVisible)
 })
