@@ -206,6 +206,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import chatService from 'src/services/ChatService'
+import speechService from 'src/services/SpeechService'
 import { buildPublicAppUrl } from 'src/utils/publicAppUrl'
 import createLatestRequest from 'src/utils/createLatestRequest'
 
@@ -290,7 +291,9 @@ const pendingScrollAfterHistoryClose = ref(false)
 const sharing = ref(false)
 const speakingMessageIndex = ref(null)
 let mobileScrollTimer = null
-let activeUtterance = null
+let speechPlaybackToken = 0
+let speechSupportRetryTimer = null
+let speechSupportRefreshToken = 0
 
 function getGuestTrialUsed () {
   try {
@@ -309,11 +312,7 @@ function setGuestTrialUsed () {
 }
 
 const suggestions = computed(() => tm('advisor.suggestions'))
-const speechSupported = computed(() => (
-  typeof window !== 'undefined' &&
-  'speechSynthesis' in window &&
-  typeof SpeechSynthesisUtterance !== 'undefined'
-))
+const speechSupported = ref(false)
 
 function getSpeechLanguage () {
   return locale.value?.startsWith('es') ? 'es-ES' : 'en-US'
@@ -329,15 +328,48 @@ function normalizeSpeechText (text) {
     .trim()
 }
 
-function stopSpeech () {
-  if (!speechSupported.value) return
+async function stopSpeech () {
+  speechPlaybackToken += 1
+  if (!speechSupported.value) {
+    speakingMessageIndex.value = null
+    return
+  }
 
-  window.speechSynthesis.cancel()
-  activeUtterance = null
+  try {
+    await speechService.stop()
+  } catch {
+    // Ignore stop failures to keep the UI responsive.
+  }
+
   speakingMessageIndex.value = null
 }
 
-function toggleSpeech (message, index) {
+async function refreshSpeechSupport () {
+  const refreshToken = ++speechSupportRefreshToken
+  const isSupported = await speechService.getAvailability(getSpeechLanguage())
+  if (refreshToken !== speechSupportRefreshToken) return isSupported
+
+  speechSupported.value = isSupported
+  return isSupported
+}
+
+function clearSpeechSupportRetry () {
+  clearTimeout(speechSupportRetryTimer)
+  speechSupportRetryTimer = null
+}
+
+async function refreshSpeechSupportWithRetry (retries = 6, delay = 800) {
+  clearSpeechSupportRetry()
+
+  const isSupported = await refreshSpeechSupport()
+  if (isSupported || !speechService.isNativeSupported() || retries <= 0) return
+
+  speechSupportRetryTimer = setTimeout(() => {
+    refreshSpeechSupportWithRetry(retries - 1, delay)
+  }, delay)
+}
+
+async function toggleSpeech (message, index) {
   if (!message?.content) return
 
   if (!speechSupported.value) {
@@ -346,30 +378,41 @@ function toggleSpeech (message, index) {
   }
 
   if (speakingMessageIndex.value === index) {
-    stopSpeech()
+    await stopSpeech()
     return
   }
 
-  stopSpeech()
-
-  const utterance = new SpeechSynthesisUtterance(normalizeSpeechText(message.content))
-  utterance.lang = getSpeechLanguage()
-  utterance.rate = 1
-  utterance.pitch = 1
-  utterance.onend = () => {
-    if (activeUtterance !== utterance) return
-    activeUtterance = null
-    speakingMessageIndex.value = null
-  }
-  utterance.onerror = () => {
-    if (activeUtterance !== utterance) return
-    activeUtterance = null
-    speakingMessageIndex.value = null
-  }
-
-  activeUtterance = utterance
+  await stopSpeech()
+  const playbackToken = ++speechPlaybackToken
   speakingMessageIndex.value = index
-  window.speechSynthesis.speak(utterance)
+
+  try {
+    await speechService.speak({
+      text: normalizeSpeechText(message.content),
+      lang: getSpeechLanguage(),
+      rate: 1,
+      pitch: 1
+    })
+  } catch (err) {
+    if (playbackToken !== speechPlaybackToken) return
+
+    if (speechService.isRecoverableNativeError(err)) {
+      try {
+        await speechService.openInstall()
+      } catch {
+        // Best-effort prompt on Android when TTS data is missing.
+      }
+      $q.notify({ type: 'warning', message: t('advisor.audioUnavailable') })
+      await refreshSpeechSupport()
+      return
+    }
+
+    $q.notify({ type: 'negative', message: t('advisor.audioError') })
+  } finally {
+    if (playbackToken === speechPlaybackToken) {
+      speakingMessageIndex.value = null
+    }
+  }
 }
 
 async function scrollToBottom () {
@@ -459,7 +502,7 @@ async function openHistoryModal () {
 async function selectChat (chatId) {
   if (loadingChatId.value !== null) return
 
-  stopSpeech()
+  await stopSpeech()
   loadingChatId.value = chatId
   try {
     const data = await chatService.getChat(chatId)
@@ -485,7 +528,7 @@ async function sendMessage () {
   const text = inputText.value.trim()
   if (!text || isLoading.value) return
 
-  stopSpeech()
+  await stopSpeech()
 
   if (guestMode.value && getGuestTrialUsed()) {
     loginModalOpen.value = true
@@ -578,15 +621,20 @@ async function shareCurrentChat () {
 }
 
 watch(messages, keepWelcomeInputVisible, { deep: true })
+watch(locale, () => {
+  refreshSpeechSupportWithRetry()
+})
 
 onMounted(() => {
   if (!guestMode.value) loadRecentChats()
   keepWelcomeInputVisible()
+  refreshSpeechSupportWithRetry()
   window.visualViewport?.addEventListener('resize', keepWelcomeInputVisible)
 })
 
 onUnmounted(() => {
   stopSpeech()
+  clearSpeechSupportRetry()
   clearTimeout(mobileScrollTimer)
   window.visualViewport?.removeEventListener('resize', keepWelcomeInputVisible)
 })
