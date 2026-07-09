@@ -80,7 +80,6 @@ class SpeechRecognitionService {
       })
 
       this.nativeListenerHandles = [partialHandle, listeningHandle]
-      this.listening = true
 
       await SpeechRecognition.start({
         language: lang,

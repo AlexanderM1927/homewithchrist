@@ -152,9 +152,6 @@
           @click="sendMessage"
         />
       </div>
-      <div v-if="isListening" class="voice-status text-caption text-primary q-mt-xs">
-        {{ $t('advisor.voiceListening') }}
-      </div>
     </div>
 
     <!-- Chat history modal -->
@@ -505,8 +502,6 @@ async function startSpeechRecognition () {
         $q.notify({ type: 'negative', message: t('advisor.voiceError') })
       }
     })
-
-    isListening.value = true
   } catch (err) {
     const errorCode = String(err?.code || err?.message || '')
     if (errorCode === 'not-allowed' || errorCode === 'service-not-allowed' || errorCode === 'permission_denied') {
