@@ -130,6 +130,19 @@
           @keydown="onMessageKeydown"
         />
         <q-btn
+          v-if="speechRecognitionSupported"
+          round
+          flat
+          color="primary"
+          :icon="isListening ? 'stop_circle' : 'mic'"
+          class="voice-btn"
+          :loading="speechRecognitionBusy"
+          :aria-label="isListening ? $t('advisor.stopVoiceInput') : $t('advisor.startVoiceInput')"
+          @click="toggleSpeechRecognition"
+        >
+          <q-tooltip>{{ isListening ? $t('advisor.stopVoiceInput') : $t('advisor.startVoiceInput') }}</q-tooltip>
+        </q-btn>
+        <q-btn
           round
           unelevated
           color="primary"
@@ -138,6 +151,9 @@
           :disable="!inputText.trim() || isLoading"
           @click="sendMessage"
         />
+      </div>
+      <div v-if="isListening" class="voice-status text-caption text-primary q-mt-xs">
+        {{ $t('advisor.voiceListening') }}
       </div>
     </div>
 
@@ -207,6 +223,7 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import chatService from 'src/services/ChatService'
 import speechService from 'src/services/SpeechService'
+import speechRecognitionService from 'src/services/SpeechRecognitionService'
 import { buildPublicAppUrl } from 'src/utils/publicAppUrl'
 import createLatestRequest from 'src/utils/createLatestRequest'
 
@@ -313,6 +330,10 @@ function setGuestTrialUsed () {
 
 const suggestions = computed(() => tm('advisor.suggestions'))
 const speechSupported = ref(false)
+const speechRecognitionSupported = ref(false)
+const isListening = ref(false)
+const speechRecognitionBusy = ref(false)
+const speechRecognitionBaseText = ref('')
 
 function getSpeechLanguage () {
   return locale.value?.startsWith('es') ? 'es-ES' : 'en-US'
@@ -326,6 +347,16 @@ function normalizeSpeechText (text) {
     .replace(/^\s*[-*]\s+/gm, '')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+function buildSpeechRecognitionText (baseText, transcript) {
+  const normalizedBaseText = String(baseText || '')
+  const normalizedTranscript = String(transcript || '').trim()
+  if (!normalizedTranscript) return normalizedBaseText
+  if (!normalizedBaseText.trim()) return normalizedTranscript
+
+  const separator = /\s$/.test(normalizedBaseText) ? '' : ' '
+  return `${normalizedBaseText}${separator}${normalizedTranscript}`
 }
 
 async function stopSpeech () {
@@ -350,6 +381,12 @@ async function refreshSpeechSupport () {
   if (refreshToken !== speechSupportRefreshToken) return isSupported
 
   speechSupported.value = isSupported
+  return isSupported
+}
+
+async function refreshSpeechRecognitionSupport () {
+  const isSupported = await speechRecognitionService.getAvailability()
+  speechRecognitionSupported.value = isSupported
   return isSupported
 }
 
@@ -415,6 +452,87 @@ async function toggleSpeech (message, index) {
   }
 }
 
+async function stopSpeechRecognition () {
+  speechRecognitionBusy.value = true
+
+  try {
+    await speechRecognitionService.stop()
+  } finally {
+    isListening.value = false
+    speechRecognitionBusy.value = false
+  }
+}
+
+async function startSpeechRecognition () {
+  speechRecognitionBusy.value = true
+
+  try {
+    const isSupported = await refreshSpeechRecognitionSupport()
+    if (!isSupported) {
+      $q.notify({ type: 'warning', message: t('advisor.voiceUnavailable') })
+      return
+    }
+
+    const permissionGranted = await speechRecognitionService.ensurePermission()
+    if (!permissionGranted) {
+      $q.notify({ type: 'warning', message: t('advisor.voicePermissionDenied') })
+      return
+    }
+
+    await stopSpeech()
+
+    speechRecognitionBaseText.value = inputText.value
+    await speechRecognitionService.start({
+      lang: getSpeechLanguage(),
+      prompt: t('advisor.voiceListening'),
+      onPartialResult: (transcript) => {
+        inputText.value = buildSpeechRecognitionText(speechRecognitionBaseText.value, transcript)
+        keepWelcomeInputVisible()
+      },
+      onStateChange: (status) => {
+        isListening.value = status === 'started'
+        speechRecognitionBusy.value = false
+      },
+      onError: (error) => {
+        const errorCode = String(error?.code || error?.message || '')
+        isListening.value = false
+        speechRecognitionBusy.value = false
+        if (errorCode === 'not-allowed' || errorCode === 'service-not-allowed' || errorCode === 'permission_denied') {
+          $q.notify({ type: 'warning', message: t('advisor.voicePermissionDenied') })
+          return
+        }
+        if (errorCode === 'aborted') return
+        $q.notify({ type: 'negative', message: t('advisor.voiceError') })
+      }
+    })
+
+    isListening.value = true
+  } catch (err) {
+    const errorCode = String(err?.code || err?.message || '')
+    if (errorCode === 'not-allowed' || errorCode === 'service-not-allowed' || errorCode === 'permission_denied') {
+      $q.notify({ type: 'warning', message: t('advisor.voicePermissionDenied') })
+    } else {
+      $q.notify({ type: 'negative', message: t('advisor.voiceError') })
+    }
+    isListening.value = false
+  } finally {
+    if (!isListening.value) {
+      speechRecognitionBusy.value = false
+    }
+  }
+}
+
+async function toggleSpeechRecognition () {
+  if (speechRecognitionBusy.value) return
+
+  if (isListening.value) {
+    await stopSpeechRecognition()
+    return
+  }
+
+  await startSpeechRecognition()
+}
+
 async function scrollToBottom () {
   await nextTick()
   const container = messagesContainer.value
@@ -470,6 +588,7 @@ function goToRegister () {
 }
 
 function clearChat () {
+  stopSpeechRecognition()
   stopSpeech()
   messages.value = []
   inputText.value = ''
@@ -528,6 +647,7 @@ async function sendMessage () {
   const text = inputText.value.trim()
   if (!text || isLoading.value) return
 
+  await stopSpeechRecognition()
   await stopSpeech()
 
   if (guestMode.value && getGuestTrialUsed()) {
@@ -623,16 +743,19 @@ async function shareCurrentChat () {
 watch(messages, keepWelcomeInputVisible, { deep: true })
 watch(locale, () => {
   refreshSpeechSupportWithRetry()
+  refreshSpeechRecognitionSupport()
 })
 
 onMounted(() => {
   if (!guestMode.value) loadRecentChats()
   keepWelcomeInputVisible()
   refreshSpeechSupportWithRetry()
+  refreshSpeechRecognitionSupport()
   window.visualViewport?.addEventListener('resize', keepWelcomeInputVisible)
 })
 
 onUnmounted(() => {
+  stopSpeechRecognition()
   stopSpeech()
   clearSpeechSupportRetry()
   clearTimeout(mobileScrollTimer)
@@ -712,6 +835,14 @@ onUnmounted(() => {
 
 .send-btn {
   flex: 0 0 auto;
+}
+
+.voice-btn {
+  flex: 0 0 auto;
+}
+
+.voice-status {
+  min-height: 18px;
 }
 
 .messages-area .full-height {
