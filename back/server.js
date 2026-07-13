@@ -14,6 +14,7 @@ const dailyVerseRoutes = require('./routes/dailyVerse')
 const trainingReflectionRoutes = require('./routes/trainingReflection')
 const notificationRoutes = require('./routes/notifications')
 const dailyVerseNotificationService = require('./services/DailyVerseNotificationService')
+const { generateRobotsTxt, generateSitemapXml } = require('./utils/seo')
 
 const app = express()
 const publicDir = path.join(process.cwd(), 'public')
@@ -46,6 +47,14 @@ app.use('/api/notifications', notificationRoutes)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
+})
+
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send(generateRobotsTxt(req))
+})
+
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml').send(generateSitemapXml(req))
 })
 
 app.use(express.static(publicDir))
